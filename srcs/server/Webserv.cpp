@@ -9,8 +9,8 @@ int Webserv::init() {
 void Webserv::loop() {
     while(true) {
         // 接続受付
-        int accfd = accept(sock->get_listen_fd(), (struct sockaddr*)NULL, NULL);
-        if (accfd == -1) {
+        int accept_fd = accept(sock->get_listen_fd(), (struct sockaddr*)NULL, NULL);
+        if (accept_fd == -1) {
             continue;
         }
 
@@ -18,7 +18,9 @@ void Webserv::loop() {
         char buf[BUF_SIZE];
         memset(buf, 0, sizeof(buf));
         std::string recv_str = "";
-        read_until_double_newline_(recv_str, buf, accfd);
+        if (read_until_double_newline_(recv_str, buf, accept_fd) == -1) {
+            continue;
+        }
 
         //リクエストされたパスを取得する
         std::string path = "";
@@ -36,26 +38,26 @@ void Webserv::loop() {
         create_response_(server_response, body_length, message_body, is_file_exist, path);
 
         //ソケットディスクリプタにレスポンス内容を書き込む
-        if(send(accfd, server_response.c_str(), server_response.length(), 0) == -1){
-            std::cerr << "write() failed." << std::endl;
+        if(send(accept_fd, server_response.c_str(), server_response.length(), 0) == -1){
+            std::cerr << "send() failed." << std::endl;
         }
 
-        close(accfd);
-        accfd = -1;
+        close(accept_fd);
+        accept_fd = -1;
    }
 }
 
-void Webserv::read_until_double_newline_(std::string &recv_str, char buf[BUF_SIZE], int accfd) {
+int Webserv::read_until_double_newline_(std::string &recv_str, char buf[BUF_SIZE], int accept_fd) {
     ssize_t read_size = 0;
 
     do {
-        read_size = recv(accfd, buf, sizeof(char) * BUF_SIZE - 1, 0);
+        read_size = recv(accept_fd, buf, sizeof(char) * BUF_SIZE - 1, 0);
         if (read_size == -1) {
-            std::cerr << "read() failed." << std::endl;
+            std::cerr << "recv() failed." << std::endl;
             std::cerr << "ERROR: " << errno << std::endl;
-            close(accfd);
-            accfd = -1;
-            break;
+            close(accept_fd);
+            accept_fd = -1;
+            return -1;
         }
         if (read_size > 0) {
             recv_str.append(buf);
@@ -67,6 +69,7 @@ void Webserv::read_until_double_newline_(std::string &recv_str, char buf[BUF_SIZ
             break;
         }
     } while (read_size > 0);
+    return 0;
 }
 
 void Webserv::get_request_path_(std::string &path, std::string &path_string) {
