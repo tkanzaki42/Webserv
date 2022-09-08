@@ -1,6 +1,7 @@
 #include "HttpResponse.hpp"
 
-std::string HttpResponse::make_response(std::vector<std::string> &header, std::vector<std::string> &message_body) {
+std::string HttpResponse::make_response(
+        std::vector<std::string> &header, std::vector<std::string> &message_body) {
     std::string server_response;
     int header_size = header.size();
     int body_size = message_body.size();
@@ -16,7 +17,8 @@ std::string HttpResponse::make_response(std::vector<std::string> &header, std::v
     }
     return server_response;
 }
-std::vector<std::string>& HttpResponse::make_header(int version, int body_length, int is_file_exist, std::string path) {
+std::vector<std::string>& HttpResponse::make_header(
+        int version, int body_length, int is_file_exist, std::string path) {
     (void)version;
     (void)is_file_exist;
     (void)path;
@@ -37,7 +39,8 @@ std::vector<std::string>& HttpResponse::make_header(int version, int body_length
     static std::vector<std::string> response_header;
     return response_header;
 }
-void HttpResponse::make_body(std::vector<std::string> &body_content, int &body_content_length, std::ifstream &output_file){
+void HttpResponse::make_body(std::vector<std::string> &body_content, int &body_content_length,
+        std::ifstream &output_file){
 
     if (output_file.fail() != 0) {
         std::cout << "File was not found." << std::endl;
