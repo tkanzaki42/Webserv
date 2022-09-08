@@ -10,4 +10,6 @@
 #include <string.h>
 #include <sstream>
 
+const int BUF_SIZE = 1024;
+
 #endif
