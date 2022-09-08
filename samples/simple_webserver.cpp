@@ -7,7 +7,17 @@
 //          curl localhost:8888
 //      or connect from a web browser with the above path
 
-#include "../includes/webserv.hpp"
+// cpp includes
+#include <iostream>
+#include <sstream>
+// c includes
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+// c network includes
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 int run_webserver_simple() {
 
