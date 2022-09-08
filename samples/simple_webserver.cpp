@@ -7,6 +7,8 @@
 //          curl localhost:8888
 //      or connect from a web browser with the above path
 
+const int HTTP_PORT = 8888;
+
 // cpp includes
 #include <iostream>
 #include <sstream>
@@ -32,7 +34,7 @@ int run_webserver_simple() {
     struct sockaddr_in  server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8888);
+    server_addr.sin_port = htons(HTTP_PORT);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // ソケットのオプション設定
