@@ -43,7 +43,7 @@ void HttpResponse::make_body(std::vector<std::string> &body_content, int &body_c
         std::ifstream &output_file){
 
     if (output_file.fail() != 0) {
-        std::cout << "File was not found." << std::endl;
+        std::cerr << "File was not found." << std::endl;
         return;
     }
 

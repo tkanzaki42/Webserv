@@ -37,7 +37,7 @@ void Webserv::loop() {
 
         //ソケットディスクリプタにレスポンス内容を書き込む
         if(send(accfd, server_response.c_str(), server_response.length(), 0) == -1){
-            std::cout << "write() failed." << std::endl;
+            std::cerr << "write() failed." << std::endl;
         }
 
         close(accfd);
@@ -51,8 +51,8 @@ void Webserv::read_until_double_newline_(std::string &recv_str, char buf[BUF_SIZ
     do {
         read_size = recv(accfd, buf, sizeof(char) * BUF_SIZE - 1, 0);
         if (read_size == -1) {
-            std::cout << "read() failed." << std::endl;
-            std::cout << "ERROR: " << errno << std::endl;
+            std::cerr << "read() failed." << std::endl;
+            std::cerr << "ERROR: " << errno << std::endl;
             close(accfd);
             accfd = -1;
             break;
