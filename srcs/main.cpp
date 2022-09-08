@@ -104,69 +104,7 @@ const int HTTP1_PORT = 5000;
 // const int HTTP_VERSION = 1;
 const std::string HTML_FILE = "index.html";
 
-class Socket {
-public:
-    Socket(int port): port_(port) {}
-    ~Socket() {}
-
-    int create();
-    int get_listen_fd() const { return listen_fd_; }
-
-private:
-    int                 listen_fd_;
-    int                 port_;
-    struct sockaddr_in  serv_addr_;
-
-    int open_socket_();
-    int bind_address_();
-    int listen_();
-};
-
-int Socket::open_socket_() {
-    listen_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-    if(listen_fd_ == -1) {
-        std::cout << "socket() failed." << std::endl;
-        return -1;
-    }
-
-    int optval = 1;
-    if(setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-        std::cout << "setsockopt() failed." << std::endl;
-        close(listen_fd_);
-        return -1;
-    }
-    return 0;
-}
-int Socket::bind_address_() {
-    memset(&serv_addr_, 0, sizeof(serv_addr_));
-    serv_addr_.sin_family = AF_INET;
-    serv_addr_.sin_port = htons(port_);
-    serv_addr_.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if(bind(listen_fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_)) == -1) {
-        std::cout << "bind() failed.(" << errno << ")" << std::endl;
-        close(listen_fd_);
-        return -1;
-    }
-    return 0;
-}
-int Socket::listen_() {
-    if(listen(listen_fd_, SOMAXCONN) == -1) {
-        std::cout << "listen() failed." << std::endl;
-        close(listen_fd_);
-        return -1;
-    }
-    return 0;
-}
-int Socket::create() {
-    if (open_socket_() == -1)
-        return -1;
-    if (bind_address_() == -1)
-        return -1;
-    if (listen_() == -1)
-        return -1;
-    return 0;
-}
+#include "util_network/Socket.hpp"
 
 class HTTP1_Parser {
 public:
@@ -349,7 +287,7 @@ int run_webserver() {
 
     std::string executive_file = "/";
     Socket sock = Socket(HTTP1_PORT);
-    sock.create();
+    sock.prepare();
 
     int body_length = 0;
     int is_file_exist;
@@ -434,7 +372,7 @@ int run_webserver() {
         close(accfd);
         accfd = -1;
    }
-    close(sock.get_listen_fd());
+    sock.cleanup();
     return 0;
 }
 
