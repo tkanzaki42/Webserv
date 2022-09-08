@@ -30,13 +30,6 @@ int run_webserver_simple() {
         return 1;
     }
 
-    // アドレス作成
-    struct sockaddr_in  server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(HTTP_PORT);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
     // ソケットのオプション設定
     int optval = 1;
     if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
@@ -44,6 +37,13 @@ int run_webserver_simple() {
         close(socket_fd);
         return 1;
     }
+
+    // アドレス作成
+    struct sockaddr_in  server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(HTTP_PORT);
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // ソケットの名前付け(ソケットへのアドレス割り当て)
     if (bind(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
