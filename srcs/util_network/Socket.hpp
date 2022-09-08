@@ -16,7 +16,7 @@
 
 class Socket {
 public:
-    Socket(int port): port_(port) {}
+    Socket(int port) : port_(port) {}
     ~Socket() {}
 
     int prepare();

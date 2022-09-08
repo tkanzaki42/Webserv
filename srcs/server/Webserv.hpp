@@ -11,6 +11,9 @@ const int HTTP_PORT = 5000;
 
 class Webserv {
 public:
+    Webserv() {}
+    ~Webserv() {}
+
     int init();
     void loop();
     int finalize();
