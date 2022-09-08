@@ -1,6 +1,7 @@
 #include "../includes/webserv.hpp"
 #include "server/Webserv.hpp"
 
+// TODO delete
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -18,6 +19,10 @@
 #include <vector>
 
 int main() {
-    run_webserver();
+    Webserv serv;
+    serv.init();
+    serv.loop();
+    serv.finalize();
+    
     return 0;
 }
