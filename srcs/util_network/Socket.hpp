@@ -1,13 +1,18 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+// cpp includes
 #include <iostream>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+
+// c includes
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+
+// c network includes
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 class Socket {
 public:
