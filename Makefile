@@ -3,7 +3,7 @@ SRCDIR		= ./srcs
 SRCS		= $(shell find $(SRCDIR) -name "*.cpp" -type f | xargs)
 OBJS		= $(SRCS:.cpp=.o)
 DEPENDS		= $(OBJS:.o=.d)
-INCLUDES	= ./includes
+INCLUDES	= -I./includes -I./
 CXX			= clang++
 CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic-errors -MMD -MP
 
@@ -12,8 +12,11 @@ all: $(NAME)
 
 -include $(DEPENDS)
 
+.cpp.o: $(SRCS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -I$(INCLUDES) -o $(NAME) $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(NAME) $(OBJS)
 
 .PHONY: clean
 clean:

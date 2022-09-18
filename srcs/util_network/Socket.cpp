@@ -1,4 +1,4 @@
-#include "Socket.hpp"
+#include "srcs/util_network/Socket.hpp"
 
 int Socket::prepare() {
     if (open_socket_() == -1)
@@ -23,7 +23,8 @@ int Socket::open_socket_() {
     }
 
     int optval = 1;
-    if (setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+    if (setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR,
+            &optval, sizeof(optval)) == -1) {
         std::cerr << "setsockopt() failed." << std::endl;
         close(listen_fd_);
         return -1;
@@ -37,7 +38,8 @@ int Socket::bind_address_() {
     serv_addr_.sin_port = htons(port_);
     serv_addr_.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(listen_fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_)) == -1) {
+    if (bind(listen_fd_, (struct sockaddr*)&serv_addr_,
+            sizeof(serv_addr_)) == -1) {
         std::cerr << "bind() failed.(" << errno << ")" << std::endl;
         close(listen_fd_);
         return -1;

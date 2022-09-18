@@ -1,9 +1,9 @@
-#ifndef HTTPPARSER_HPP
-#define HTTPPARSER_HPP
+#ifndef SRCS_SERVER_HTTPPARSER_HPP_
+#define SRCS_SERVER_HTTPPARSER_HPP_
 
 #include <iostream>
 
-#include "../../includes/webserv.hpp"
+#include "includes/webserv.hpp"
 
 // const int HTTP_VERSION = 1;
 // const std::string HTML_FILE = "index.html";
@@ -15,4 +15,4 @@
 //     static std::string get_requestline_path(char _pbuf[BUF_SIZE]);
 // };
 
-#endif
+#endif  // SRCS_SERVER_HTTPPARSER_HPP_

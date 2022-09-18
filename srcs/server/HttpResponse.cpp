@@ -1,18 +1,19 @@
-#include "HttpResponse.hpp"
+#include "srcs/server/HttpResponse.hpp"
 
 std::string HttpResponse::make_response(
-        std::vector<std::string> &header, std::vector<std::string> &message_body) {
+        std::vector<std::string> &header,
+        std::vector<std::string> &message_body) {
     std::string server_response;
     int header_size = header.size();
     int body_size = message_body.size();
 
     std::string tmp;
 
-    for (int i = 0; i < header_size; i++){
+    for (int i = 0; i < header_size; i++) {
         server_response.append(header[i].c_str());
     }
 
-    for (int i = 0; i < body_size; i++){
+    for (int i = 0; i < body_size; i++) {
         server_response.append(message_body[i].c_str());
     }
     return server_response;
@@ -39,9 +40,10 @@ std::vector<std::string>& HttpResponse::make_header(
     static std::vector<std::string> response_header;
     return response_header;
 }
-void HttpResponse::make_body(std::vector<std::string> &body_content, int &body_content_length,
-        std::ifstream &output_file){
-
+void HttpResponse::make_body(
+        std::vector<std::string> &body_content,
+        int &body_content_length,
+        std::ifstream &output_file) {
     if (output_file.fail() != 0) {
         std::cerr << "File was not found." << std::endl;
         return;

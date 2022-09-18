@@ -1,16 +1,17 @@
-#ifndef WEBSERV_HPP
-#define WEBSERV_HPP
-
-#include "../util_network/Socket.hpp"
-#include "HttpResponse.hpp"
+#ifndef SRCS_SERVER_WEBSERV_HPP_
+#define SRCS_SERVER_WEBSERV_HPP_
 
 #include <iostream>
 #include <vector>
+#include <string>
+
+#include "../util_network/Socket.hpp"
+#include "./HttpResponse.hpp"
 
 const int HTTP_PORT = 5000;
 
 class Webserv {
-public:
+ public:
     Webserv() {}
     ~Webserv() {}
 
@@ -18,10 +19,11 @@ public:
     void loop();
     int finalize();
 
-private:
+ private:
     Socket *sock;
 
-    int read_until_double_newline_(std::string &recv_str, char buf[BUF_SIZE], int accept_fd);
+    int read_until_double_newline_(
+            std::string &recv_str, char buf[BUF_SIZE], int accept_fd);
     void get_request_path_(std::string &path, std::string &path_string);
     void read_contents_from_file_(int &is_file_exist,
             int &body_length, std::vector<std::string> &message_body);
@@ -30,4 +32,4 @@ private:
             int is_file_exist, std::string &path);
 };
 
-#endif
+#endif  // SRCS_SERVER_WEBSERV_HPP_
