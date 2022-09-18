@@ -16,17 +16,16 @@ void Webserv::loop() {
         }
 
         // \r\n\r\nが来るまでメッセージ受信
-        char buf[BUF_SIZE];
-        memset(buf, 0, sizeof(buf));
-        std::string recv_str = "";
-        if (read_until_double_newline_(recv_str, buf, accept_fd) == -1) {
+        std::string recv_str;
+        if (recv_until_double_newline_(recv_str, accept_fd) == -1) {
             continue;
         }
 
-        // リクエストされたパスを取得する
-        std::string path = "";
-        std::string path_string = "";
-        get_request_path_(path, path_string);
+        // リクエストデータを解析
+        HttpRequest req;
+        req.analyze_request(recv_str);
+
+        print_debug_(recv_str, req);
 
         // 取得したパスのファイルを開いて内容を取得する
         int is_file_exist = -1;
@@ -37,7 +36,8 @@ void Webserv::loop() {
         // HTTPレスポンスを作成する
         std::string server_response;
         create_response_(
-            server_response, body_length, message_body, is_file_exist, path);
+            server_response, body_length, message_body,
+            is_file_exist, req);
 
         // ソケットディスクリプタにレスポンス内容を書き込む
         if (send(accept_fd, server_response.c_str(),
@@ -50,11 +50,12 @@ void Webserv::loop() {
     }
 }
 
-int Webserv::read_until_double_newline_(
-        std::string &recv_str, char buf[BUF_SIZE], int accept_fd) {
+int Webserv::recv_until_double_newline_(std::string &recv_str, int accept_fd) {
     ssize_t read_size = 0;
+    char buf[BUF_SIZE];
 
     do {
+        memset(buf, 0, sizeof(buf));
         read_size = recv(accept_fd, buf, sizeof(char) * BUF_SIZE - 1, 0);
         if (read_size == -1) {
             std::cerr << "recv() failed." << std::endl;
@@ -66,29 +67,14 @@ int Webserv::read_until_double_newline_(
         if (read_size > 0) {
             recv_str.append(buf);
         }
-        if ((recv_str[recv_str.length()-4] == 0x0d) &&
-            (recv_str[recv_str.length()-3] == 0x0a) &&
-            (recv_str[recv_str.length()-2] == 0x0d) &&
-            (recv_str[recv_str.length()-1] == 0x0a)) {
+        if ((recv_str[recv_str.length()-4] == '\r') &&
+            (recv_str[recv_str.length()-3] == '\n') &&
+            (recv_str[recv_str.length()-2] == '\r') &&
+            (recv_str[recv_str.length()-1] == '\n')) {
             break;
         }
     } while (read_size > 0);
     return 0;
-}
-
-void Webserv::get_request_path_(std::string &path, std::string &path_string) {
-    std::string executive_file = "/";
-    // std::string exe = executive_file;
-    // std::size_t pos = exe.rfind('/');
-    // if (pos != std::string::npos) {
-    //     exe = exe.substr(pos + 1);
-    // }
-    path_string.clear();
-    path = "";  // TODO(someone) remove
-    // path = HttpParser::get_requestline_path(buf);
-    // path_string = HttpParser::argv_path_analyzer(
-    //     path, executive_file.c_str(), exe.c_str());
-    // std::cout << "path_string : " << path_string << std::endl;
 }
 
 void Webserv::read_contents_from_file_(int &is_file_exist,
@@ -110,15 +96,31 @@ void Webserv::read_contents_from_file_(int &is_file_exist,
 
 void Webserv::create_response_(std::string &server_response,
         int body_length, std::vector<std::string> &message_body,
-        int is_file_exist, std::string &path) {
+        int is_file_exist, HttpRequest &req) {
     std::vector<std::string> header
-        = HttpResponse::make_header(3, body_length, is_file_exist, path);
+        = HttpResponse::make_header(
+            3, body_length, is_file_exist, req.request_path);
     server_response = HttpResponse::make_response(header, message_body);
     std::cout << server_response << std::endl;
+    std::cout << "---------------------------------------" << std::endl;
 }
 
 int Webserv::finalize() {
     sock->cleanup();
     delete sock;
     return 0;
+}
+
+void Webserv::print_debug_(std::string &recv_str, HttpRequest &req) {
+    std::cout << "//-----recv_str start-----" << std::endl;
+    std::cout << recv_str << std::endl;
+    std::cout << "\\\\-----recv_str end-----" << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "[req]" << std::endl;
+    std::cout << "  req.method       : " << req.method << std::endl;
+    std::cout << "  req.request_path : " << req.request_path << std::endl;
+    std::cout << "  base_html_path   : " << kBaseHtmlPath << std::endl;
+    std::cout << "  req.path_to_file : " << req.path_to_file << std::endl;
+    std::cout << std::endl;
 }

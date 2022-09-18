@@ -5,8 +5,9 @@
 #include <vector>
 #include <string>
 
-#include "../util_network/Socket.hpp"
-#include "./HttpResponse.hpp"
+#include "srcs/util_network/Socket.hpp"
+#include "srcs/server/HttpResponse.hpp"
+#include "srcs/server/HttpRequest.hpp"
 
 const int HTTP_PORT = 5000;
 
@@ -22,14 +23,13 @@ class Webserv {
  private:
     Socket *sock;
 
-    int read_until_double_newline_(
-            std::string &recv_str, char buf[BUF_SIZE], int accept_fd);
-    void get_request_path_(std::string &path, std::string &path_string);
+    int recv_until_double_newline_(std::string &recv_str, int accept_fd);
     void read_contents_from_file_(int &is_file_exist,
             int &body_length, std::vector<std::string> &message_body);
     void create_response_(std::string &server_response,
             int body_length, std::vector<std::string> &message_body,
-            int is_file_exist, std::string &path);
+            int is_file_exist, HttpRequest &req);
+    void print_debug_(std::string &recv_str, HttpRequest &req);
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_
