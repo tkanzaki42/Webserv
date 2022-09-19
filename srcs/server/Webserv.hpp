@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <map>
 
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/server/HttpResponse.hpp"
@@ -18,14 +17,12 @@ class Webserv {
     Webserv() {}
     ~Webserv() {}
 
-    int init();
-    void loop();
-    int finalize();
+    int   init();
+    void  loop();
+    int   finalize();
 
  private:
     Socket                   *sock;
-    HttpRequest              request_;
-    HttpResponse             response_;
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_

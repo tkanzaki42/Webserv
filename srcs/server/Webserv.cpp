@@ -8,6 +8,9 @@ int Webserv::init() {
 
 void Webserv::loop() {
     while (true) {
+        HttpRequest   request_;
+        HttpResponse  response_;
+
         // 接続受付
         int accept_fd = accept(
             sock->get_listen_fd(),
@@ -40,7 +43,6 @@ void Webserv::loop() {
         }
 
         close(accept_fd);
-        accept_fd = -1;  // TODO(tkanzaki) -1入れる必要性(?)
     }
 }
 
