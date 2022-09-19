@@ -1,5 +1,30 @@
 #include "srcs/server/HttpRequest.hpp"
 
+HttpRequest::HttpRequest() :
+    http_method(NOT_DEFINED), request_path(""), path_to_file(""),
+    http_ver(""), received_line_(""), accept_fd_(-1) {
+}
+
+HttpRequest::~HttpRequest() {
+}
+
+HttpRequest::HttpRequest(const HttpRequest &obj) {
+    *this = obj;
+}
+
+HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
+    this->accept_fd_     = obj.accept_fd_;
+    this->received_line_ = obj.received_line_;
+
+    this->http_method    = obj.http_method;
+    this->request_path   = obj.request_path;
+    this->path_to_file   = obj.path_to_file;
+    this->http_ver       = obj.http_ver;
+    this->header_field   = std::map<std::string, std::string>(obj.header_field);
+
+    return *this;
+}
+
 const std::string& HttpRequest::get_received_line() {
     return this->received_line_;
 }

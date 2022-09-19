@@ -29,10 +29,10 @@ class HttpRequest {
     std::string http_ver;
     std::map<std::string, std::string> header_field;
 
-    HttpRequest() : 
-        http_method(NOT_DEFINED), request_path(""), path_to_file(""),
-        http_ver(""), received_line_(""), accept_fd_(-1) {}
-    ~HttpRequest() {}
+    HttpRequest();
+    ~HttpRequest();
+    HttpRequest(const HttpRequest &obj);
+    HttpRequest& operator=(const HttpRequest &obj);
 
     const std::string& get_received_line();
     void set_accept_fd(int accept_fd);
