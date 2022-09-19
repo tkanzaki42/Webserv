@@ -26,8 +26,6 @@ class Webserv {
     Socket                   *sock;
     HttpRequest              request_;
     HttpResponse             response_;
-
-    int recv_until_double_newline_(std::string &recv_str, int accept_fd);
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_

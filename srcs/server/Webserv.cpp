@@ -25,7 +25,7 @@ void Webserv::loop() {
         // リクエストデータを解析
         request_.analyze_request();
 
-        print_debug_();
+        request_.print_debug();
 
         // HTTPレスポンスを作成する
         response_.make_response();
@@ -42,33 +42,6 @@ void Webserv::loop() {
         close(accept_fd);
         accept_fd = -1;  // TODO(tkanzaki) -1入れる必要性(?)
     }
-}
-
-int Webserv::recv_until_double_newline_(std::string &recv_str, int accept_fd) {
-    ssize_t read_size = 0;
-    char buf[BUF_SIZE];
-
-    do {
-        memset(buf, 0, sizeof(buf));
-        read_size = recv(accept_fd, buf, sizeof(char) * BUF_SIZE - 1, 0);
-        if (read_size == -1) {
-            std::cerr << "recv() failed." << std::endl;
-            std::cerr << "ERROR: " << errno << std::endl;
-            close(accept_fd);
-            accept_fd = -1;
-            return -1;
-        }
-        if (read_size > 0) {
-            recv_str.append(buf);
-        }
-        if ((recv_str[recv_str.length()-4] == '\r') &&
-            (recv_str[recv_str.length()-3] == '\n') &&
-            (recv_str[recv_str.length()-2] == '\r') &&
-            (recv_str[recv_str.length()-1] == '\n')) {
-            break;
-        }
-    } while (read_size > 0);
-    return 0;
 }
 
 int Webserv::finalize() {

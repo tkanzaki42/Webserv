@@ -23,37 +23,36 @@ enum HttpMethod {
 
 class HttpRequest {
  public:
-    HttpMethod  method;
+    HttpMethod  http_method;
     std::string request_path;
     std::string path_to_file;
     std::string http_ver;
     std::map<std::string, std::string> header_field;
 
-    HttpRequest() : method(NOT_DEFINED), request_path(""), path_to_file("") {}
+    HttpRequest() : 
+        http_method(NOT_DEFINED), request_path(""), path_to_file(""),
+        http_ver(""), received_line_(""), accept_fd_(-1) {}
     ~HttpRequest() {}
 
-    const std::string &get_received_line();
+    const std::string& get_received_line();
     void set_accept_fd(int accept_fd);
+    int  recv_until_double_newline_();
     void analyze_request();
-    void print_debug_();
+    void print_debug();
 
  private:
-    std::size_t skip_space_(
-            std::string &recv_str, std::size_t read_idx);
-    std::size_t skip_crlf_(
-            std::string &recv_str, std::size_t read_idx);
-    std::size_t parse_method_(
-            std::string &recv_str, std::size_t read_idx);
-    std::size_t parse_request_path_(
-            std::string &recv_str, std::size_t read_idx);
-    std::size_t parse_http_ver_(
-            std::string &recv_str, std::size_t read_idx);
-    std::size_t parse_header_field_(
-            std::string &recv_str, std::size_t read_idx);
-    std::size_t parse_one_header_field_(
-            std::string &recv_str, std::size_t read_idx);
-    void generate_path_to_file_();
+    std::string received_line_;
+    int         accept_fd_;
+
+    std::size_t skip_space_(std::size_t read_idx);
+    std::size_t skip_crlf_(std::size_t read_idx);
+    std::size_t parse_method_(std::size_t read_idx);
+    std::size_t parse_request_path_(std::size_t read_idx);
+    std::size_t parse_http_ver_(std::size_t read_idx);
+    std::size_t parse_header_field_(std::size_t read_idx);
+    std::size_t parse_one_header_field_(std::size_t read_idx);
     void rtrim_(std::string &str);
+    void generate_path_to_file_();
 };
 
 #endif  // SRCS_SERVER_HTTPREQUEST_HPP_
