@@ -8,6 +8,9 @@ int Webserv::init() {
 
 void Webserv::loop() {
     while (true) {
+        HttpRequest   request_;
+        HttpResponse  response_;
+
         // 接続受付
         int accept_fd = accept(
             sock->get_listen_fd(),
@@ -25,7 +28,7 @@ void Webserv::loop() {
         // リクエストデータを解析
         request_.analyze_request();
 
-        print_debug_();
+        request_.print_debug();
 
         // HTTPレスポンスを作成する
         response_.make_response();
@@ -40,7 +43,6 @@ void Webserv::loop() {
         }
 
         close(accept_fd);
-        accept_fd = -1;  // TODO(tkanzaki) -1入れる必要性(?)
     }
 }
 
@@ -48,18 +50,4 @@ int Webserv::finalize() {
     sock->cleanup();
     delete sock;
     return 0;
-}
-
-void Webserv::print_debug_() {
-    std::cout << "//-----recieved_line start-----" << std::endl;
-    std::cout << request_.get_received_line() << std::endl;
-    std::cout << "\\\\-----recieved_line end-----" << std::endl;
-    std::cout << std::endl;
-
-    std::cout << "[req]" << std::endl;
-    std::cout << "  req.method       : " << request_.method << std::endl;
-    std::cout << "  req.request_path : " << request_.request_path << std::endl;
-    std::cout << "  base_html_path   : " << kBaseHtmlPath << std::endl;
-    std::cout << "  req.path_to_file : " << request_.path_to_file << std::endl;
-    std::cout << std::endl;
 }

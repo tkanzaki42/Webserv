@@ -17,16 +17,12 @@ class Webserv {
     Webserv() {}
     ~Webserv() {}
 
-    int init();
-    void loop();
-    int finalize();
+    int   init();
+    void  loop();
+    int   finalize();
 
  private:
     Socket                   *sock;
-    HttpRequest              request_;
-    HttpResponse             response_;
-
-    void print_debug_();
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_
