@@ -24,6 +24,7 @@ class HttpBody {
     const std::vector<std::string> &get_content();
     void                           read_contents_from_file();
     std::size_t                    get_content_length();
+    void                           clear_contents();
     // std::vector<std::string>& make_response404();
     // std::vector<std::string>& make_response302(std::string path);
     // std::vector<std::string>& make_responseUpgrade();

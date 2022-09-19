@@ -9,6 +9,7 @@
 #include "includes/webserv.hpp"
 #include "srcs/server/HttpHeader.hpp"
 #include "srcs/server/HttpBody.hpp"
+#include "srcs/server/Debug.hpp"
 
 class HttpResponse {
  private:

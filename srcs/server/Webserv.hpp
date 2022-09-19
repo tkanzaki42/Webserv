@@ -8,6 +8,7 @@
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/server/HttpResponse.hpp"
 #include "srcs/server/HttpRequest.hpp"
+#include "srcs/server/Debug.hpp"
 
 const int HTTP_PORT = 5000;
 

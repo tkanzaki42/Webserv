@@ -59,7 +59,7 @@ void HttpRequest::generate_path_to_file_() {
 int HttpRequest::recv_until_double_newline_() {
     ssize_t read_size = 0;
     char buf[BUF_SIZE];
-
+    recieved_line_ = std::string();
     do {
         memset(buf, 0, sizeof(buf));
         read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);

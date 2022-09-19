@@ -22,7 +22,6 @@ void HttpHeader::make_response200() {
     std::ostringstream oss;
     oss << "Content-Length: " << body_length_ << "\r\n";
 
-    content_.clear();
     content_.push_back("HTTP/1.1 200 OK\r\n");
     content_.push_back("Content-Type: text/html; charset=UTF-8\r\n");
     content_.push_back(oss.str());
@@ -72,4 +71,8 @@ const std::vector<std::string> &HttpHeader::get_content() {
 
 void HttpHeader::set_body_length(int body_length) {
     body_length_ = body_length;
+}
+
+void HttpHeader::clear_contents() {
+    content_.clear();
 }

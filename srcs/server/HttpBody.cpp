@@ -31,7 +31,6 @@ void HttpBody::read_contents_from_file() {
     // std::ifstream output_file(path_string.c_str());
     // char line[256];
     // is_file_exist = output_file.fail();
-    content_.clear();
     // while (output_file.getline(line, 256-1)) {
     //     body_length += strlen(line);
     //     message_body.push_back(std::string(line));
@@ -47,4 +46,8 @@ std::size_t HttpBody::get_content_length() {
 
 const std::vector<std::string> &HttpBody::get_content() {
     return this->content_;
+}
+
+void HttpBody::clear_contents() {
+    content_.clear();
 }

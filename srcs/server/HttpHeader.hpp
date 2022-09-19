@@ -18,6 +18,7 @@ class HttpHeader {
     void make_response200();
     const std::vector<std::string> &get_content();
     void set_body_length(int body_length);
+    void clear_contents();
     // std::vector<std::string>& make_response404();
     // std::vector<std::string>& make_response302(std::string path);
     // std::vector<std::string>& make_responseUpgrade();

@@ -21,16 +21,21 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj) {
 }
 
 void HttpResponse::make_response() {
+    // レスポンス、リクエストヘッダ、リクエストボディの初期化
+    response_.clear();
+    header_.clear_contents();
+    message_body_.clear_contents();
+
+    // リクエストヘッダ、リクエストボディの作成
     make_header_();
     make_message_body_();
 
+    // リクエストヘッダ、リクエストボディの内容をレスポンスにまとめる
     std::vector<std::string> header_content = header_.get_content();
     std::vector<std::string> body_content = message_body_.get_content();
-
     for (std::size_t i = 0; i < header_content.size(); i++) {
         response_.append(header_content[i].c_str());
     }
-
     for (std::size_t i = 0; i < body_content.size(); i++) {
         response_.append(body_content[i].c_str());
     }
