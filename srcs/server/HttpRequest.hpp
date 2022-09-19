@@ -7,6 +7,8 @@
 
 #include "includes/webserv.hpp"
 
+// TODO(tkanzaki) 定数、列挙型はバッティングの可能性があるので
+// クラス内にstatic constで定義の方がいいかも(?)
 const std::string kBaseHtmlPath = "./public_html";
 const std::string kIndexHtmlFileName = "index.html";
 
