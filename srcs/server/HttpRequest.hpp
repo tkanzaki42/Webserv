@@ -9,6 +9,8 @@
 
 #include "includes/webserv.hpp"
 
+// TODO(tkanzaki) 定数、列挙型はバッティングの可能性があるので
+// クラス内にstatic constで定義の方がいいかも(?)
 const std::string kBaseHtmlPath = "./public_html";
 const std::string kIndexHtmlFileName = "index.html";
 
@@ -21,7 +23,7 @@ enum HttpMethod {
 
 class HttpRequest {
  public:
-    HttpMethod method;
+    HttpMethod  method;
     std::string request_path;
     std::string path_to_file;
     std::string http_ver;
@@ -30,7 +32,10 @@ class HttpRequest {
     HttpRequest() : method(NOT_DEFINED), request_path(""), path_to_file("") {}
     ~HttpRequest() {}
 
-    void analyze_request(std::string &recv_str);
+    const std::string &get_received_line();
+    void set_accept_fd(int accept_fd);
+    void analyze_request();
+    void print_debug_();
 
  private:
     std::size_t skip_space_(
