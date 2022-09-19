@@ -112,6 +112,8 @@ int Webserv::finalize() {
 }
 
 void Webserv::print_debug_(std::string &recv_str, HttpRequest &req) {
+    typedef std::map<std::string, std::string>::iterator map_iter;
+
     std::cout << "//-----recv_str start-----" << std::endl;
     std::cout << recv_str << std::endl;
     std::cout << "\\\\-----recv_str end-----" << std::endl;
@@ -122,5 +124,13 @@ void Webserv::print_debug_(std::string &recv_str, HttpRequest &req) {
     std::cout << "  req.request_path : " << req.request_path << std::endl;
     std::cout << "  base_html_path   : " << kBaseHtmlPath << std::endl;
     std::cout << "  req.path_to_file : " << req.path_to_file << std::endl;
+    std::cout << "  req.http_ver     : " << req.http_ver << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "[header_field]" << std::endl;
+    for (map_iter it = req.header_field.begin();
+            it != req.header_field.end(); it++) {
+        std::cout << "  " << it->first << ": " << it->second << std::endl;
+    }
     std::cout << std::endl;
 }

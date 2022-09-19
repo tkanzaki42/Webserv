@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/server/HttpResponse.hpp"
