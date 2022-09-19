@@ -8,18 +8,24 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/server/HttpHeader.hpp"
+#include "srcs/server/HttpBody.hpp"
 
 class HttpResponse {
+ private:
+    HttpHeader  header_;
+    HttpBody    message_body_;
+    std::string response_;
+
+    void        make_header_();
+    void        make_message_body_();
  public:
-    static std::string make_response(
-            std::vector<std::string> &header,
-            std::vector<std::string> &message_body);
-    static std::vector<std::string>& make_header(
-            int version, int body_length, int is_file_exist, std::string path);
-    static void make_body(
-            std::vector<std::string> &body_content,
-            int &body_content_length,
-            std::ifstream &output_file);
+    HttpResponse();
+    ~HttpResponse();
+    HttpResponse(const HttpResponse &obj);
+    HttpResponse &operator=(const HttpResponse &obj);
+
+    void              make_response();
+    const std::string &get_response();
 };
 
 #endif  // SRCS_SERVER_HTTPRESPONSE_HPP_

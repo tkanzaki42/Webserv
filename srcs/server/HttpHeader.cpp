@@ -1,18 +1,33 @@
 #include "srcs/server/HttpHeader.hpp"
 
-std::vector<std::string>& HttpHeader::make_response200(int body_length) {
+HttpHeader::HttpHeader():
+content_(std::vector<std::string>()),
+body_length_(0) {
+}
+
+HttpHeader::~HttpHeader() {
+}
+
+HttpHeader::HttpHeader(const HttpHeader &obj) {
+    *this = obj;
+}
+
+HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
+    this->content_     = obj.content_;
+    this->body_length_ = obj.body_length_;
+    return *this;
+}
+
+void HttpHeader::make_response200() {
     std::ostringstream oss;
-    oss << "Content-Length: " << body_length << "\r\n";
+    oss << "Content-Length: " << body_length_ << "\r\n";
 
-    static std::vector<std::string> header;
-    header.clear();
-    header.push_back("HTTP/1.1 200 OK\r\n");
-    header.push_back("Content-Type: text/html; charset=UTF-8\r\n");
-    header.push_back(oss.str());
-    header.push_back("Connection: Keep-Alive\r\n");
-    header.push_back("\r\n");
-
-    return header;
+    content_.clear();
+    content_.push_back("HTTP/1.1 200 OK\r\n");
+    content_.push_back("Content-Type: text/html; charset=UTF-8\r\n");
+    content_.push_back(oss.str());
+    content_.push_back("Connection: Keep-Alive\r\n");
+    content_.push_back("\r\n");
 }
 
 // std::vector<std::string>& HttpHeader::make_response404() {
@@ -50,3 +65,11 @@ std::vector<std::string>& HttpHeader::make_response200(int body_length) {
 
 //     return header;
 // }
+
+const std::vector<std::string> &HttpHeader::get_content() {
+    return this->content_;
+}
+
+void HttpHeader::set_body_length(int body_length) {
+    body_length_ = body_length;
+}

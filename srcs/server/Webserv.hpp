@@ -21,15 +21,13 @@ class Webserv {
     int finalize();
 
  private:
-    Socket *sock;
+    Socket                   *sock;
+    HttpRequest              request_;
+    HttpResponse             response_;
 
-    int recv_until_double_newline_(std::string &recv_str, int accept_fd);
-    void read_contents_from_file_(int &is_file_exist,
-            int &body_length, std::vector<std::string> &message_body);
-    void create_response_(std::string &server_response,
-            int body_length, std::vector<std::string> &message_body,
-            int is_file_exist, HttpRequest &req);
-    void print_debug_(std::string &recv_str, HttpRequest &req);
+    int recv_until_double_newline_();
+    void create_response_();
+    void print_debug_();
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_
