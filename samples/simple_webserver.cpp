@@ -9,9 +9,6 @@
 
 const int HTTP_PORT = 8888;
 
-// cpp includes
-#include <iostream>
-#include <sstream>
 // c includes
 #include <unistd.h>
 #include <errno.h>
@@ -20,9 +17,11 @@ const int HTTP_PORT = 8888;
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+// cpp includes
+#include <iostream>
+#include <sstream>
 
 int run_webserver_simple() {
-
     // ソケット生成
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (!socket_fd) {
@@ -32,7 +31,8 @@ int run_webserver_simple() {
 
     // ソケットのオプション設定
     int optval = 1;
-    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR,
+            &optval, sizeof(optval)) == -1) {
         std::cout << "Failed to setsocket" << std::endl;
         close(socket_fd);
         return 1;
@@ -46,7 +46,8 @@ int run_webserver_simple() {
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // ソケットの名前付け(ソケットへのアドレス割り当て)
-    if (bind(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
+    if (bind(socket_fd, (struct sockaddr *)&server_addr,
+            sizeof(server_addr)) != 0) {
         std::cout << "Failed to bind. error:" << strerror(errno) << std::endl;
         close(socket_fd);
         return 1;
