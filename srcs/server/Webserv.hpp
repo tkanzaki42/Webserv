@@ -25,8 +25,6 @@ class Webserv {
     HttpRequest              request_;
     HttpResponse             response_;
 
-    int recv_until_double_newline_();
-    void create_response_();
     void print_debug_();
 };
 

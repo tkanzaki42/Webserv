@@ -28,7 +28,9 @@ void Webserv::loop() {
         print_debug_();
 
         // HTTPレスポンスを作成する
-        create_response_();
+        response_.make_response();
+        std::cout << response_.get_response() << std::endl;
+        std::cout << "---------------------------------------" << std::endl;
 
         // ソケットディスクリプタにレスポンス内容を書き込む
         if (send(accept_fd,
@@ -40,12 +42,6 @@ void Webserv::loop() {
         close(accept_fd);
         accept_fd = -1;  // TODO(tkanzaki) -1入れる必要性(?)
     }
-}
-
-void Webserv::create_response_() {
-    response_.make_response();
-    std::cout << response_.get_response() << std::endl;
-    std::cout << "---------------------------------------" << std::endl;
 }
 
 int Webserv::finalize() {
