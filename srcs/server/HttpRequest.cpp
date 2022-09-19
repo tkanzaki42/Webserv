@@ -101,10 +101,10 @@ std::size_t HttpRequest::parse_one_header_field_(
     buffer[buffer_idx] = '\0';
     std::string field_name = std::string(buffer);
 
-    read_idx = skip_space_(recv_str, read_idx);
+    read_idx = skip_space_(recv_str, ++read_idx);
 
     buffer_idx = 0;
-    while (recv_str[read_idx] != '\n' && read_idx < recv_str.length()) {
+    while (recv_str[read_idx] != '\r' && read_idx < recv_str.length()) {
         buffer[buffer_idx++] = recv_str[read_idx];
         read_idx++;
     }
@@ -112,7 +112,6 @@ std::size_t HttpRequest::parse_one_header_field_(
     std::string field_value = std::string(buffer);
     rtrim_(field_value);
 
-    std::cout << "inserting" << field_name << ":" << field_value << std::endl;
     header_field.insert(std::make_pair(field_name, field_value));
     return read_idx;
 }
