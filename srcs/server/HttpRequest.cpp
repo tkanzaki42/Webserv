@@ -21,7 +21,7 @@ std::size_t HttpRequest::skip_space_(
 
 std::size_t HttpRequest::parse_method_(
         std::string &recv_str, std::size_t read_idx) {
-    int ret = read_idx;
+    std::size_t ret = read_idx;
 
     if (recv_str.compare(read_idx, 4, "POST") == 0) {
         method = METHOD_POST;
@@ -38,7 +38,7 @@ std::size_t HttpRequest::parse_method_(
 
 std::size_t HttpRequest::parse_request_path_(
         std::string &recv_str, std::size_t read_idx) {
-    char path_buffer[128];
+    char path_buffer[1280];
     int path_buffer_idx = 0;
 
     while (recv_str[read_idx] != ' ' && read_idx < recv_str.length()) {
