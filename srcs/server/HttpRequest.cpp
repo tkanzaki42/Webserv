@@ -1,8 +1,8 @@
 #include "srcs/server/HttpRequest.hpp"
 
 HttpRequest::HttpRequest() :
-    http_method(NOT_DEFINED), request_path(""), path_to_file(""),
-    http_ver(""), received_line_(""), accept_fd_(-1) {
+    http_method(NOT_DEFINED), request_path(""), path_to_file(""), http_ver(""),
+    accept_fd_(-1), received_line_(""), status_code_(200) {
 }
 
 HttpRequest::~HttpRequest() {
@@ -92,6 +92,10 @@ void HttpRequest::print_debug() {
         std::cout << "    " << it->first << ": " << it->second << std::endl;
     }
     std::cout << std::endl;
+}
+
+int HttpRequest::get_status_code() const {
+    return status_code_;
 }
 
 std::size_t HttpRequest::skip_space_(std::size_t read_idx) {
