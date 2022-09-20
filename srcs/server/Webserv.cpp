@@ -17,7 +17,7 @@ void Webserv::loop() {
         }
 
         // \r\n\r\nが来るまでメッセージ受信
-        HttpRequest   request_;
+        HttpRequest request_;
         request_.set_accept_fd(accept_fd);
         if (request_.recv_until_double_newline_() == -1) {
             continue;
@@ -29,7 +29,7 @@ void Webserv::loop() {
         request_.print_debug();
 
         // HTTPレスポンスを作成する
-        HttpResponse  response_(request_);
+        HttpResponse response_(request_);
         response_.make_response();
         std::cout << response_.get_response() << std::endl;
         std::cout << "---------------------------------------" << std::endl;

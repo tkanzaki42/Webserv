@@ -4,7 +4,8 @@ HttpResponse::HttpResponse(const HttpRequest& request)
         : request_(request),
           header_(HttpHeader()),
           message_body_(HttpBody()),
-          response_(std::string()) {
+          response_(std::string()),
+          status_code_(request.get_status_code()) {
 }
 
 HttpResponse::~HttpResponse() {
@@ -19,6 +20,7 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj) {
     this->header_       = obj.header_;
     this->message_body_ = obj.message_body_;
     this->response_     = obj.response_;
+    this->status_code_  = obj.status_code_;
     return *this;
 }
 
@@ -42,9 +44,11 @@ void HttpResponse::make_response() {
         response_.append(body_content[i].c_str());
     }
 }
+
 void HttpResponse::make_header_() {
     // 取得したパスのファイルを開いて内容を取得する
-    message_body_.read_contents_from_file();
+    if (status_code_ == 200)
+        message_body_.read_contents_from_file();
     // TODO(tkanzaki) ここの条件分岐はHttpHeaderクラスに書いてもいいかも
     // ポリモーフィズムを使うのもあり
     // (void)version;
@@ -63,12 +67,12 @@ void HttpResponse::make_header_() {
     // else {
     int body_length = message_body_.get_content_length();
     header_.set_body_length(body_length);
-    header_.make_response(request_.status_code);
+    header_.make_response(status_code_);
     // }
 }
 
 void HttpResponse::make_message_body_() {
-    message_body_.make_response(request_.status_code);
+    message_body_.make_response(status_code_);
 }
 
 const std::string &HttpResponse::get_response() {

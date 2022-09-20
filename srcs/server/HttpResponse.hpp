@@ -7,9 +7,9 @@
 #include <fstream>
 
 #include "includes/webserv.hpp"
+#include "srcs/server/HttpRequest.hpp"
 #include "srcs/server/HttpHeader.hpp"
 #include "srcs/server/HttpBody.hpp"
-#include "srcs/server/HttpRequest.hpp"
 #include "srcs/server/Debug.hpp"
 
 class HttpResponse {
@@ -18,6 +18,7 @@ class HttpResponse {
     HttpHeader          header_;
     HttpBody            message_body_;
     std::string         response_;
+    int                 status_code_;
 
     void        make_header_();
     void        make_message_body_();

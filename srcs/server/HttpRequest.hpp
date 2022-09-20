@@ -28,7 +28,6 @@ class HttpRequest {
     std::string path_to_file;
     std::string http_ver;
     std::map<std::string, std::string> header_field;
-    int         status_code;
 
     HttpRequest();
     ~HttpRequest();
@@ -40,10 +39,12 @@ class HttpRequest {
     int  recv_until_double_newline_();
     void analyze_request();
     void print_debug();
+    int  get_status_code() const;
 
  private:
-    std::string received_line_;
     int         accept_fd_;
+    std::string received_line_;
+    int         status_code_;
 
     std::size_t skip_space_(std::size_t read_idx);
     std::size_t skip_crlf_(std::size_t read_idx);
