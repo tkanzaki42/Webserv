@@ -1,5 +1,21 @@
 #include "srcs/server/HttpBody.hpp"
 
+std::string HttpBody::get_error_description_(int status_code) {
+    if (status_code == 404)
+        return std::string("The requested URL was not found on this server.");
+    return std::string("Unknown Error");
+}
+
+void HttpBody::make_error_response_(int status_code) {
+    std::ostringstream oss_body;
+    oss_body << "<html><body><h1>" << status_code << " "
+        << HttpHeader::get_reason_phrase(status_code)
+        << "</h1><p>" << get_error_description_(status_code)
+        << "</p><hr><address>Webserv</address></body></html>\r\n";
+
+    content_.push_back(oss_body.str());
+}
+
 HttpBody::HttpBody():
 content_(std::vector<std::string>()) {
 }
@@ -16,7 +32,9 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
     return *this;
 }
 
-void HttpBody::make_response() {
+void HttpBody::make_response(int status_code) {
+    if (status_code != 200)
+        make_error_response_(status_code);
     return;
     if (output_file_.fail() != 0) {
         std::cerr << "File was not found." << std::endl;

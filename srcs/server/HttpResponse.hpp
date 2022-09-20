@@ -9,18 +9,20 @@
 #include "includes/webserv.hpp"
 #include "srcs/server/HttpHeader.hpp"
 #include "srcs/server/HttpBody.hpp"
+#include "srcs/server/HttpRequest.hpp"
 #include "srcs/server/Debug.hpp"
 
 class HttpResponse {
  private:
-    HttpHeader  header_;
-    HttpBody    message_body_;
-    std::string response_;
+    const HttpRequest&  request_;
+    HttpHeader          header_;
+    HttpBody            message_body_;
+    std::string         response_;
 
     void        make_header_();
     void        make_message_body_();
  public:
-    HttpResponse();
+    explicit HttpResponse(const HttpRequest& request);
     ~HttpResponse();
     HttpResponse(const HttpResponse &obj);
     HttpResponse &operator=(const HttpResponse &obj);

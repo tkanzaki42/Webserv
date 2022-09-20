@@ -1,15 +1,17 @@
 #include "srcs/server/HttpResponse.hpp"
 
-HttpResponse::HttpResponse():
-header_(HttpHeader()),
-message_body_(HttpBody()),
-response_(std::string()) {
+HttpResponse::HttpResponse(const HttpRequest& request)
+        : request_(request),
+          header_(HttpHeader()),
+          message_body_(HttpBody()),
+          response_(std::string()) {
 }
 
 HttpResponse::~HttpResponse() {
 }
 
-HttpResponse::HttpResponse(const HttpResponse &obj) {
+HttpResponse::HttpResponse(const HttpResponse &obj)
+        : request_(obj.request_) {
     *this = obj;
 }
 
@@ -61,12 +63,12 @@ void HttpResponse::make_header_() {
     // else {
     int body_length = message_body_.get_content_length();
     header_.set_body_length(body_length);
-    header_.make_response200();
+    header_.make_response(request_.status_code);
     // }
 }
 
 void HttpResponse::make_message_body_() {
-    message_body_.make_response();
+    message_body_.make_response(request_.status_code);
 }
 
 const std::string &HttpResponse::get_response() {

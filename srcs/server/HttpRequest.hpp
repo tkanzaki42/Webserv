@@ -28,6 +28,7 @@ class HttpRequest {
     std::string path_to_file;
     std::string http_ver;
     std::map<std::string, std::string> header_field;
+    int         status_code;
 
     HttpRequest();
     ~HttpRequest();

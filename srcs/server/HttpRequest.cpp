@@ -2,7 +2,7 @@
 
 HttpRequest::HttpRequest() :
     http_method(NOT_DEFINED), request_path(""), path_to_file(""),
-    http_ver(""), received_line_(""), accept_fd_(-1) {
+    http_ver(""), status_code(200), received_line_(""), accept_fd_(-1) {
 }
 
 HttpRequest::~HttpRequest() {
