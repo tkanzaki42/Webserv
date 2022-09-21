@@ -55,7 +55,7 @@ int HttpRequest::recv_until_double_newline() {
 }
 
 void HttpRequest::analyze_request() {
-    parser_.parse();
+    status_code_ = parser_.parse();
 
     generate_path_to_file_();
 }

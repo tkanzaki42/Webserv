@@ -21,11 +21,13 @@ HttpParser& HttpParser::operator=(const HttpParser &obj) {
     return *this;
 }
 
-void HttpParser::parse() {
+int HttpParser::parse() {
     parse_method_();
     parse_request_path_();
     parse_http_ver_();
     parse_header_field_();
+
+    return validate_parsed_data_();
 }
 
 HttpMethod HttpParser::get_http_method() const {
@@ -146,4 +148,18 @@ void HttpParser::skip_crlf_() {
 void HttpParser::rtrim_(std::string &str) {
     std::string const &whitespace = " \r\n\t\v\f";
     str.erase(str.find_last_not_of(whitespace) + 1);
+}
+
+int HttpParser::validate_parsed_data_() {
+    if (http_method_ == NOT_DEFINED)
+        return 400;  // Bad Request
+    if (request_path_ == "")
+        return 400;
+    if (http_ver_ == "")
+        return 400;
+    else if (http_ver_ != "1.1")
+        return 505;  // HTTP Version Not Supported
+    if (header_field_.empty())
+        return 400;
+    return 200;
 }

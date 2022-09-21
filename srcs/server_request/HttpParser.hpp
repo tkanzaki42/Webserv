@@ -15,7 +15,7 @@ class HttpParser {
     HttpParser(const HttpParser &obj);
     HttpParser& operator=(const HttpParser &obj);
 
-    void                                      parse();
+    int                                       parse();
     HttpMethod                                get_http_method() const;
     const std::string&                        get_request_path() const;
     const std::string&                        get_http_ver() const;
@@ -39,6 +39,7 @@ class HttpParser {
     void                                 skip_space_();
     void                                 skip_crlf_();
     void                                 rtrim_(std::string &str);
+    int                                  validate_parsed_data_();
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPPARSER_HPP_
