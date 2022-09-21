@@ -12,4 +12,14 @@
 
 const int BUF_SIZE = 1024;
 
+const std::string kBaseHtmlPath = "./public_html";
+const std::string kIndexHtmlFileName = "index.html";
+
+enum HttpMethod {
+    NOT_DEFINED = 0,
+    METHOD_POST = 1,
+    METHOD_GET = 2,
+    METHOD_DELETE = 3
+};
+
 #endif  // INCLUDES_WEBSERV_HPP_

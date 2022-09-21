@@ -19,7 +19,7 @@ void Webserv::loop() {
         // \r\n\r\nが来るまでメッセージ受信
         HttpRequest request_;
         request_.set_accept_fd(accept_fd);
-        if (request_.recv_until_double_newline_() == -1) {
+        if (request_.recv_until_double_newline() == -1) {
             continue;
         }
 
