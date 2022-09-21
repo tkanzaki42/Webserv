@@ -16,7 +16,6 @@ class HttpParser {
     HttpParser& operator=(const HttpParser &obj);
 
     void                                      parse();
-    std::string&                              get_received_line();
     HttpMethod                                get_http_method() const;
     const std::string&                        get_request_path() const;
     const std::string&                        get_http_ver() const;
