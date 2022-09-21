@@ -10,7 +10,7 @@
 
 class HttpParser {
  public:
-    HttpParser(const std::string& received_line_);
+    explicit HttpParser(const std::string& received_line_);
     ~HttpParser();
     HttpParser(const HttpParser &obj);
     HttpParser& operator=(const HttpParser &obj);

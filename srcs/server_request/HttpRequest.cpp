@@ -1,7 +1,9 @@
 #include "srcs/server_request/HttpRequest.hpp"
 
 HttpRequest::HttpRequest()
-        : accept_fd_(-1), parser_(HttpParser(received_line_)), status_code_(200) {
+        : accept_fd_(-1),
+          parser_(HttpParser(received_line_)),
+          status_code_(200) {
 }
 
 HttpRequest::~HttpRequest() {
