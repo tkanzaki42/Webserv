@@ -34,6 +34,7 @@ class HttpRequest {
  private:
     int                                       accept_fd_;
     HttpParser                                parser_;
+    std::string                               received_line_;
     int                                       status_code_;
     std::string                               path_to_file_;
 

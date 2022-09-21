@@ -1,16 +1,17 @@
 #include "srcs/server_request/HttpParser.hpp"
 
-HttpParser::HttpParser() : read_idx_(0) {
+HttpParser::HttpParser(const std::string& received_line)
+        : read_idx_(0), received_line_(received_line) {
 }
 
 HttpParser::~HttpParser() {}
 
-HttpParser::HttpParser(const HttpParser &obj) {
+HttpParser::HttpParser(const HttpParser &obj)
+        : received_line_(obj.received_line_) {
     *this = obj;
 }
 
 HttpParser& HttpParser::operator=(const HttpParser &obj) {
-    received_line_ = obj.received_line_;
     read_idx_      = obj.read_idx_;
     http_method_   = obj.http_method_;
     request_path_  = obj.request_path_;
@@ -25,10 +26,6 @@ void HttpParser::parse() {
     parse_request_path_();
     parse_http_ver_();
     parse_header_field_();
-}
-
-std::string& HttpParser::get_received_line() {
-    return received_line_;
 }
 
 HttpMethod HttpParser::get_http_method() const {

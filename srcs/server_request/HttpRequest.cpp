@@ -1,13 +1,14 @@
 #include "srcs/server_request/HttpRequest.hpp"
 
-HttpRequest::HttpRequest() :
-    accept_fd_(-1), parser_(HttpParser()), status_code_(200) {
+HttpRequest::HttpRequest()
+        : accept_fd_(-1), parser_(HttpParser(received_line_)), status_code_(200) {
 }
 
 HttpRequest::~HttpRequest() {
 }
 
-HttpRequest::HttpRequest(const HttpRequest &obj) {
+HttpRequest::HttpRequest(const HttpRequest &obj)
+        : parser_(HttpParser(obj.parser_)) {
     *this = obj;
 }
 
@@ -39,13 +40,12 @@ int HttpRequest::recv_until_double_newline() {
             return -1;
         }
         if (read_size > 0) {
-            parser_.get_received_line().append(buf);
+            received_line_.append(buf);
         }
-        int received_line_len = parser_.get_received_line().length();
-        if ((parser_.get_received_line()[received_line_len - 4] == '\r') &&
-            (parser_.get_received_line()[received_line_len - 3] == '\n') &&
-            (parser_.get_received_line()[received_line_len - 2] == '\r') &&
-            (parser_.get_received_line()[received_line_len - 1] == '\n')) {
+        if ((received_line_[received_line_.length() - 4] == '\r') &&
+            (received_line_[received_line_.length() - 3] == '\n') &&
+            (received_line_[received_line_.length() - 2] == '\r') &&
+            (received_line_[received_line_.length() - 1] == '\n')) {
             break;
         }
     } while (read_size > 0);
@@ -62,7 +62,7 @@ void HttpRequest::print_debug() {
     typedef std::map<std::string, std::string>::const_iterator map_iter;
 
     std::cout << "//-----received_line_ start-----" << std::endl;
-    std::cout << parser_.get_received_line() << std::endl;
+    std::cout << received_line_ << std::endl;
     std::cout << "\\\\-----received_line_ end-----" << std::endl;
     std::cout << std::endl;
 

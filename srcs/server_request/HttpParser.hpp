@@ -10,7 +10,7 @@
 
 class HttpParser {
  public:
-    HttpParser();
+    HttpParser(const std::string& received_line_);
     ~HttpParser();
     HttpParser(const HttpParser &obj);
     HttpParser& operator=(const HttpParser &obj);
@@ -23,8 +23,8 @@ class HttpParser {
     const std::map<std::string, std::string>& get_header_field() const;
 
  private:
-    std::string                         received_line_;
     std::size_t                         read_idx_;
+    const std::string&                  received_line_;
 
     // parsed data
     HttpMethod                          http_method_;
