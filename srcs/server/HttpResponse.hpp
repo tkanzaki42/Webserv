@@ -20,8 +20,9 @@ class HttpResponse {
     std::string         response_;
     int                 status_code_;
 
-    void        make_header_();
-    void        make_message_body_();
+    void                make_message_body_();
+    void                make_header_();
+
  public:
     explicit HttpResponse(const HttpRequest& request);
     ~HttpResponse();
