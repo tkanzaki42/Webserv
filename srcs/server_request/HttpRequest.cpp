@@ -58,7 +58,7 @@ void HttpRequest::analyze_request() {
 
     generate_path_to_file_();
 
-    if (get_http_method() == METHOD_POST)
+    if (status_code_ == 200 && get_http_method() == METHOD_POST)
         status_code_ = receive_and_store_to_file_();
 }
 
@@ -153,5 +153,5 @@ int HttpRequest::receive_and_store_to_file_() {
     } while (read_size > 0);
 
     ofs_outfile.close();
-    return 200;
+    return 201;  // Created
 }
