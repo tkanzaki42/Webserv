@@ -80,8 +80,8 @@ void HttpRequest::print_debug() {
     std::cout << "  path_to_file_  : " << get_path_to_file() << std::endl;
 
     std::cout << "  header_field_  :" << std::endl;
-    for (map_iter it = parser_.get_header_field().begin();
-            it != parser_.get_header_field().end(); it++) {
+    for (map_iter it = parser_.get_header_field_map().begin();
+            it != parser_.get_header_field_map().end(); it++) {
         std::cout << "    " << it->first << ": " << it->second << std::endl;
     }
     std::cout << std::endl;
@@ -100,8 +100,8 @@ const std::string& HttpRequest::get_http_ver() const {
 }
 
 const std::map<std::string, std::string>&
-        HttpRequest::get_header_field() const {
-    return parser_.get_header_field();
+        HttpRequest::get_header_field_map() const {
+    return parser_.get_header_field_map();
 }
 
 int HttpRequest::get_status_code() const {
@@ -144,7 +144,8 @@ int HttpRequest::receive_and_store_to_file_() {
             std::cout << "read_size:" << read_size
                 << ", total:" << total_read_size << std::endl;
             if (total_read_size
-                    >= atoi(get_header_field().at("Content-Length").c_str())) {
+                    >= atoi(parser_.get_header_field("Content-Length").c_str())
+               ) {
                 close(accept_fd_);
                 accept_fd_ = -1;
                 break;

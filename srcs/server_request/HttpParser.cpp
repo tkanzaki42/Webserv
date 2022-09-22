@@ -43,8 +43,13 @@ const std::string& HttpParser::get_http_ver() const {
     return http_ver_;
 }
 
-const std::map<std::string, std::string>& HttpParser::get_header_field() const {
+const std::map<std::string, std::string>&
+        HttpParser::get_header_field_map() const {
     return header_field_;
+}
+
+const std::string& HttpParser::get_header_field(const std::string& key) {
+    return header_field_[key];
 }
 
 void HttpParser::parse_method_() {

@@ -27,7 +27,7 @@ class HttpRequest {
     HttpMethod                                get_http_method() const;
     const std::string&                        get_request_path() const;
     const std::string&                        get_http_ver() const;
-    const std::map<std::string, std::string>& get_header_field() const;
+    const std::map<std::string, std::string>& get_header_field_map() const;
     // getter(HttpRequest)
     int                                       get_status_code() const;
     const std::string&                        get_path_to_file() const;

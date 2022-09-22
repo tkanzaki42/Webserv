@@ -16,11 +16,13 @@ class HttpParser {
     HttpParser(const HttpParser &obj);
     HttpParser& operator=(const HttpParser &obj);
 
-    int                                       parse();
-    HttpMethod                                get_http_method() const;
-    const std::string&                        get_request_path() const;
-    const std::string&                        get_http_ver() const;
-    const std::map<std::string, std::string>& get_header_field() const;
+    int                          parse();
+    HttpMethod                   get_http_method() const;
+    const std::string&           get_request_path() const;
+    const std::string&           get_http_ver() const;
+    const std::map<std::string, std::string>&
+                                 get_header_field_map() const;
+    const std::string&           get_header_field(const std::string& key);
 
  private:
     std::size_t                         read_idx_;
