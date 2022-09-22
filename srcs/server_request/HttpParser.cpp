@@ -26,8 +26,9 @@ int HttpParser::parse() {
     parse_request_path_();
     parse_http_ver_();
     parse_header_field_();
+    int status_code = validate_parsed_data_();
 
-    return validate_parsed_data_();
+    return status_code;
 }
 
 HttpMethod HttpParser::get_http_method() const {
@@ -90,6 +91,7 @@ void HttpParser::parse_http_ver_() {
     buffer[buffer_idx] = '\0';
     http_ver_ = std::string(buffer);
 
+    skip_crlf_();
     skip_crlf_();
 }
 

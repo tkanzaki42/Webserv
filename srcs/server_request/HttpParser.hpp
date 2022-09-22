@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <map>
+#include <fstream>
 
 #include "includes/webserv.hpp"
 
@@ -31,6 +32,7 @@ class HttpParser {
     std::string                         http_ver_;
     std::map<std::string, std::string>  header_field_;
 
+    // parser
     void                                 parse_method_();
     void                                 parse_request_path_();
     void                                 parse_http_ver_();

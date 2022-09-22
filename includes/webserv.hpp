@@ -10,7 +10,7 @@
 #include <iostream>
 #include <sstream>
 
-const int BUF_SIZE = 1024;
+const int BUF_SIZE = 8001;
 
 const std::string kBaseHtmlPath = "./public_html";
 const std::string kIndexHtmlFileName = "index.html";
