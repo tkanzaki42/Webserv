@@ -3,7 +3,7 @@
 HttpResponse::HttpResponse(const HttpRequest& request)
         : request_(request),
           header_(HttpHeader()),
-          message_body_(HttpBody()),
+          message_body_(HttpBody(request)),
           response_(std::string()),
           status_code_(request.get_status_code()) {
 }
@@ -12,7 +12,8 @@ HttpResponse::~HttpResponse() {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &obj)
-        : request_(obj.request_) {
+        : request_(obj.request_),
+          message_body_(HttpBody(obj.request_)) {
     *this = obj;
 }
 
@@ -46,7 +47,7 @@ void HttpResponse::make_response() {
 }
 
 void HttpResponse::make_message_body_() {
-    message_body_.make_response(status_code_);
+    status_code_ = message_body_.make_response(status_code_);
 }
 
 void HttpResponse::make_header_() {
