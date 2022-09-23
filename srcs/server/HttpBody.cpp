@@ -1,16 +1,18 @@
 #include "srcs/server/HttpBody.hpp"
 
-std::string HttpBody::get_error_description_(int status_code) {
+std::string HttpBody::get_status_description_(int status_code) {
     if (status_code == 404)
         return std::string("The requested URL was not found on this server.");
+    else if (status_code == 201)
+        return std::string("Successfully uploaded the file.");
     return std::string("Unknown Error");
 }
 
-void HttpBody::make_error_response_(int status_code) {
+void HttpBody::make_status_response_(int status_code) {
     std::ostringstream oss_body;
     oss_body << "<html><body><h1>" << status_code << " "
         << HttpHeader::get_reason_phrase(status_code)
-        << "</h1><p>" << get_error_description_(status_code)
+        << "</h1><p>" << get_status_description_(status_code)
         << "</p><hr><address>Webserv</address></body></html>\r\n";
 
     content_.push_back(oss_body.str());
@@ -34,8 +36,11 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
 
 void HttpBody::make_response(int status_code) {
     if (status_code != 200)
-        make_error_response_(status_code);
+        make_status_response_(status_code);
+    else
+        read_contents_from_file_();
     return;
+
     if (output_file_.fail() != 0) {
         std::cerr << "File was not found." << std::endl;
     }
@@ -44,7 +49,7 @@ void HttpBody::make_response(int status_code) {
     // body_content_length_ = output_file_.gcount();
 }
 
-void HttpBody::read_contents_from_file() {
+void HttpBody::read_contents_from_file_() {
     // is_file_exist = -1;  // TODO(someone) remove
     // std::ifstream output_file(path_string.c_str());
     // char line[256];
@@ -59,7 +64,13 @@ void HttpBody::read_contents_from_file() {
 }
 
 std::size_t HttpBody::get_content_length() {
-    return (content_[0].length());  // TODO(someone) remove
+    int content_length = 0;
+
+    for (std::vector<std::string>::iterator it = content_.begin();
+            it != content_.end(); ++it) {
+        content_length += (*it).length();
+    }
+    return (content_length);
 }
 
 const std::vector<std::string> &HttpBody::get_content() {

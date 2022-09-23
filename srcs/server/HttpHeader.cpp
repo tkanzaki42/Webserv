@@ -24,7 +24,7 @@ void HttpHeader::make_response(int status_code) {
         << get_reason_phrase(status_code) << "\r\n";
     content_.push_back(oss_status_line.str());
     content_.push_back("Content-Type: text/html; charset=UTF-8\r\n");
-    if (status_code == 200) {
+    if (status_code == 200 || status_code == 201) {
         std::ostringstream oss_content_length;
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
 

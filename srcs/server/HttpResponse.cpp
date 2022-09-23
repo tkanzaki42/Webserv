@@ -31,8 +31,8 @@ void HttpResponse::make_response() {
     message_body_.clear_contents();
 
     // リクエストヘッダ、リクエストボディの作成
-    make_header_();
     make_message_body_();
+    make_header_();
 
     // リクエストヘッダ、リクエストボディの内容をレスポンスにまとめる
     std::vector<std::string> header_content = header_.get_content();
@@ -45,10 +45,12 @@ void HttpResponse::make_response() {
     }
 }
 
+void HttpResponse::make_message_body_() {
+    message_body_.make_response(status_code_);
+}
+
 void HttpResponse::make_header_() {
-    // 取得したパスのファイルを開いて内容を取得する
-    if (status_code_ == 200)
-        message_body_.read_contents_from_file();
+    
     // TODO(tkanzaki) ここの条件分岐はHttpHeaderクラスに書いてもいいかも
     // ポリモーフィズムを使うのもあり
     // (void)version;
@@ -69,10 +71,6 @@ void HttpResponse::make_header_() {
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
     // }
-}
-
-void HttpResponse::make_message_body_() {
-    message_body_.make_response(status_code_);
 }
 
 const std::string &HttpResponse::get_response() {

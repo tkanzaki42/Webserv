@@ -21,11 +21,14 @@ HttpParser& HttpParser::operator=(const HttpParser &obj) {
     return *this;
 }
 
-void HttpParser::parse() {
+int HttpParser::parse() {
     parse_method_();
     parse_request_path_();
     parse_http_ver_();
     parse_header_field_();
+    int status_code = validate_parsed_data_();
+
+    return status_code;
 }
 
 HttpMethod HttpParser::get_http_method() const {
@@ -40,8 +43,13 @@ const std::string& HttpParser::get_http_ver() const {
     return http_ver_;
 }
 
-const std::map<std::string, std::string>& HttpParser::get_header_field() const {
+const std::map<std::string, std::string>&
+        HttpParser::get_header_field_map() const {
     return header_field_;
+}
+
+const std::string& HttpParser::get_header_field(const std::string& key) {
+    return header_field_[key];
 }
 
 void HttpParser::parse_method_() {
@@ -88,6 +96,7 @@ void HttpParser::parse_http_ver_() {
     buffer[buffer_idx] = '\0';
     http_ver_ = std::string(buffer);
 
+    skip_crlf_();
     skip_crlf_();
 }
 
@@ -146,4 +155,18 @@ void HttpParser::skip_crlf_() {
 void HttpParser::rtrim_(std::string &str) {
     std::string const &whitespace = " \r\n\t\v\f";
     str.erase(str.find_last_not_of(whitespace) + 1);
+}
+
+int HttpParser::validate_parsed_data_() {
+    if (http_method_ == NOT_DEFINED)
+        return 400;  // Bad Request
+    if (request_path_ == "")
+        return 400;
+    if (http_ver_ == "")
+        return 400;
+    else if (http_ver_ != "1.1")
+        return 505;  // HTTP Version Not Supported
+    if (header_field_.empty())
+        return 400;
+    return 200;
 }

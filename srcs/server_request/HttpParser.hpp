@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <map>
+#include <fstream>
 
 #include "includes/webserv.hpp"
 
@@ -15,11 +16,13 @@ class HttpParser {
     HttpParser(const HttpParser &obj);
     HttpParser& operator=(const HttpParser &obj);
 
-    void                                      parse();
-    HttpMethod                                get_http_method() const;
-    const std::string&                        get_request_path() const;
-    const std::string&                        get_http_ver() const;
-    const std::map<std::string, std::string>& get_header_field() const;
+    int                          parse();
+    HttpMethod                   get_http_method() const;
+    const std::string&           get_request_path() const;
+    const std::string&           get_http_ver() const;
+    const std::map<std::string, std::string>&
+                                 get_header_field_map() const;
+    const std::string&           get_header_field(const std::string& key);
 
  private:
     std::size_t                         read_idx_;
@@ -31,6 +34,7 @@ class HttpParser {
     std::string                         http_ver_;
     std::map<std::string, std::string>  header_field_;
 
+    // parser
     void                                 parse_method_();
     void                                 parse_request_path_();
     void                                 parse_http_ver_();
@@ -39,6 +43,7 @@ class HttpParser {
     void                                 skip_space_();
     void                                 skip_crlf_();
     void                                 rtrim_(std::string &str);
+    int                                  validate_parsed_data_();
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPPARSER_HPP_

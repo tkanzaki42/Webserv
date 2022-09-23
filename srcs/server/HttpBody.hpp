@@ -18,8 +18,9 @@ class HttpBody {
     std::ifstream            output_file_;
     // int                      body_content_length_;
 
-    std::string              get_error_description_(int status_code);
-    void                     make_error_response_(int status_code);
+    std::string              get_status_description_(int status_code);
+    void                     make_status_response_(int status_code);
+    void                     read_contents_from_file_();
 
  public:
     HttpBody();
@@ -29,7 +30,6 @@ class HttpBody {
 
     void                           make_response(int status_code);
     const std::vector<std::string> &get_content();
-    void                           read_contents_from_file();
     std::size_t                    get_content_length();
     void                           clear_contents();
     // std::vector<std::string>& make_response404();
