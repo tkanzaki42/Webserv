@@ -126,7 +126,23 @@ int HttpRequest::receive_and_store_to_file_() {
     char           buf[BUF_SIZE];
     std::ofstream  ofs_outfile;
 
-    ofs_outfile.open(path_to_file_.c_str(), std::ios::out | std::ios::binary);
+    // ディレクトリがなければ作成
+    struct stat stat_dir;
+    std::string dir_path = path_to_file_.substr(0, path_to_file_.rfind('/'));
+    if (stat(dir_path.c_str(), &stat_dir) == -1) {
+        if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            std::cerr << "Could not create dirctory: " << dir_path << std::endl;
+            return 500;  // Internal Server Error
+        }
+    }
+
+    // ファイルのオープン
+    ofs_outfile.open(path_to_file_.c_str(),
+            std::ios::out | std::ios::binary | std::ios::trunc);
+    if (!ofs_outfile) {
+        std::cerr << "Could not open file: " << path_to_file_ << std::endl;
+        return 500;  // Internal Server Error
+    }
 
     do {
         read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);

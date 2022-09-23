@@ -1,6 +1,8 @@
 #ifndef SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
 #define SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
 
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
