@@ -43,6 +43,7 @@ class HttpRequest {
 
     void                                      generate_path_to_file_();
     int                                       receive_and_store_to_file_();
+    int                                       delete_file_();
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_

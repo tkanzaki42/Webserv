@@ -58,8 +58,12 @@ void HttpRequest::analyze_request() {
 
     generate_path_to_file_();
 
-    if (status_code_ == 200 && get_http_method() == METHOD_POST)
-        status_code_ = receive_and_store_to_file_();
+    if (status_code_ == 200) {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = receive_and_store_to_file_();
+        else if (get_http_method() == METHOD_DELETE)
+            status_code_ = delete_file_();
+    }
 }
 
 void HttpRequest::print_debug() {
@@ -171,4 +175,12 @@ int HttpRequest::receive_and_store_to_file_() {
 
     ofs_outfile.close();
     return 201;  // Created
+}
+
+int HttpRequest::delete_file_() {
+    if (std::remove(path_to_file_.c_str()) != 0) {
+        std::cerr << "Failed to delete file: " << path_to_file_ << std::endl;
+        return 204;  // No Content
+    }
+    return 204;  // No Content
 }
