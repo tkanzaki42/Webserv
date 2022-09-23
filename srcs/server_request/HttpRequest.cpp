@@ -119,11 +119,11 @@ void HttpRequest::generate_path_to_file_() {
 }
 
 bool HttpRequest::receive_and_store_to_file_() {
-    ssize_t         read_size = 0;
-    ssize_t         total_read_size = 0;
-    char            buf[BUF_SIZE];
+    // ssize_t         read_size = 0;
+    // ssize_t         total_read_size = 0;
+    // char            buf[BUF_SIZE];
+    // const FDManager &fd_manager = server_.get_fd_manager();
     std::ofstream   ofs_outfile;
-    const FDManager &fd_manager = server_.get_fd_manager();
 
     // ディレクトリがなければ作成
     struct stat stat_dir;
@@ -145,27 +145,26 @@ bool HttpRequest::receive_and_store_to_file_() {
         return false;  // Internal Server Error
     }
 
-    do {
-        // TODO(tkanzaki) リクエストヘッダのContentを参照してファイルに書き込む
-        if (!fd_manager.recieve(buf)) {
-            std::cerr << "recv() failed in "
-                << "receive_and_store_to_file_()." << std::endl;
-            return false;
-        }
-        if (read_size > 0) {
-            ofs_outfile.write(buf, read_size);
-            total_read_size += read_size;
-            std::cout << "read_size:" << read_size
-                << ", total:" << total_read_size << std::endl;
-            if (total_read_size
-                    >= atoi(parser_.get_header_field("Content-Length").c_str())
-               ) {
-                // close(accept_fd_);
-                // accept_fd_ = -1;
-                break;
-            }
-        }
-    } while (read_size > 0);
+    ofs_outfile << "ヘッダ読み取ったContent";
+
+    // do {
+    //     if (!fd_manager.recieve(buf)) {
+    //         std::cerr << "recv() failed in "
+    //             << "receive_and_store_to_file_()." << std::endl;
+    //         return false;
+    //     }
+    //     if (read_size > 0) {
+    //         ofs_outfile.write(buf, read_size);
+    //         total_read_size += read_size;
+    //         std::cout << "read_size:" << read_size
+    //             << ", total:" << total_read_size << std::endl;
+    //         if (total_read_size
+    //                 >= atoi(parser_.get_header_field("Content-Length").c_str())
+    //            ) {
+    //             break;
+    //         }
+    //     }
+    // } while (read_size > 0);
 
     ofs_outfile.close();
     status_code_ = 201;
