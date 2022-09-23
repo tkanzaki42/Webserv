@@ -66,7 +66,7 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
 }
 
 int HttpBody::make_response(int status_code) {
-    if (status_code == 200)
+    if (status_code == 200 && request_.get_http_method() == METHOD_GET)
         status_code = read_contents_from_file_();
 
     if (status_code != 200)
