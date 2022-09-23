@@ -10,7 +10,6 @@
 #include "srcs/server_request/HttpRequest.hpp"
 #include "srcs/server/HttpHeader.hpp"
 #include "srcs/server/HttpBody.hpp"
-#include "srcs/server/Debug.hpp"
 
 class HttpResponse {
  private:

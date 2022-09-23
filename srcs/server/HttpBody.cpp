@@ -1,5 +1,21 @@
 #include "srcs/server/HttpBody.hpp"
 
+HttpBody::HttpBody():
+content_(std::vector<std::string>()) {
+}
+
+HttpBody::~HttpBody() {
+}
+
+HttpBody::HttpBody(const HttpBody &obj) {
+    *this = obj;
+}
+
+HttpBody &HttpBody::operator=(const HttpBody &obj) {
+    this->content_     = obj.content_;
+    return *this;
+}
+
 std::string HttpBody::get_status_description_(int status_code) {
     if (status_code == 404)
         return std::string("The requested URL was not found on this server.");
@@ -16,22 +32,6 @@ void HttpBody::make_status_response_(int status_code) {
         << "</p><hr><address>Webserv</address></body></html>\r\n";
 
     content_.push_back(oss_body.str());
-}
-
-HttpBody::HttpBody():
-content_(std::vector<std::string>()) {
-}
-
-HttpBody::~HttpBody() {
-}
-
-HttpBody::HttpBody(const HttpBody &obj) {
-    *this = obj;
-}
-
-HttpBody &HttpBody::operator=(const HttpBody &obj) {
-    this->content_     = obj.content_;
-    return *this;
 }
 
 void HttpBody::make_response(int status_code) {

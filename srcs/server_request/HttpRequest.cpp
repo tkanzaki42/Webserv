@@ -1,7 +1,8 @@
 #include "srcs/server_request/HttpRequest.hpp"
+#include "srcs/server/Webserv.hpp"
 
-HttpRequest::HttpRequest()
-        : accept_fd_(-1),
+HttpRequest::HttpRequest(Webserv &server)
+        : server_(server),
           parser_(HttpParser(received_line_)),
           status_code_(200) {
 }
@@ -10,56 +11,55 @@ HttpRequest::~HttpRequest() {
 }
 
 HttpRequest::HttpRequest(const HttpRequest &obj)
-        : parser_(HttpParser(obj.parser_)) {
+        : server_(obj.server_),
+          parser_(HttpParser(obj.parser_)) {
     *this = obj;
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
-    accept_fd_    = obj.accept_fd_;
     parser_       = HttpParser(obj.parser_);
     status_code_  = obj.status_code_;
     return *this;
 }
 
-void HttpRequest::set_accept_fd(int accept_fd) {
-    this->accept_fd_ = accept_fd;
-}
+// void HttpRequest::set_accept_fd(int accept_fd) {
+//     this->accept_fd_ = accept_fd;
+// }
 
 int HttpRequest::receive_header() {
-    ssize_t  read_size = 0;
-    char     buf[BUF_SIZE];
+    char      buf[BUF_SIZE];
+    FDManager &fd_manager = server_.get_fd_manager();
 
-    memset(buf, 0, sizeof(buf));
-    read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);
-    // std::cout << "read_size: " << read_size << std::endl;
-    if (read_size < 0) {
+    if (!fd_manager.recieve(buf)) {
         std::cerr << "recv() failed." << std::endl;
         std::cerr << "ERROR: " << errno << std::endl;
-        close(accept_fd_);
-        accept_fd_ = -1;
         status_code_ = 400;  // Bad Request
-        return -1;
+        return false;
     }
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
     if (!found_empty_line) {
         std::cerr << "Failed to recognize header." << std::endl;
-        close(accept_fd_);
-        accept_fd_ = -1;
         status_code_ = 400;  // Bad Request
-        return -1;
+        return false;
     }
     received_line_.append(buf);
 
-    return 0;
+    return true;
 }
 
-void HttpRequest::analyze_request() {
+bool HttpRequest::analyze_request() {
     status_code_ = parser_.parse();
 
     generate_path_to_file_();
 
     if (status_code_ == 200 && get_http_method() == METHOD_POST)
-        status_code_ = receive_and_store_to_file_();
+    {
+        if (!receive_and_store_to_file_())
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void HttpRequest::print_debug() {
@@ -120,11 +120,12 @@ void HttpRequest::generate_path_to_file_() {
     }
 }
 
-int HttpRequest::receive_and_store_to_file_() {
+bool HttpRequest::receive_and_store_to_file_() {
     ssize_t        read_size = 0;
     ssize_t        total_read_size = 0;
     char           buf[BUF_SIZE];
     std::ofstream  ofs_outfile;
+    FDManager      &fd_manager = server_.get_fd_manager();
 
     // ディレクトリがなければ作成
     struct stat stat_dir;
@@ -132,7 +133,8 @@ int HttpRequest::receive_and_store_to_file_() {
     if (stat(dir_path.c_str(), &stat_dir) == -1) {
         if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             std::cerr << "Could not create dirctory: " << dir_path << std::endl;
-            return 500;  // Internal Server Error
+            status_code_ = 500;
+            return false;  // Internal Server Error
         }
     }
 
@@ -141,20 +143,18 @@ int HttpRequest::receive_and_store_to_file_() {
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
         std::cerr << "Could not open file: " << path_to_file_ << std::endl;
-        return 500;  // Internal Server Error
+        status_code_ = 500;
+        return false;  // Internal Server Error
     }
 
     do {
-        read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);
-        if (read_size == -1) {
+        // TODO(tkanzaki) リクエストヘッダのContentを参照してファイルに書き込む
+        if (!fd_manager.recieve(buf)) {
             std::cerr << "recv() failed in "
                 << "receive_and_store_to_file_()." << std::endl;
-            close(accept_fd_);
-            accept_fd_ = -1;
-            return -1;
+            return false;
         }
         if (read_size > 0) {
-            buf[read_size] = '\0';
             ofs_outfile.write(buf, read_size);
             total_read_size += read_size;
             std::cout << "read_size:" << read_size
@@ -162,13 +162,14 @@ int HttpRequest::receive_and_store_to_file_() {
             if (total_read_size
                     >= atoi(parser_.get_header_field("Content-Length").c_str())
                ) {
-                close(accept_fd_);
-                accept_fd_ = -1;
+                // close(accept_fd_);
+                // accept_fd_ = -1;
                 break;
             }
         }
     } while (read_size > 0);
 
     ofs_outfile.close();
-    return 201;  // Created
+    status_code_ = 201;
+    return true;  // Created
 }

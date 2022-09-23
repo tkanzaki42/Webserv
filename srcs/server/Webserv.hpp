@@ -8,21 +8,23 @@
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/server/HttpResponse.hpp"
 #include "srcs/server_request/HttpRequest.hpp"
-#include "srcs/server/Debug.hpp"
+#include "srcs/server/FDManager.hpp"
 
 const int HTTP_PORT = 5000;
 
 class Webserv {
  public:
-    Webserv() {}
-    ~Webserv() {}
+    Webserv();
+    ~Webserv();
 
-    int   init();
     void  loop();
-    int   finalize();
-
+    FDManager &get_fd_manager();
+    Socket    &get_socket();
  private:
-    Socket                   *sock;
+    HttpRequest  request_;
+    HttpResponse response_;
+    Socket       socket_;
+    FDManager    fd_manager_;
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_

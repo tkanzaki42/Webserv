@@ -20,9 +20,7 @@
 
 int main() {
     Webserv serv;
-    serv.init();
     serv.loop();
-    serv.finalize();
 
     return 0;
 }

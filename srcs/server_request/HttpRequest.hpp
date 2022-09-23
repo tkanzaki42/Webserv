@@ -13,16 +13,18 @@
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
 
+class Webserv;
+
 class HttpRequest {
  public:
-    HttpRequest();
+    HttpRequest(Webserv &server);
     ~HttpRequest();
     HttpRequest(const HttpRequest &obj);
     HttpRequest& operator=(const HttpRequest &obj);
 
-    void                                      set_accept_fd(int accept_fd);
+   //  void                                      set_accept_fd(int accept_fd);
     int                                       receive_header();
-    void                                      analyze_request();
+    bool                                      analyze_request();
     void                                      print_debug();
 
     // getter(HttpParser)
@@ -35,14 +37,15 @@ class HttpRequest {
     const std::string&                        get_path_to_file() const;
 
  private:
-    int                                       accept_fd_;
+   //  int                                       accept_fd_;
+    Webserv                                   &server_;
     HttpParser                                parser_;
     std::string                               received_line_;
     std::string                               path_to_file_;
     int                                       status_code_;
 
     void                                      generate_path_to_file_();
-    int                                       receive_and_store_to_file_();
+    bool                                      receive_and_store_to_file_();
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
