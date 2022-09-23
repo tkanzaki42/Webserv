@@ -152,7 +152,6 @@ int HttpRequest::receive_and_store_to_file_() {
         if (total_read_size
                 >= atoi(parser_.get_header_field("Content-Length").c_str())
             ) {
-            accept_fd_ = -1;
             break;
         }
 
