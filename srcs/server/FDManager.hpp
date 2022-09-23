@@ -8,19 +8,19 @@ class Webserv;
 
 class FDManager {
  private:
-    int           accept_fd_;
-    Webserv       &server_;
+    int                 accept_fd_;
+    const Webserv       &server_;
  public:
-    FDManager(Webserv &server);
+    explicit FDManager(const Webserv &server);
     ~FDManager();
-    FDManager(FDManager &obj);
+    FDManager(const FDManager &obj);
     FDManager &operator=(const FDManager &obj);
 
     bool accept();
-    void disconnect();
-    bool send(const std::string &str);
-    bool recieve(char buf[]);
+    void disconnect() const;
+    bool send(const std::string &str) const;
+    bool recieve(char buf[]) const;
     int get_accept_fd() const;
 };
 
-#endif
+#endif  // PROJ_WEBSERV_SRCS_SERVER_FDMANAGER_HPP_

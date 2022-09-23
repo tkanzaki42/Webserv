@@ -4,11 +4,11 @@ Webserv::Webserv():
 request_(*this),
 response_(*this),
 socket_(HTTP_PORT),
-fd_manager_(*this){
+fd_manager_(*this) {
     socket_.prepare();
 }
 
-Webserv::~Webserv(){
+Webserv::~Webserv() {
     socket_.cleanup();
 }
 
@@ -49,10 +49,10 @@ void Webserv::loop() {
     }
 }
 
-FDManager &Webserv::get_fd_manager(){
+const FDManager &Webserv::get_fd_manager() const {
     return fd_manager_;
 }
 
-Socket &Webserv::get_socket(){
+const Socket &Webserv::get_socket() const {
     return socket_;
 }

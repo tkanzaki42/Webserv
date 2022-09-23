@@ -18,8 +18,8 @@ class Webserv {
     ~Webserv();
 
     void  loop();
-    FDManager &get_fd_manager();
-    Socket    &get_socket();
+    const FDManager &get_fd_manager() const;
+    const Socket    &get_socket() const;
  private:
     HttpRequest  request_;
     HttpResponse response_;

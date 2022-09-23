@@ -1,7 +1,7 @@
 #include "srcs/server_request/HttpRequest.hpp"
 #include "srcs/server/Webserv.hpp"
 
-HttpRequest::HttpRequest(Webserv &server)
+HttpRequest::HttpRequest(const Webserv &server)
         : server_(server),
           parser_(HttpParser(received_line_)),
           status_code_(200) {
@@ -27,8 +27,8 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
 // }
 
 int HttpRequest::receive_header() {
-    char      buf[BUF_SIZE];
-    FDManager &fd_manager = server_.get_fd_manager();
+    char            buf[BUF_SIZE];
+    const FDManager &fd_manager = server_.get_fd_manager();
 
     if (!fd_manager.recieve(buf)) {
         std::cerr << "recv() failed." << std::endl;
@@ -52,10 +52,8 @@ bool HttpRequest::analyze_request() {
 
     generate_path_to_file_();
 
-    if (status_code_ == 200 && get_http_method() == METHOD_POST)
-    {
-        if (!receive_and_store_to_file_())
-        {
+    if (status_code_ == 200 && get_http_method() == METHOD_POST) {
+        if (!receive_and_store_to_file_()) {
             return false;
         }
     }
@@ -121,11 +119,11 @@ void HttpRequest::generate_path_to_file_() {
 }
 
 bool HttpRequest::receive_and_store_to_file_() {
-    ssize_t        read_size = 0;
-    ssize_t        total_read_size = 0;
-    char           buf[BUF_SIZE];
-    std::ofstream  ofs_outfile;
-    FDManager      &fd_manager = server_.get_fd_manager();
+    ssize_t         read_size = 0;
+    ssize_t         total_read_size = 0;
+    char            buf[BUF_SIZE];
+    std::ofstream   ofs_outfile;
+    const FDManager &fd_manager = server_.get_fd_manager();
 
     // ディレクトリがなければ作成
     struct stat stat_dir;

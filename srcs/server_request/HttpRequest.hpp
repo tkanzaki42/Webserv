@@ -17,12 +17,11 @@ class Webserv;
 
 class HttpRequest {
  public:
-    HttpRequest(Webserv &server);
+    HttpRequest(const Webserv &server);
     ~HttpRequest();
     HttpRequest(const HttpRequest &obj);
     HttpRequest& operator=(const HttpRequest &obj);
 
-   //  void                                      set_accept_fd(int accept_fd);
     int                                       receive_header();
     bool                                      analyze_request();
     void                                      print_debug();
@@ -37,8 +36,7 @@ class HttpRequest {
     const std::string&                        get_path_to_file() const;
 
  private:
-   //  int                                       accept_fd_;
-    Webserv                                   &server_;
+    const Webserv                             &server_;
     HttpParser                                parser_;
     std::string                               received_line_;
     std::string                               path_to_file_;
