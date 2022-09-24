@@ -43,8 +43,6 @@ void Webserv::loop() {
     }
 }
 
-int Webserv::finalize() {
-    sock->cleanup();
-    delete sock;
-    return 0;
+void Webserv::finalize() {
+    fd_manager_.destory_socket();
 }
