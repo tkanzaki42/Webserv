@@ -5,24 +5,23 @@
 #include <vector>
 #include <string>
 
-#include "srcs/util_network/Socket.hpp"
 #include "srcs/server/HttpResponse.hpp"
+#include "srcs/server/FDManager.hpp"
 #include "srcs/server_request/HttpRequest.hpp"
-#include "srcs/server/Debug.hpp"
 
 const int HTTP_PORT = 5000;
 
 class Webserv {
  public:
-    Webserv() {}
-    ~Webserv() {}
+    Webserv();
+    ~Webserv();
 
-    int   init();
-    void  loop();
-    int   finalize();
+    void init();
+    void loop();
+    void finalize();
 
  private:
-    Socket                   *sock;
+    FDManager fd_manager_;
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_
