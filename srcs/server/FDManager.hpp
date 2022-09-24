@@ -1,6 +1,6 @@
 
-#ifndef FD_MANAGER_HPP_
-#define FD_MANAGER_HPP_
+#ifndef SRCS_SERVER_FDMANAGER_HPP_
+#define SRCS_SERVER_FDMANAGER_HPP_
 
 #include <iostream>
 #include <string>
@@ -38,4 +38,4 @@ class FDManager {
     void destory_socket();
 };
 
-#endif  // PROJ_WEBSERV_SRCS_SERVER_FDMANAGER_HPP_
+#endif  // SRCS_SERVER_FDMANAGER_HPP_
