@@ -33,7 +33,11 @@ std::string HttpBody::get_status_description_(int status_code) {
         return std::string("The requested URL was not found on this server.");
     else if (status_code == 201)
         return std::string("Successfully uploaded the file.");
-    return std::string("Unknown Error");
+
+    if (400 <= status_code && status_code <= 599)
+        return std::string("Unknown Error");
+    else
+        return std::string("No message");
 }
 
 void HttpBody::make_status_response_(int status_code) {
