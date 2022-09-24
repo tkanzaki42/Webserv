@@ -27,7 +27,6 @@ int FDManager::get_accept_fd() const {
 bool FDManager::accept() {
     accept_fd_ = ::accept(socket_.get_listen_fd(),
         (struct sockaddr*)NULL, NULL);
-    return accept_fd_;
     if (accept_fd_ == -1) {
         return false;
     }
