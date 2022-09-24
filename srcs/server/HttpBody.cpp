@@ -1,11 +1,43 @@
 #include "srcs/server/HttpBody.hpp"
 
+int HttpBody::read_contents_from_file_() {
+    // ファイルのオープン
+    std::ifstream ifs_readfile;
+    ifs_readfile.open(request_.get_path_to_file().c_str());
+
+    // エラーチェック
+    if (ifs_readfile.fail()) {
+        // ファイルが存在しない
+        std::cerr << "File not found: "
+            << request_.get_path_to_file() << std::endl;
+        return 404;  // Not Found
+    } else if (!ifs_readfile) {
+        // その他のファイルオープンエラー
+        std::cerr << "Could not open file: "
+            << request_.get_path_to_file() << std::endl;
+        return 500;  // Internal Server Error
+    }
+
+    // ファイル読み込み
+    char          read_line[256];
+    while (ifs_readfile.getline(read_line, 256 - 1)) {
+        content_.push_back(std::string(read_line));
+    }
+
+    ifs_readfile.close();
+    return 200;
+}
+
 std::string HttpBody::get_status_description_(int status_code) {
     if (status_code == 404)
         return std::string("The requested URL was not found on this server.");
     else if (status_code == 201)
         return std::string("Successfully uploaded the file.");
-    return std::string("Unknown Error");
+
+    if (400 <= status_code && status_code <= 599)
+        return std::string("Unknown Error");
+    else
+        return std::string("No message");
 }
 
 void HttpBody::make_status_response_(int status_code) {
@@ -15,17 +47,20 @@ void HttpBody::make_status_response_(int status_code) {
         << "</h1><p>" << get_status_description_(status_code)
         << "</p><hr><address>Webserv</address></body></html>\r\n";
 
+    content_.clear();
     content_.push_back(oss_body.str());
 }
 
-HttpBody::HttpBody():
-content_(std::vector<std::string>()) {
+HttpBody::HttpBody(const HttpRequest& request)
+        : request_(request),
+          content_(std::vector<std::string>()) {
 }
 
 HttpBody::~HttpBody() {
 }
 
-HttpBody::HttpBody(const HttpBody &obj) {
+HttpBody::HttpBody(const HttpBody &obj)
+        : request_(obj.request_) {
     *this = obj;
 }
 
@@ -34,33 +69,13 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
     return *this;
 }
 
-void HttpBody::make_response(int status_code) {
+int HttpBody::make_response(int status_code) {
+    if (status_code == 200 && request_.get_http_method() == METHOD_GET)
+        status_code = read_contents_from_file_();
+
     if (status_code != 200)
         make_status_response_(status_code);
-    else
-        read_contents_from_file_();
-    return;
-
-    if (output_file_.fail() != 0) {
-        std::cerr << "File was not found." << std::endl;
-    }
-    output_file_.read(read_file_buf_, HttpBody::BUFFER_SIZE);
-    content_.push_back(read_file_buf_);
-    // body_content_length_ = output_file_.gcount();
-}
-
-void HttpBody::read_contents_from_file_() {
-    // is_file_exist = -1;  // TODO(someone) remove
-    // std::ifstream output_file(path_string.c_str());
-    // char line[256];
-    // is_file_exist = output_file.fail();
-    // while (output_file.getline(line, 256-1)) {
-    //     body_length += strlen(line);
-    //     message_body.push_back(std::string(line));
-    // }
-    // 使い終わったファイルのクローズ
-    // output_file.close();
-    content_.push_back("hello world");  // TODO(someone) remove
+    return status_code;
 }
 
 std::size_t HttpBody::get_content_length() {

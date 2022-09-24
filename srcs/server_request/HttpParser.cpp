@@ -52,6 +52,11 @@ const std::string& HttpParser::get_header_field(const std::string& key) {
     return header_field_[key];
 }
 
+const std::string HttpParser::get_remain_buffer() {
+    return received_line_.substr(
+            read_idx_, received_line_.length() - read_idx_);
+}
+
 void HttpParser::parse_method_() {
     if (received_line_.compare(read_idx_, 4, "POST") == 0) {
         http_method_ = METHOD_POST;
@@ -97,7 +102,6 @@ void HttpParser::parse_http_ver_() {
     http_ver_ = std::string(buffer);
 
     skip_crlf_();
-    skip_crlf_();
 }
 
 void HttpParser::parse_header_field_() {
@@ -106,6 +110,7 @@ void HttpParser::parse_header_field_() {
         header_field_.insert(parse_one_header_field_());
         skip_crlf_();
     }
+    skip_crlf_();
 }
 
 std::pair<std::string, std::string> HttpParser::parse_one_header_field_() {

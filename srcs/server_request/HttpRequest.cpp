@@ -58,8 +58,12 @@ void HttpRequest::analyze_request() {
 
     generate_path_to_file_();
 
-    if (status_code_ == 200 && get_http_method() == METHOD_POST)
-        status_code_ = receive_and_store_to_file_();
+    if (status_code_ == 200) {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = receive_and_store_to_file_();
+        else if (get_http_method() == METHOD_DELETE)
+            status_code_ = delete_file_();
+    }
 }
 
 void HttpRequest::print_debug() {
@@ -121,11 +125,6 @@ void HttpRequest::generate_path_to_file_() {
 }
 
 int HttpRequest::receive_and_store_to_file_() {
-    ssize_t        read_size = 0;
-    ssize_t        total_read_size = 0;
-    char           buf[BUF_SIZE];
-    std::ofstream  ofs_outfile;
-
     // ディレクトリがなければ作成
     struct stat stat_dir;
     std::string dir_path = path_to_file_.substr(0, path_to_file_.rfind('/'));
@@ -137,6 +136,7 @@ int HttpRequest::receive_and_store_to_file_() {
     }
 
     // ファイルのオープン
+    std::ofstream ofs_outfile;
     ofs_outfile.open(path_to_file_.c_str(),
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
@@ -144,7 +144,21 @@ int HttpRequest::receive_and_store_to_file_() {
         return 500;  // Internal Server Error
     }
 
+    // ヘッダ読み込み時にバッファに残っている分を書きだす
+    std::string remain_buffer = parser_.get_remain_buffer();
+    ofs_outfile.write(remain_buffer.c_str(), remain_buffer.length());
+
+    // 受信しながらファイルに書き出し
+    ssize_t total_read_size = remain_buffer.length();
+    ssize_t read_size = 0;
+    char    buf[BUF_SIZE];
     do {
+        if (total_read_size
+                >= atoi(parser_.get_header_field("Content-Length").c_str())
+            ) {
+            break;
+        }
+
         read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);
         if (read_size == -1) {
             std::cerr << "recv() failed in "
@@ -159,16 +173,17 @@ int HttpRequest::receive_and_store_to_file_() {
             total_read_size += read_size;
             std::cout << "read_size:" << read_size
                 << ", total:" << total_read_size << std::endl;
-            if (total_read_size
-                    >= atoi(parser_.get_header_field("Content-Length").c_str())
-               ) {
-                close(accept_fd_);
-                accept_fd_ = -1;
-                break;
-            }
         }
     } while (read_size > 0);
 
     ofs_outfile.close();
     return 201;  // Created
+}
+
+int HttpRequest::delete_file_() {
+    if (std::remove(path_to_file_.c_str()) != 0) {
+        std::cerr << "Failed to delete file: " << path_to_file_ << std::endl;
+        return 204;  // No Content
+    }
+    return 204;  // No Content
 }
