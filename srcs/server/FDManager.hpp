@@ -29,7 +29,7 @@ class FDManager {
     bool send(const std::string &str) const;
 
     // ファイルディスクリプタを読み込む(クライアント)
-    int recieve(char buf[]) const;
+    int receive(char buf[]) const;
 
     // ソケットを作成(ソケット)
     void create_socket();
