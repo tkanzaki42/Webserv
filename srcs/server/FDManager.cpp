@@ -41,7 +41,7 @@ bool FDManager::send(const std::string &str) const {
     return true;
 }
 
-int FDManager::recieve(char buf[]) const {
+int FDManager::receive(char buf[]) const {
     memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = recv(accept_fd_,
         buf, sizeof(char) * BUF_SIZE - 1, 0);
