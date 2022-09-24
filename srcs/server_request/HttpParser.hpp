@@ -23,6 +23,7 @@ class HttpParser {
     const std::map<std::string, std::string>&
                                  get_header_field_map() const;
     const std::string&           get_header_field(const std::string& key);
+    const std::string            get_remain_buffer();
 
  private:
     std::size_t                         read_idx_;
