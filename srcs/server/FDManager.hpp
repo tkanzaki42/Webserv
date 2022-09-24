@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <string>
+
+#include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
 
 class FDManager {

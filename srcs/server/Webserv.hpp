@@ -9,8 +9,6 @@
 #include "srcs/server/FDManager.hpp"
 #include "srcs/server_request/HttpRequest.hpp"
 
-const int HTTP_PORT = 5000;
-
 class Webserv {
  public:
     Webserv();
