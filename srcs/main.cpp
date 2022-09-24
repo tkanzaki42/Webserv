@@ -15,7 +15,7 @@
 #include <fstream>
 #include <vector>
 
-#include "../includes/webserv.hpp"
+#include "includes/webserv.hpp"
 #include "server/Webserv.hpp"
 
 int main() {
