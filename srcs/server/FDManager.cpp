@@ -1,5 +1,4 @@
 #include "srcs/server/FDManager.hpp"
-#include "srcs/server/Webserv.hpp"
 
 FDManager::FDManager():
 accept_fd_(-1),
