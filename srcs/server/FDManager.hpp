@@ -6,8 +6,6 @@
 #include <string>
 #include "srcs/util_network/Socket.hpp"
 
-class Webserv;
-
 class FDManager {
  private:
     int                 accept_fd_;
