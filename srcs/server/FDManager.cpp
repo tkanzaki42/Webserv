@@ -6,8 +6,6 @@ socket_(HTTP_PORT) {
     (void)max_fd_;
     (void)received_fd_collection_;
     (void)timeout_;
-    (void)from_addr_;
-    from_addr_len_ = sizeof(struct sockaddr_in);
     // 通信用ディスクリプタの配列を初期化する
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
@@ -22,7 +20,6 @@ FDManager::~FDManager() {
 FDManager::FDManager(const FDManager &obj):
 accept_fd_(-1),
 socket_(HTTP_PORT) {
-    from_addr_len_ = sizeof(struct sockaddr_in);
     *this = obj;
 }
 
@@ -33,6 +30,26 @@ FDManager &FDManager::operator=(const FDManager &obj) {
 
 int FDManager::get_accept_fd() const {
     return accept_fd_;
+}
+
+void FDManager::prepare_() {
+    // 接続待ちのディスクリプタをディスクリプタ集合に設定する
+    FD_ZERO(&received_fd_collection_);
+    FD_SET(socket_.get_listen_fd(), &received_fd_collection_);
+    max_fd_ = socket_.get_listen_fd();
+    // 受信待ちのディスクリプタをディスクリプタ集合に設定する
+    for (size_t i = 0;
+        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
+        if (packet_fd_[i] != -1) {
+            FD_SET(packet_fd_[i], &received_fd_collection_);
+            if (packet_fd_[i] > max_fd_) {
+                max_fd_ = packet_fd_[i];
+            }
+        }
+    }
+    // タイムアウト時間を10sec+500000μsec に指定する。
+    timeout_.tv_sec  = 10;
+    timeout_.tv_usec = 500000;
 }
 
 bool FDManager::accept() {
@@ -98,8 +115,7 @@ bool FDManager::accept() {
     }
     return false;
     */
-    accept_fd_ = ::accept(socket_.get_listen_fd(),
-         (struct sockaddr*)NULL, NULL);
+    accept_fd_ = socket_.accept();
     if (accept_fd_ == -1) {
          return false;
      }

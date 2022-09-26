@@ -1,6 +1,7 @@
 #include "srcs/util_network/Socket.hpp"
 
 int Socket::prepare() {
+    serv_addr_len_ = sizeof(serv_addr_);
     if (open_socket_() == -1)
         return -1;
     if (bind_address_() == -1)
@@ -13,6 +14,13 @@ int Socket::prepare() {
 int Socket::cleanup() {
     close(listen_fd_);
     return 0;
+}
+
+int Socket::accept() {
+    int fd = ::accept(listen_fd_,
+        (struct sockaddr *)&serv_addr_,
+        &serv_addr_len_);
+    return fd;
 }
 
 int Socket::open_socket_() {
@@ -39,7 +47,7 @@ int Socket::bind_address_() {
     serv_addr_.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(listen_fd_, (struct sockaddr*)&serv_addr_,
-            sizeof(serv_addr_)) == -1) {
+            serv_addr_len_) == -1) {
         std::cerr << "bind() failed.(" << errno << ")" << std::endl;
         close(listen_fd_);
         return -1;

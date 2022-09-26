@@ -28,9 +28,7 @@ class FDManager {
     // タイムアウト時間
     struct timeval  timeout_;
 
-    // クライアントからの接続を確立するときに使う
-    struct sockaddr_in from_addr_;
-    socklen_t          from_addr_len_;
+    void            prepare_();
 
  public:
     FDManager();

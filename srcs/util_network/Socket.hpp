@@ -23,10 +23,13 @@ class Socket {
     int cleanup();
     int get_listen_fd() const { return listen_fd_; }
 
+    int accept();
+
  private:
     int                 listen_fd_;
     int                 port_;
     struct sockaddr_in  serv_addr_;
+    socklen_t           serv_addr_len_;
 
     int open_socket_();
     int bind_address_();
