@@ -41,11 +41,12 @@ void FDManager::prepare_() {
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
         if (packet_fd_[i] != -1) {
-            FD_SET(packet_fd_[i], &received_fd_collection_);
-            if (packet_fd_[i] > max_fd_) {
-                max_fd_ = packet_fd_[i];
-            }
+            packet_fd_[i] = -1;
+            // if (packet_fd_[i] > max_fd_) {
+            //     max_fd_ = packet_fd_[i];
+            // }
         }
+        FD_SET(packet_fd_[i], &received_fd_collection_);
     }
     // タイムアウト時間を10sec+500000μsec に指定する。
     timeout_.tv_sec  = 10;
@@ -53,33 +54,15 @@ void FDManager::prepare_() {
 }
 
 bool FDManager::accept() {
-    /*
-    // 接続待ちのディスクリプタをディスクリプタ集合に設定する
-    FD_ZERO(&received_fd_collection_);
-    FD_SET(socket_.get_listen_fd(), &received_fd_collection_);
-    max_fd_ = socket_.get_listen_fd();
-    // 受信待ちのディスクリプタをディスクリプタ集合に設定する
-    for (size_t i = 0;
-        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
-        if (packet_fd_[i] != -1) {
-            FD_SET(packet_fd_[i], &received_fd_collection_);
-            if (packet_fd_[i] > max_fd_) {
-                max_fd_ = packet_fd_[i];
-            }
-        }
-    }
-    // タイムアウト時間を10sec+500000μsec に指定する。
-    timeout_.tv_sec  = 10;
-    timeout_.tv_usec = 500000;
+    prepare_();
 
     // 接続＆受信を待ち受ける
-
-    accept_fd_ = select(max_fd_+1,
+    int count = select(max_fd_+1,
         &received_fd_collection_,
         NULL,
         NULL,
         &timeout_);
-    if (accept_fd_ < 0) {
+    if (count < 0) {
         if (errno == EINTR) {
             // シグナル受信によるselect終了の場合、再度待ち受けに戻る
             return false;
@@ -88,11 +71,10 @@ bool FDManager::accept() {
         // その他のエラーの場合、終了する。
         // exit;
         return false;
-    } else if (accept_fd_ == 0) {
+    } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る
         return false;
     } else {
-
         // 接続待ちディスクリプタに接続があったかを調べる
         if (FD_ISSET(socket_.get_listen_fd(), &received_fd_collection_)) {
             // 接続されたならクライアントからの接続を確立する
@@ -100,26 +82,19 @@ bool FDManager::accept() {
                 i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
                 i++) {
                 if (packet_fd_[i] == -1) {
-                    if ((packet_fd_[i] = ::accept(socket_.get_listen_fd(),
-                            (struct sockaddr *)&from_addr_,
-                            &from_addr_len_)) < 0) {
+                    if ((packet_fd_[i] = socket_.accept()) < 0) {
                         // exit;
                         return false;
                     }
+                    accept_fd_ = packet_fd_[i];
                     std::cout << "socket:" << packet_fd_[i];
-                    std::cout << "connected." << std::endl;
-                    return true;
+                    std::cout << " connected." << std::endl;
+                    break;
                 }
             }
         }
     }
-    return false;
-    */
-    accept_fd_ = socket_.accept();
-    if (accept_fd_ == -1) {
-         return false;
-     }
-     return true;
+    return true;
 }
 
 bool FDManager::send(const std::string &str) const {
@@ -170,14 +145,12 @@ int FDManager::receive(char *buf) const {
 
 void FDManager::disconnect() const {
     // パケット送受信用ソケットクローズ
-    /*
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
         i++) {
         close(packet_fd_[i]);
     }
-    */
-    close(accept_fd_);
+    //close(accept_fd_);
 }
 
 void FDManager::create_socket() {
