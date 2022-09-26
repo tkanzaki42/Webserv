@@ -10,8 +10,27 @@
 
 class FDManager {
  private:
-    int                 accept_fd_;
-    Socket              socket_;
+    int             accept_fd_;
+    Socket          socket_;
+
+    // 受信用バッファ
+    //  char            acception_buffer_[2048];
+
+    // 通信用ファイルディスクリプタの配列
+    int             packet_fd_[10];
+
+    // ディスクリプタの最大値
+    int             max_fd_;
+
+    // 接続待ち、受信待ちをするディスクリプタの集合
+    fd_set          received_fd_collection_;
+
+    // タイムアウト時間
+    struct timeval  timeout_;
+
+    // クライアントからの接続を確立するときに使う
+    struct sockaddr_in from_addr_;
+    socklen_t          from_addr_len_;
 
  public:
     FDManager();
@@ -31,7 +50,7 @@ class FDManager {
     bool send(const std::string &str) const;
 
     // ファイルディスクリプタを読み込む(クライアント)
-    int receive(char buf[]) const;
+    int receive(char *buf) const;
 
     // ソケットを作成(ソケット)
     void create_socket();

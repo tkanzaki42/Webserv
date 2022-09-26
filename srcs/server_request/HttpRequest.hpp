@@ -12,15 +12,16 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
+#include "srcs/server/FDManager.hpp"
 
 class HttpRequest {
  public:
-    HttpRequest();
+    explicit HttpRequest(const FDManager &fd_manager);
     ~HttpRequest();
     HttpRequest(const HttpRequest &obj);
     HttpRequest& operator=(const HttpRequest &obj);
 
-    void                                      set_accept_fd(int accept_fd);
+   //  void                                      set_accept_fd(int accept_fd);
     int                                       receive_header();
     void                                      analyze_request();
     void                                      print_debug();
@@ -35,7 +36,8 @@ class HttpRequest {
     const std::string&                        get_path_to_file() const;
 
  private:
-    int                                       accept_fd_;
+    const FDManager                           &fd_manager_;
+   //  int                                       accept_fd_;
     HttpParser                                parser_;
     std::string                               received_line_;
     std::string                               path_to_file_;
