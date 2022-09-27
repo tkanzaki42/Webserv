@@ -30,6 +30,8 @@ class FDManager {
 
     void            prepare_();
 
+    bool            select_();
+
  public:
     FDManager();
     ~FDManager();

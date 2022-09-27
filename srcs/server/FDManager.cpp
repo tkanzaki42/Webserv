@@ -53,11 +53,9 @@ void FDManager::prepare_() {
     timeout_.tv_usec = 500000;
 }
 
-bool FDManager::accept() {
-    prepare_();
-
+bool FDManager::select_() {
     // 接続＆受信を待ち受ける
-    int count = select(max_fd_+1,
+    int count = ::select(max_fd_+1,
         &received_fd_collection_,
         NULL,
         NULL,
@@ -65,42 +63,43 @@ bool FDManager::accept() {
     if (count < 0) {
         if (errno == EINTR) {
             // シグナル受信によるselect終了の場合、再度待ち受けに戻る
-            return false;
+            std::cout << "Interrupted system call." << std::endl;
         }
-        // std::cout << "!this!" << std::endl;
-        // その他のエラーの場合、終了する。
-        // exit;
+        std::cerr << "select() failed." << std::endl;
         return false;
     } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る
+        std::cerr << "timeout in select()" << std::endl;
         return false;
     } else {
-        // 接続待ちディスクリプタに接続があったかを調べる
-        if (FD_ISSET(socket_.get_listen_fd(), &received_fd_collection_)) {
-            // 接続されたならクライアントからの接続を確立する
-            for (size_t i = 0;
-                i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
-                i++) {
-                if (packet_fd_[i] == -1) {
-                    if ((packet_fd_[i] = socket_.accept()) < 0) {
-                        // exit;
-                        return false;
-                    }
-                    accept_fd_ = packet_fd_[i];
-                    std::cout << "socket:" << packet_fd_[i];
-                    std::cout << " connected." << std::endl;
-                    break;
-                }
-            }
-        }
+        return true;
     }
-    return true;
 }
 
-bool FDManager::send(const std::string &str) const {
-    if (::send(accept_fd_, str.c_str(),
-        str.length(), 0) == -1) {
+bool FDManager::accept() {
+    prepare_();
+
+    // 接続＆受信を待ち受ける
+    if (!select_()) {
         return false;
+    }
+    // 接続待ちディスクリプタに接続があったかを調べる
+    if (FD_ISSET(socket_.get_listen_fd(), &received_fd_collection_)) {
+        // 接続されたならクライアントからの接続を確立する
+        for (size_t i = 0;
+            i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
+            i++) {
+            if (packet_fd_[i] == -1) {
+                if ((packet_fd_[i] = socket_.accept()) < 0) {
+                    // exit;
+                    return false;
+                }
+                accept_fd_ = packet_fd_[i];
+                std::cout << "socket:" << packet_fd_[i];
+                std::cout << " connected." << std::endl;
+                break;
+            }
+        }
     }
     return true;
 }
@@ -141,6 +140,14 @@ int FDManager::receive(char *buf) const {
         buf, sizeof(char) * BUF_SIZE - 1, 0);
     buf[read_size] = '\0';
     return read_size;
+}
+
+bool FDManager::send(const std::string &str) const {
+    if (::send(accept_fd_, str.c_str(),
+        str.length(), 0) == -1) {
+        return false;
+    }
+    return true;
 }
 
 void FDManager::disconnect() const {

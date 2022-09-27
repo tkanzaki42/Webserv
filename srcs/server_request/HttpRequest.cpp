@@ -1,6 +1,6 @@
 #include "srcs/server_request/HttpRequest.hpp"
 
-HttpRequest::HttpRequest(const FDManager &fd_manager)
+HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
           status_code_(200) {
@@ -30,14 +30,14 @@ int HttpRequest::receive_header() {
     char     buf[BUF_SIZE];
 
     memset(buf, 0, sizeof(buf));
-    read_size = fd_manager_.receive(buf);
+    read_size = fd_manager_->receive(buf);
     // std::cout << "read_size: " << read_size << std::endl;
     if (read_size < 0) {
         std::cerr << "recv() failed." << std::endl;
         std::cerr << "ERROR: " << errno << std::endl;
         // close(accept_fd_);
         // accept_fd_ = -1;
-        fd_manager_.disconnect();
+        fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
         return -1;
     }
@@ -46,7 +46,7 @@ int HttpRequest::receive_header() {
         std::cerr << "Failed to recognize header." << std::endl;
         // close(accept_fd_);
         // accept_fd_ = -1;
-        fd_manager_.disconnect();
+        fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
         return -1;
     }
@@ -161,13 +161,13 @@ int HttpRequest::receive_and_store_to_file_() {
             break;
         }
 
-        read_size = fd_manager_.receive(buf);
+        read_size = fd_manager_->receive(buf);
         if (read_size == -1) {
             std::cerr << "recv() failed in "
                 << "receive_and_store_to_file_()." << std::endl;
             // close(accept_fd_);
             // accept_fd_ = -1;
-            fd_manager_.disconnect();
+            fd_manager_->disconnect();
             return -1;
         }
         if (read_size > 0) {

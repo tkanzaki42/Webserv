@@ -16,7 +16,7 @@
 
 class HttpRequest {
  public:
-    explicit HttpRequest(const FDManager &fd_manager);
+    explicit HttpRequest(FDManager *fd_manager);
     ~HttpRequest();
     HttpRequest(const HttpRequest &obj);
     HttpRequest& operator=(const HttpRequest &obj);
@@ -36,7 +36,7 @@ class HttpRequest {
     const std::string&                        get_path_to_file() const;
 
  private:
-    const FDManager                           &fd_manager_;
+    FDManager                                *fd_manager_;
    //  int                                       accept_fd_;
     HttpParser                                parser_;
     std::string                               received_line_;
