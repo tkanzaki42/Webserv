@@ -21,6 +21,9 @@ int Socket::accept() {
     int fd = ::accept(listen_fd_,
         (struct sockaddr *)&from_addr_,
         &from_addr_len_);
+    if (fd < 0){
+        _exit(1);
+    }
     return fd;
 }
 

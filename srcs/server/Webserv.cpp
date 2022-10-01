@@ -19,7 +19,6 @@ void Webserv::loop() {
 
         // \r\n\r\nが来るまでメッセージ受信
         HttpRequest request_(&fd_manager_);
-        // request_.set_accept_fd(fd_manager_.get_accept_fd());
         if (request_.receive_header() == -1)
             continue;
 

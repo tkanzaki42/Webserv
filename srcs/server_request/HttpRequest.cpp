@@ -35,8 +35,6 @@ int HttpRequest::receive_header() {
     if (read_size < 0) {
         std::cerr << "recv() failed." << std::endl;
         std::cerr << "ERROR: " << errno << std::endl;
-        // close(accept_fd_);
-        // accept_fd_ = -1;
         fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
         return -1;
@@ -44,8 +42,6 @@ int HttpRequest::receive_header() {
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
     if (!found_empty_line) {
         std::cerr << "Failed to recognize header." << std::endl;
-        // close(accept_fd_);
-        // accept_fd_ = -1;
         fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
         return -1;

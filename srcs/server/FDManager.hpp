@@ -10,47 +10,46 @@
 
 class FDManager {
  private:
-    int             accept_fd_;
     Socket          socket_;
-
-    // 受信用バッファ
-    //  char            acception_buffer_[2048];
 
     // 通信用ファイルディスクリプタの配列
     int             packet_fd_[10];
+    // 処理用のファイルディスクリプタのコピー
+    int             accept_fd_index_;
 
     // ディスクリプタの最大値
     int             max_fd_;
 
-    // 接続待ち、受信待ちをするディスクリプタの集合
+    // 接続待ち、受信待ちをするディスクリプタの集合(select用)
     fd_set          received_fd_collection_;
 
     // タイムアウト時間
     struct timeval  timeout_;
 
-    void            prepare_();
-
+    void            prepare_select_();
     bool            select_();
 
  public:
+    // selectのタイムアウト時間
+    static const time_t TIMEOUT_SECOND = 10;
+    static const time_t TIMEOUT_U_SECOND = 500000;
+
     FDManager();
     ~FDManager();
     FDManager(const FDManager &obj);
     FDManager &operator=(const FDManager &obj);
 
-    int get_accept_fd() const;
-
     // ファイルディスクリプタをオープン(クライアント)
     bool accept();
 
     // ファイルディスクリプタをクローズ(クライアント)
-    void disconnect() const;
+    void disconnect();
 
     // ファイルディスクリプタに書き込む(クライアント)
-    bool send(const std::string &str) const;
+    bool send(const std::string &str);
 
     // ファイルディスクリプタを読み込む(クライアント)
-    int receive(char *buf) const;
+    int receive(char *buf);
 
     // ソケットを作成(ソケット)
     void create_socket();
