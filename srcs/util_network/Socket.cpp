@@ -2,6 +2,7 @@
 
 int Socket::prepare() {
     serv_addr_len_ = sizeof(serv_addr_);
+    from_addr_len_ = sizeof(from_addr_);
     if (open_socket_() == -1)
         return -1;
     if (bind_address_() == -1)
@@ -18,8 +19,8 @@ int Socket::cleanup() {
 
 int Socket::accept() {
     int fd = ::accept(listen_fd_,
-        (struct sockaddr *)&serv_addr_,
-        &serv_addr_len_);
+        (struct sockaddr *)&from_addr_,
+        &from_addr_len_);
     return fd;
 }
 

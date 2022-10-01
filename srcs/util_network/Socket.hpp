@@ -30,6 +30,8 @@ class Socket {
     int                 port_;
     struct sockaddr_in  serv_addr_;
     socklen_t           serv_addr_len_;
+    struct sockaddr_in  from_addr_;
+    socklen_t           from_addr_len_;
 
     int open_socket_();
     int bind_address_();
