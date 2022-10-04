@@ -24,7 +24,7 @@ class FDManager {
     fd_set          received_fd_collection_;
 
     // タイムアウト時間
-    struct timeval  timeout_;
+    struct timeval  select_time_;
 
     void            prepare_select_();
     bool            select_();
@@ -36,8 +36,8 @@ class FDManager {
     std::map<std::string, int> host1;
 
     // selectのタイムアウト時間
-    static const time_t TIMEOUT_SECOND = 10;
-    static const time_t TIMEOUT_U_SECOND = 500000;
+    static const time_t SELECT_TIME_SECOND = 5;
+    static const time_t SELECT_TIME_U_SECOND = 0;
 
     FDManager();
     ~FDManager();

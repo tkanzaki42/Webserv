@@ -14,9 +14,6 @@ FDManager::FDManager() {
         socket_[i].set_port(config[oss.str()]["PORT"]);        
     }
 
-    (void)max_fd_;
-    (void)received_fd_collection_;
-    (void)timeout_;
     // 通信用ディスクリプタの配列を初期化する
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
@@ -91,8 +88,10 @@ void FDManager::prepare_select_() {
             }
         }
     }
-    timeout_.tv_sec  = FDManager::TIMEOUT_SECOND;
-    timeout_.tv_usec = FDManager::TIMEOUT_U_SECOND;
+
+    // selectのタイムアウト時間(ここは毎回初期化しないと0になる)
+    select_time_.tv_sec  = FDManager::SELECT_TIME_SECOND;
+    select_time_.tv_usec = FDManager::SELECT_TIME_U_SECOND;
 }
 
 bool FDManager::select_() {
@@ -101,7 +100,7 @@ bool FDManager::select_() {
         &received_fd_collection_,
         NULL,
         NULL,
-        &timeout_);
+        &select_time_);
     if (count < 0) {
         if (errno == EINTR) {
             // シグナル受信によるselect終了の場合、再度待ち受けに戻る
