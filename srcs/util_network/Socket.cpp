@@ -1,5 +1,29 @@
 #include "srcs/util_network/Socket.hpp"
 
+Socket::Socket():
+port_(0){
+}
+
+Socket::Socket(int port):
+port_(port){
+}
+
+Socket::Socket(const Socket &obj){
+    listen_fd_     = obj.listen_fd_;
+    port_          = obj.port_;
+    serv_addr_     = obj.serv_addr_;
+    serv_addr_len_ = obj.serv_addr_len_;
+    from_addr_     = obj.from_addr_;
+    from_addr_len_ = obj.from_addr_len_;
+}
+
+Socket::~Socket(){
+}
+
+void Socket::set_port(int port){
+    port_ = port;
+}
+
 int Socket::prepare() {
     serv_addr_len_ = sizeof(serv_addr_);
     from_addr_len_ = sizeof(from_addr_);

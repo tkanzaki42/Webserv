@@ -1,7 +1,10 @@
 #include "srcs/util_network/FDManager.hpp"
 
-FDManager::FDManager():
-socket_(HTTP_PORT) {
+FDManager::FDManager() {
+    // ポート番号をセット
+    socket_[0].set_port(HTTP_PORT1);
+    socket_[1].set_port(HTTP_PORT2);
+    
     (void)max_fd_;
     (void)received_fd_collection_;
     (void)timeout_;
@@ -16,8 +19,7 @@ socket_(HTTP_PORT) {
 FDManager::~FDManager() {
 }
 
-FDManager::FDManager(const FDManager &obj):
-socket_(HTTP_PORT) {
+FDManager::FDManager(const FDManager &obj) {
     *this = obj;
 }
 
@@ -34,12 +36,20 @@ bool FDManager::accept() {
         // やり直し
         return false;
     }
+    int active_socket_index;
+    if (FD_ISSET(socket_[0].get_listen_fd(), &received_fd_collection_)) {
+        active_socket_index = 0;
+    } else if (FD_ISSET(socket_[1].get_listen_fd(), &received_fd_collection_)) {
+        active_socket_index = 1;
+    } else {
+        return false;
+    }
     // 接続されたならクライアントからの接続を確立する
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
         i++) {
         if (packet_fd_[i] == -1) {
-            packet_fd_[i] = socket_.accept();
+            packet_fd_[i] = socket_[active_socket_index].accept();
             accept_fd_index_ = i;
             std::cout << "socket:" << packet_fd_[accept_fd_index_];
             std::cout << " connected." << std::endl;
@@ -52,8 +62,12 @@ bool FDManager::accept() {
 void FDManager::prepare_select_() {
     // 接続待ちのディスクリプタをディスクリプタ集合に設定する
     FD_ZERO(&received_fd_collection_);
-    FD_SET(socket_.get_listen_fd(), &received_fd_collection_);
-    max_fd_ = socket_.get_listen_fd();
+    FD_SET(socket_[0].get_listen_fd(), &received_fd_collection_);
+    FD_SET(socket_[1].get_listen_fd(), &received_fd_collection_);
+    max_fd_ = socket_[0].get_listen_fd();
+    if (max_fd_ < socket_[1].get_listen_fd()){
+        max_fd_ = socket_[1].get_listen_fd();
+    }
     // 受信待ちのディスクリプタをディスクリプタ集合に設定する
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
@@ -146,9 +160,11 @@ void FDManager::disconnect(){
 }
 
 void FDManager::create_socket() {
-    socket_.prepare();
+    socket_[0].prepare();
+    socket_[1].prepare();
 }
 
 void FDManager::destory_socket() {
-    socket_.cleanup();
+    socket_[0].cleanup();
+    socket_[1].cleanup();
 }

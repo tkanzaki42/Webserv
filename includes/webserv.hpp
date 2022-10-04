@@ -11,7 +11,8 @@
 #include <sstream>
 
 const int BUF_SIZE = 8001;
-const int HTTP_PORT = 5000;
+const int HTTP_PORT1 = 5000;
+const int HTTP_PORT2 = 5001;
 
 const std::string kBaseHtmlPath = "./public_html";
 const std::string kIndexHtmlFileName = "index.html";

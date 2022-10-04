@@ -10,7 +10,7 @@
 
 class FDManager {
  private:
-    Socket          socket_;
+    Socket          socket_[2];
 
     // 通信用ファイルディスクリプタの配列
     int             packet_fd_[10];

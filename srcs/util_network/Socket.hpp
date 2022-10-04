@@ -16,12 +16,15 @@
 
 class Socket {
  public:
-    explicit Socket(int port) : port_(port) {}
-    ~Socket() {}
+    Socket();
+    explicit Socket(int port);
+    Socket(const Socket &obj);
+    ~Socket();
 
     int prepare();
     int cleanup();
     int get_listen_fd() const { return listen_fd_; }
+    void set_port(int port);
 
     int accept();
 
@@ -33,9 +36,9 @@ class Socket {
     struct sockaddr_in  from_addr_;
     socklen_t           from_addr_len_;
 
-    int open_socket_();
-    int bind_address_();
-    int listen_();
+    int  open_socket_();
+    int  bind_address_();
+    int  listen_();
 };
 
 #endif  // SRCS_UTIL_NETWORK_SOCKET_HPP_
