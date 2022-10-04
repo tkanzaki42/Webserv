@@ -1,17 +1,16 @@
 #include "srcs/util_network/FDManager.hpp"
 #include "srcs/server/Webserv.hpp"
-#include <sstream>
+#include "srcs/util/Util.hpp"
 
 FDManager::FDManager() {    
-    host0["PORT"] = 5000;
-    host1["PORT"] = 5001;
+    host0["PORT"] = "5000";
+    host1["PORT"] = "5001";
     config["0"] = host0;
     config["1"] = host1;
     // ポート番号をセット
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        std::ostringstream oss;
-        oss << i;
-        socket_[i].set_port(config[oss.str()]["PORT"]);        
+        int port = Util::stoi(config[Util::itos(i)]["PORT"]);
+        socket_[i].set_port(port);        
     }
 
     // 通信用ディスクリプタの配列を初期化する

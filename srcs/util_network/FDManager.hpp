@@ -28,12 +28,11 @@ class FDManager {
 
     void            prepare_select_();
     bool            select_();
-
  public:
-    std::map<std::string, std::map<std::string, int> > config;
+    std::map<std::string, std::map<std::string, std::string> > config;
 
-    std::map<std::string, int> host0;
-    std::map<std::string, int> host1;
+    std::map<std::string, std::string> host0;
+    std::map<std::string, std::string> host1;
 
     // selectのタイムアウト時間
     static const time_t SELECT_TIME_SECOND = 5;
