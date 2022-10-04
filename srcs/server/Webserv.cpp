@@ -2,7 +2,6 @@
 
 Webserv::Webserv() {
 }
-
 Webserv::~Webserv() {
 }
 

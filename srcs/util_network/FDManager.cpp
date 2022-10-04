@@ -1,10 +1,19 @@
 #include "srcs/util_network/FDManager.hpp"
+#include "srcs/server/Webserv.hpp"
+#include <sstream>
 
-FDManager::FDManager() {
+FDManager::FDManager() {    
+    host0["PORT"] = 5000;
+    host1["PORT"] = 5001;
+    config["0"] = host0;
+    config["1"] = host1;
     // ポート番号をセット
-    socket_[0].set_port(HTTP_PORT1);
-    socket_[1].set_port(HTTP_PORT2);
-    
+    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
+        std::ostringstream oss;
+        oss << i;
+        socket_[i].set_port(config[oss.str()]["PORT"]);        
+    }
+
     (void)max_fd_;
     (void)received_fd_collection_;
     (void)timeout_;
@@ -36,14 +45,16 @@ bool FDManager::accept() {
         // やり直し
         return false;
     }
-    int active_socket_index;
-    if (FD_ISSET(socket_[0].get_listen_fd(), &received_fd_collection_)) {
-        active_socket_index = 0;
-    } else if (FD_ISSET(socket_[1].get_listen_fd(), &received_fd_collection_)) {
-        active_socket_index = 1;
-    } else {
-        return false;
+
+    // 接続されたソケットを確認
+    int active_socket_index = -1;
+    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
+        if (FD_ISSET(socket_[i].get_listen_fd(), &received_fd_collection_)) {
+            active_socket_index = i;
+            break;
+        }      
     }
+
     // 接続されたならクライアントからの接続を確立する
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
@@ -62,12 +73,14 @@ bool FDManager::accept() {
 void FDManager::prepare_select_() {
     // 接続待ちのディスクリプタをディスクリプタ集合に設定する
     FD_ZERO(&received_fd_collection_);
-    FD_SET(socket_[0].get_listen_fd(), &received_fd_collection_);
-    FD_SET(socket_[1].get_listen_fd(), &received_fd_collection_);
-    max_fd_ = socket_[0].get_listen_fd();
-    if (max_fd_ < socket_[1].get_listen_fd()){
-        max_fd_ = socket_[1].get_listen_fd();
+    max_fd_ = -1;
+    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
+        FD_SET(socket_[i].get_listen_fd(), &received_fd_collection_);
+        if (max_fd_ < socket_[i].get_listen_fd()){
+            max_fd_ = socket_[i].get_listen_fd();
+        }
     }
+
     // 受信待ちのディスクリプタをディスクリプタ集合に設定する
     for (size_t i = 0;
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
@@ -160,11 +173,13 @@ void FDManager::disconnect(){
 }
 
 void FDManager::create_socket() {
-    socket_[0].prepare();
-    socket_[1].prepare();
+    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
+        socket_[i].prepare();
+    }
 }
 
 void FDManager::destory_socket() {
-    socket_[0].cleanup();
-    socket_[1].cleanup();
+    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
+        socket_[i].cleanup();
+    }
 }

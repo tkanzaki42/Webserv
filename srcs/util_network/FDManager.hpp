@@ -30,6 +30,11 @@ class FDManager {
     bool            select_();
 
  public:
+    std::map<std::string, std::map<std::string, int> > config;
+
+    std::map<std::string, int> host0;
+    std::map<std::string, int> host1;
+
     // selectのタイムアウト時間
     static const time_t TIMEOUT_SECOND = 10;
     static const time_t TIMEOUT_U_SECOND = 500000;

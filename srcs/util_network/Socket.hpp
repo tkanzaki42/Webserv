@@ -24,8 +24,8 @@ class Socket {
     int prepare();
     int cleanup();
     int get_listen_fd() const { return listen_fd_; }
-    void set_port(int port);
 
+    void set_port(int port);
     int accept();
 
  private:
