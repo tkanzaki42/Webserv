@@ -1,4 +1,4 @@
-#include "srcs/server/FDManager.hpp"
+#include "srcs/util_network/FDManager.hpp"
 
 FDManager::FDManager():
 socket_(HTTP_PORT) {
@@ -59,7 +59,6 @@ void FDManager::prepare_select_() {
         i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
         if (packet_fd_[i] != -1) {
             FD_SET(packet_fd_[i], &received_fd_collection_);
-            // packet_fd_[i] = -1;
             if (packet_fd_[i] > max_fd_) {
                 max_fd_ = packet_fd_[i];
             }
@@ -87,7 +86,7 @@ bool FDManager::select_() {
         _exit(1);
     } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る
-        std::cout << "timeout to select(). try again." << std::endl;
+        std::cout << "resources released." << std::endl;
         return false;
     } else {
         std::cout << "FDManager::select ";
@@ -136,7 +135,7 @@ bool FDManager::send(const std::string &str){
         std::cout << "FDManager::send failed." << std::endl;
         return false;
     }
-    std::cout << "FDManager::send success to fd:" << packet_fd_[accept_fd_index_] << std::endl;
+    std::cout << "FDManager::send success to fd: " << packet_fd_[accept_fd_index_] << std::endl;
     return true;
 }
 
