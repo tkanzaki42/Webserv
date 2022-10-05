@@ -1,8 +1,8 @@
+// Copyright 2022 tkanzaki
 #include "srcs/util_network/FDManager.hpp"
 #include "srcs/server/Webserv.hpp"
 #include "srcs/util/Util.hpp"
-
-FDManager::FDManager() {    
+FDManager::FDManager() {
     host0["PORT"] = "5000";
     host1["PORT"] = "5001";
     config["0"] = host0;
@@ -10,7 +10,7 @@ FDManager::FDManager() {
     // ポート番号をセット
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
         int port = Util::stoi(config[Util::itos(i)]["PORT"]);
-        socket_[i].set_port(port);        
+        socket_[i].set_port(port);
     }
 
     // 通信用ディスクリプタの配列を初期化する
@@ -48,7 +48,7 @@ bool FDManager::accept() {
         if (FD_ISSET(socket_[i].get_listen_fd(), &received_fd_collection_)) {
             active_socket_index = i;
             break;
-        }      
+        }
     }
 
     // 接続されたならクライアントからの接続を確立する
@@ -72,7 +72,7 @@ void FDManager::prepare_select_() {
     max_fd_ = -1;
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
         FD_SET(socket_[i].get_listen_fd(), &received_fd_collection_);
-        if (max_fd_ < socket_[i].get_listen_fd()){
+        if (max_fd_ < socket_[i].get_listen_fd()) {
             max_fd_ = socket_[i].get_listen_fd();
         }
     }
@@ -122,7 +122,7 @@ bool FDManager::select_() {
     }
 }
 
-int FDManager::receive(char *buf){
+int FDManager::receive(char *buf) {
     // 受信待ちディスクリプタにデータがあるかを調べる
     if (packet_fd_[accept_fd_index_] == -1) {
         return -1;
@@ -149,7 +149,7 @@ int FDManager::receive(char *buf){
     return read_size;
 }
 
-bool FDManager::send(const std::string &str){
+bool FDManager::send(const std::string &str) {
     // 受信待ちディスクリプタにデータがあるかを調べる
     if (packet_fd_[accept_fd_index_] == -1) {
         return false;
@@ -160,11 +160,12 @@ bool FDManager::send(const std::string &str){
         std::cout << "FDManager::send failed." << std::endl;
         return false;
     }
-    std::cout << "FDManager::send success to fd: " << packet_fd_[accept_fd_index_] << std::endl;
+    std::cout << "FDManager::send success to fd: ";
+    std::cout << packet_fd_[accept_fd_index_] << std::endl;
     return true;
 }
 
-void FDManager::disconnect(){
+void FDManager::disconnect() {
     // パケット送受信用ソケットクローズ
     close(packet_fd_[accept_fd_index_]);
     packet_fd_[accept_fd_index_] = -1;

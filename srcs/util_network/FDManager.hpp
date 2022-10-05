@@ -1,9 +1,10 @@
-
-#ifndef SRCS_SERVER_FDMANAGER_HPP_
-#define SRCS_SERVER_FDMANAGER_HPP_
+// Copyright 2022 tkanzaki
+#ifndef PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#define PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
 
 #include <iostream>
 #include <string>
+#include <map>
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
@@ -28,6 +29,7 @@ class FDManager {
 
     void            prepare_select_();
     bool            select_();
+
  public:
     std::map<std::string, std::map<std::string, std::string> > config;
 
@@ -62,4 +64,4 @@ class FDManager {
     void destory_socket();
 };
 
-#endif  // SRCS_SERVER_FDMANAGER_HPP_
+#endif  // PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_

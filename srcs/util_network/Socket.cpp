@@ -1,14 +1,15 @@
+// Copyright 2022 tkanzaki
 #include "srcs/util_network/Socket.hpp"
 
 Socket::Socket():
-port_(0){
+port_(0) {
 }
 
 Socket::Socket(int port):
-port_(port){
+port_(port) {
 }
 
-Socket::Socket(const Socket &obj){
+Socket::Socket(const Socket &obj) {
     listen_fd_     = obj.listen_fd_;
     port_          = obj.port_;
     serv_addr_     = obj.serv_addr_;
@@ -17,10 +18,10 @@ Socket::Socket(const Socket &obj){
     from_addr_len_ = obj.from_addr_len_;
 }
 
-Socket::~Socket(){
+Socket::~Socket() {
 }
 
-void Socket::set_port(int port){
+void Socket::set_port(int port) {
     port_ = port;
 }
 
@@ -45,7 +46,7 @@ int Socket::accept() {
     int fd = ::accept(listen_fd_,
         (struct sockaddr *)&from_addr_,
         &from_addr_len_);
-    if (fd < 0){
+    if (fd < 0) {
         _exit(1);
     }
     return fd;

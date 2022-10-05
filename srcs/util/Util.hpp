@@ -1,9 +1,10 @@
-
-#ifndef SRCS_UTIL_UTIL_HPP_
-#define SRCS_UTIL_UTIL_HPP_
+// Copyright 2022 tkanzaki
+#ifndef PROJ_WEBSERV_SRCS_UTIL_UTIL_HPP_
+#define PROJ_WEBSERV_SRCS_UTIL_UTIL_HPP_
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
 class Util {
  public:
@@ -11,4 +12,4 @@ class Util {
      static std::string itos(int i);
 };
 
-#endif  // SRCS_SERVER_UTIL_HPP_
+#endif  // PROJ_WEBSERV_SRCS_UTIL_UTIL_HPP_
