@@ -2,7 +2,6 @@
 
 Webserv::Webserv() {
 }
-
 Webserv::~Webserv() {
 }
 
@@ -18,8 +17,7 @@ void Webserv::loop() {
         }
 
         // \r\n\r\nが来るまでメッセージ受信
-        HttpRequest request_;
-        request_.set_accept_fd(fd_manager_.get_accept_fd());
+        HttpRequest request_(&fd_manager_);
         if (request_.receive_header() == -1)
             continue;
 
@@ -35,7 +33,7 @@ void Webserv::loop() {
         std::cout << "---------------------------------------" << std::endl;
 
         // ソケットディスクリプタにレスポンス内容を書き込む
-        if (fd_manager_.send(response_.get_response())) {
+        if (!fd_manager_.send(response_.get_response())) {
             std::cerr << "send() failed." << std::endl;
         }
 

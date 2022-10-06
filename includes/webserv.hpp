@@ -9,9 +9,9 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
+#include <map>
 
 const int BUF_SIZE = 8001;
-const int HTTP_PORT = 5000;
 
 const std::string kBaseHtmlPath = "./public_html";
 const std::string kIndexHtmlFileName = "index.html";

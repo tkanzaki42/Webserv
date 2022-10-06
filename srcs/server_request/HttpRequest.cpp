@@ -1,7 +1,7 @@
 #include "srcs/server_request/HttpRequest.hpp"
 
-HttpRequest::HttpRequest()
-        : accept_fd_(-1),
+HttpRequest::HttpRequest(FDManager *fd_manager)
+        : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
           status_code_(200) {
 }
@@ -10,41 +10,39 @@ HttpRequest::~HttpRequest() {
 }
 
 HttpRequest::HttpRequest(const HttpRequest &obj)
-        : parser_(HttpParser(obj.parser_)) {
+        : fd_manager_(obj.fd_manager_),
+          parser_(HttpParser(obj.parser_)) {
     *this = obj;
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
-    accept_fd_    = obj.accept_fd_;
     parser_       = HttpParser(obj.parser_);
     status_code_  = obj.status_code_;
     return *this;
 }
 
-void HttpRequest::set_accept_fd(int accept_fd) {
-    this->accept_fd_ = accept_fd;
-}
+// void HttpRequest::set_accept_fd(int accept_fd) {
+//     this->accept_fd_ = accept_fd;
+// }
 
 int HttpRequest::receive_header() {
     ssize_t  read_size = 0;
     char     buf[BUF_SIZE];
 
     memset(buf, 0, sizeof(buf));
-    read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);
+    read_size = fd_manager_->receive(buf);
     // std::cout << "read_size: " << read_size << std::endl;
     if (read_size < 0) {
         std::cerr << "recv() failed." << std::endl;
         std::cerr << "ERROR: " << errno << std::endl;
-        close(accept_fd_);
-        accept_fd_ = -1;
+        fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
         return -1;
     }
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
     if (!found_empty_line) {
         std::cerr << "Failed to recognize header." << std::endl;
-        close(accept_fd_);
-        accept_fd_ = -1;
+        fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
         return -1;
     }
@@ -159,12 +157,13 @@ int HttpRequest::receive_and_store_to_file_() {
             break;
         }
 
-        read_size = recv(accept_fd_, buf, sizeof(char) * BUF_SIZE - 1, 0);
+        read_size = fd_manager_->receive(buf);
         if (read_size == -1) {
             std::cerr << "recv() failed in "
                 << "receive_and_store_to_file_()." << std::endl;
-            close(accept_fd_);
-            accept_fd_ = -1;
+            // close(accept_fd_);
+            // accept_fd_ = -1;
+            fd_manager_->disconnect();
             return -1;
         }
         if (read_size > 0) {
