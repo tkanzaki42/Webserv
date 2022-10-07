@@ -9,11 +9,12 @@ FDManager::FDManager() {
     config["1"] = host1;
     // ポート番号をセット
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        int port = StringConverter::stoi(config[StringConverter::itos(i)]["PORT"]);
+        int port = StringConverter::stoi(
+                        config[StringConverter::itos(i)]["PORT"]);
         socket_[i].set_port(port);
     }
 
-    // 通信用ディスクリプタの配列を初期化する
+    // 処理用のファイルディスクリプタを初期化する
     accept_fd_ = -1;
 }
 
@@ -108,14 +109,14 @@ bool FDManager::select_() {
 }
 
 int FDManager::receive(char *buf) {
-    // 受信待ちディスクリプタにデータがあるかを調べる
+    // 接続中かどうか
     if (accept_fd_ == -1) {
         return -1;
     }
 
     memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = -1;
-    // データがあるならパケット受信する
+    // クライアントから受信する
     read_size = ::recv(accept_fd_,
         buf,
         sizeof(char) * BUF_SIZE - 1,
@@ -128,14 +129,14 @@ int FDManager::receive(char *buf) {
         accept_fd_ = -1;
         return -1;
     }
-    // パケット受信成功の場合
+    // 受信成功の場合
     std::cout << "socket:" << accept_fd_;
     std::cout << "received." << std::endl;
     return read_size;
 }
 
 bool FDManager::send(const std::string &str) {
-    // 受信待ちディスクリプタにデータがあるかを調べる
+    // 接続中かどうか
     if (accept_fd_ == -1) {
         return false;
     }
@@ -151,7 +152,7 @@ bool FDManager::send(const std::string &str) {
 }
 
 void FDManager::disconnect() {
-    // パケット送受信用ソケットクローズ
+    // クライアントとの接続を切断する
     close(accept_fd_);
     accept_fd_ = -1;
 }
