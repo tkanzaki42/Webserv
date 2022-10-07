@@ -1,6 +1,6 @@
 // Copyright 2022 tkanzaki
-#ifndef PROJ_WEBSERV_SRCS_UTIL_NETWORK_SOCKET_HPP_
-#define PROJ_WEBSERV_SRCS_UTIL_NETWORK_SOCKET_HPP_
+#ifndef SRCS_UTIL_NETWORK_SOCKET_HPP_
+#define SRCS_UTIL_NETWORK_SOCKET_HPP_
 
 // c includes
 #include <unistd.h>
@@ -42,4 +42,4 @@ class Socket {
     int  listen_();
 };
 
-#endif  // PROJ_WEBSERV_SRCS_UTIL_NETWORK_SOCKET_HPP_
+#endif  // SRCS_UTIL_NETWORK_SOCKET_HPP_

@@ -1,6 +1,6 @@
 // Copyright 2022 tkanzaki
-#ifndef PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
-#define PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#ifndef SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#define SRCS_UTIL_NETWORK_FDMANAGER_HPP_
 
 #include <iostream>
 #include <string>
@@ -13,10 +13,8 @@ class FDManager {
  private:
     Socket          socket_[2];
 
-    // 通信用ファイルディスクリプタの配列
-    int             packet_fd_[10];
-    // 処理用のファイルディスクリプタのコピー
-    int             accept_fd_index_;
+    // 処理用のファイルディスクリプタ
+    int             accept_fd_;
 
     // ディスクリプタの最大値
     int             max_fd_;
@@ -64,4 +62,4 @@ class FDManager {
     void destory_socket();
 };
 
-#endif  // PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#endif  // SRCS_UTIL_NETWORK_FDMANAGER_HPP_

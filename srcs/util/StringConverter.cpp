@@ -1,15 +1,15 @@
 // Copyright 2022 tkanzaki
 #include <string>
-#include "srcs/util/Util.hpp"
+#include "srcs/util/StringConverter.hpp"
 
-int Util::stoi(const std::string &s) {
+int StringConverter::stoi(const std::string &s) {
     int num;
     std::istringstream ss(s);
     ss >> num;
     return num;
 }
 
-std::string Util::itos(int i) {
+std::string StringConverter::itos(int i) {
     std::ostringstream oss;
     oss << i;
     return (oss.str());
