@@ -1,6 +1,6 @@
 // Copyright 2022 tkanzaki
-#ifndef PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
-#define PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#ifndef SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#define SRCS_UTIL_NETWORK_FDMANAGER_HPP_
 
 #include <iostream>
 #include <string>
@@ -11,20 +11,19 @@
 
 class FDManager {
  private:
+    // ソケット
     Socket          socket_[2];
 
-    // 通信用ファイルディスクリプタの配列
-    int             packet_fd_[10];
-    // 処理用のファイルディスクリプタのコピー
-    int             accept_fd_index_;
+    // 処理用のファイルディスクリプタ
+    int             accept_fd_;
 
-    // ディスクリプタの最大値
+    // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
 
     // 接続待ち、受信待ちをするディスクリプタの集合(select用)
     fd_set          received_fd_collection_;
 
-    // タイムアウト時間
+    // タイムアウト時間(select用)
     struct timeval  select_time_;
 
     void            prepare_select_();
@@ -45,23 +44,23 @@ class FDManager {
     FDManager(const FDManager &obj);
     FDManager &operator=(const FDManager &obj);
 
-    // ファイルディスクリプタをオープン(クライアント)
+    // クライアントからの接続を承認する
     bool accept();
 
-    // ファイルディスクリプタをクローズ(クライアント)
+    // クライアントとの接続を切断する
     void disconnect();
 
-    // ファイルディスクリプタに書き込む(クライアント)
+    // クライアントに文字列を送る
     bool send(const std::string &str);
 
-    // ファイルディスクリプタを読み込む(クライアント)
+    // クライアントからの文字列をバッファに読み込ませる(戻り値は読み込んだ文字列の長さ)
     int receive(char *buf);
 
-    // ソケットを作成(ソケット)
+    // ソケットを作成
     void create_socket();
 
-    // ソケットを削除(ソケット)
+    // ソケットを削除
     void destory_socket();
 };
 
-#endif  // PROJ_WEBSERV_SRCS_UTIL_NETWORK_FDMANAGER_HPP_
+#endif  // SRCS_UTIL_NETWORK_FDMANAGER_HPP_
