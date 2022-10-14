@@ -17,12 +17,22 @@
 
 #include "includes/webserv.hpp"
 #include "server/Webserv.hpp"
+#include "config/Config.hpp"
 
-int main() {
-    Webserv serv;
-    serv.init();
-    serv.loop();
-    serv.finalize();
+int main(int argc, char const *argv[]) {
+    if (argc > 2) {
+        exit(EXIT_FAILURE);
+    }
+    try {
+        Config::parseConfig(argv[1]);
+    } catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        exit(EXIT_FAILURE);
+    }
+    // Webserv serv;
+    // serv.init();
+    // serv.loop();
+    // serv.finalize();
 
     return 0;
 }
