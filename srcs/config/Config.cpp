@@ -118,3 +118,29 @@ void    Config::printConfig() {
         }
     }
 }
+
+std::string Config::getSingleStr(const std::string& hostname,
+                                 const std::string& key) {
+    return (_config[hostname][key][0]);
+}
+
+int Config::getSingleInt(const std::string& hostname, const std::string& key) {
+    return (StringConverter::stoi(_config[hostname][key][0]));
+}
+
+std::vector<int> Config::getVectorInt(const std::string& hostname,
+                                      const std::string& key) {
+    std::vector<int> intVector;
+    std::vector<std::string>::iterator begin = _config[hostname][key].begin();
+    std::vector<std::string>::iterator end = _config[hostname][key].end();
+    for (std::vector<std::string>::iterator iter = begin;
+         iter != end; iter++) {
+        intVector.push_back(StringConverter::stoi(*iter));
+    }
+    return (intVector);
+}
+
+std::vector<std::string> Config::getVectorStr(const std::string& hostname,
+                                              const std::string& key) {
+    return (_config[hostname][key]);
+}
