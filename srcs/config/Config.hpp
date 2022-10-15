@@ -6,6 +6,8 @@
 #include <string>
 #include <fstream>
 
+#include "srcs/config/ConfigChecker.hpp"
+
 typedef std::map<std::string, std::string> string_map;
 
 class Config {
