@@ -24,7 +24,7 @@ void Config::init(const std::string &path) {
     }
 }
 
-std::map<std::string, string_map> Config::_config;
+std::map<std::string, string_vector_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
     std::ifstream ifs(path.c_str());
     if (!ifs) {
@@ -68,7 +68,8 @@ void    Config::parseConfig(const std::string &path) {
                 value = buf.substr(2);
                 isKeySet = true;
                 // map に格納する
-                _config[hostname][key] = value;
+                std::vector<std::string> valueVecotr = parseValue(value);
+                _config[hostname][key] = valueVecotr;
             }
         } else {
             throw(Config::ConfigFormatException());
@@ -79,17 +80,41 @@ void    Config::parseConfig(const std::string &path) {
     ifs.close();
 }
 
+std::vector<std::string> Config::parseValue(const std::string &valueStr) {
+    std::vector<std::string> valueVector;
+    if (valueStr.size() < 3) {
+        throw(Config::ConfigFormatException());
+    }
+    if (valueStr[0] != '[') {
+        valueVector.push_back(valueStr);
+    } else if (valueStr.at(valueStr.size() - 1) != ']') {
+        throw(Config::ConfigFormatException());
+    } else {
+        valueVector = split(valueStr.substr(1, valueStr.size() - 2), ',');
+    }
+    return (valueVector);
+}
+
+
 void    Config::printConfig() {
-    std::map<std::string, string_map>::iterator begin = _config.begin();
-    std::map<std::string, string_map >::iterator end = _config.end();
-    for (std::map<std::string, string_map>
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    for (std::map<std::string, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         std::cout << itr->first << std::endl;
-        string_map::iterator key_begin = itr->second.begin();
-        string_map::iterator key_end = itr->second.end();
-        for (string_map::iterator iter = key_begin; iter != key_end; iter++) {
+        string_vector_map::iterator key_begin = itr->second.begin();
+        string_vector_map::iterator key_end = itr->second.end();
+        for (string_vector_map::iterator iter = key_begin;
+             iter != key_end; iter++) {
             std::cout << " " << iter->first << std::endl;
-            std::cout << "  " << iter->second << std::endl;
+            std::vector<std::string>::iterator beginV = iter->second.begin();
+            std::vector<std::string>::iterator endV = iter->second.end();
+            std::cout << "  ";
+            for (std::vector<std::string>::iterator iterV = beginV;
+                 iterV != endV; iterV++) {
+                std::cout << *iterV << " ";
+            }
+            std::cout << std::endl;
         }
     }
 }
