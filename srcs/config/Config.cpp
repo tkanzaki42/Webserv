@@ -26,7 +26,7 @@ void Config::init(const std::string &path) {
 
 std::map<std::string, string_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
-    std::ifstream ifs(path);
+    std::ifstream ifs(path.c_str());
     if (!ifs) {
         std::cerr << "Can not open file" << std::endl;
         exit(EXIT_FAILURE);
