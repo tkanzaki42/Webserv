@@ -20,7 +20,8 @@
 #include "config/Config.hpp"
 
 int main(int argc, char const *argv[]) {
-    if (argc > 2) {
+    if (argc != 2) {
+        std::cout << "Invalid arguments" << std::endl;
         exit(EXIT_FAILURE);
     }
     try {

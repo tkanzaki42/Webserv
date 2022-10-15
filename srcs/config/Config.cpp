@@ -1,8 +1,6 @@
 #include "Config.hpp"
 
 Config::Config() {
-    // std::map<std::string, std::string> map;
-    Config::_config["a"]["b"] = "hoge";
 }
 
 Config::~Config() {
@@ -38,23 +36,32 @@ void    Config::parseConfig(const std::string &path) {
         if (!buf.size() || buf[0] == '#')
             continue;
         if (buf[0] != ' ') {
+            bool isKeySet = false;
             hostname = buf;
-            std::getline(ifs, buf, '\n');
-            if (ifs.eof() || buf[0] != ' ' || buf[1] == ' ') {
-                ifs.close();
-                std::cout << "key error" << std::endl;
-                throw(Config::ConfigFormatException());
+            while (!ifs.eof()) {
+                std::getline(ifs, buf, '\n');
+                if ((ifs.eof() || buf[0] != ' ' || buf[1] == ' ')) {
+                    if (isKeySet)
+                        break;
+                    ifs.close();
+                    std::cout << "key error" << std::endl;
+                    throw(Config::ConfigFormatException());
+                } else {
+                    key = buf.substr(1);
+                }
+                std::getline(ifs, buf, '\n');
+                if (ifs.eof() || buf[0] != ' '
+                 || buf[1] != ' ' || buf[2] == ' ') {
+                    ifs.close();
+                    throw(Config::ConfigFormatException());
+                }
+                value = buf.substr(2);
+                std::cout << hostname << " ";
+                std::cout<< key << " ";
+                std::cout << value << std::endl;
+                isKeySet = true;
             }
-            key = buf.substr(1);
-            std::getline(ifs, buf, '\n');
-            if (ifs.eof() || buf[0] != ' ' || buf[1] != ' ' || buf[2] == ' ') {
-                ifs.close();
-                std::cout << "value error" << std::endl;
-                throw(Config::ConfigFormatException());
-            }
-            value = buf.substr(2);
         }
-        std::cout << hostname << " " << key << " " << value << std::endl;
         _config[hostname][key] = value;
     }
     ifs.close();
