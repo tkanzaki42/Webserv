@@ -12,9 +12,8 @@ class Config {
  public:
     Config();
     ~Config();
-    Config(Config const &other);
-    Config &operator=(Config const &other);
     static void parseConfig(const std::string &path);
+    static void printConfig();
 
     class ConfigFormatException : public std::exception {
      public:

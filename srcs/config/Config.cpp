@@ -6,16 +6,6 @@ Config::Config() {
 Config::~Config() {
 }
 
-Config::Config(Config const &other) {
-    *this = other;
-}
-
-Config &Config::operator=(Config const &other) {
-    if (this != &other) {
-    }
-    return *this;
-}
-
 const char* Config::ConfigFormatException::what() const throw() {
     return ("Config file is not valid format.");
 }
@@ -27,11 +17,11 @@ void    Config::parseConfig(const std::string &path) {
         std::cout << "Can not open file" << std::endl;
         exit(EXIT_FAILURE);
     }
-    std::string buf;
-    std::string hostname;
-    std::string key;
-    std::string value;
     while (!ifs.eof()) {
+        std::string buf;
+        std::string hostname;
+        std::string key;
+        std::string value;
         std::getline(ifs, buf, '\n');
         if (!buf.size() || buf[0] == '#')
             continue;
@@ -40,29 +30,47 @@ void    Config::parseConfig(const std::string &path) {
             hostname = buf;
             while (!ifs.eof()) {
                 std::getline(ifs, buf, '\n');
-                if ((ifs.eof() || buf[0] != ' ' || buf[1] == ' ')) {
+                if ((ifs.eof() || buf.size() < 2
+                 || buf[0] != ' ' || buf[1] == ' ')) {
                     if (isKeySet)
                         break;
                     ifs.close();
                     std::cout << "key error" << std::endl;
                     throw(Config::ConfigFormatException());
-                } else {
-                    key = buf.substr(1);
                 }
+                key = buf.substr(1);
                 std::getline(ifs, buf, '\n');
-                if (ifs.eof() || buf[0] != ' '
+                if (ifs.eof() || buf.size() < 3 || buf[0] != ' '
                  || buf[1] != ' ' || buf[2] == ' ') {
                     ifs.close();
                     throw(Config::ConfigFormatException());
                 }
                 value = buf.substr(2);
-                std::cout << hostname << " ";
-                std::cout<< key << " ";
-                std::cout << value << std::endl;
                 isKeySet = true;
+                _config[hostname][key] = value;
             }
         }
-        _config[hostname][key] = value;
     }
+    Config::printConfig();
     ifs.close();
+}
+
+void    Config::printConfig() {
+    std::map<std::string, std::map<std::string, std::string> >
+        ::iterator begin = _config.begin();
+    std::map<std::string, std::map<std::string, std::string> >
+        ::iterator end = _config.end();
+    for (std::map<std::string, std::map<std::string, std::string> >
+        ::iterator itr = begin; itr != end; itr++) {
+        std::cout << itr->first << std::endl;
+        std::map<std::string, std::string>
+            ::iterator key_begin = itr->second.begin();
+        std::map<std::string, std::string>
+            ::iterator key_end = itr->second.end();
+        for (std::map<std::string, std::string>
+            ::iterator iter = key_begin; iter != key_end; iter++) {
+            std::cout << " " << iter->first << std::endl;
+            std::cout << "  " << iter->second << std::endl;
+        }
+    }
 }
