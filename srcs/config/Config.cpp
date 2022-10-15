@@ -10,7 +10,7 @@ const char* Config::ConfigFormatException::what() const throw() {
     return ("Config file is not valid format.");
 }
 
-std::map<std::string, std::map<std::string, std::string> > Config::_config;
+std::map<std::string, string_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
     std::ifstream ifs(path);
     if (!ifs) {
@@ -56,19 +56,14 @@ void    Config::parseConfig(const std::string &path) {
 }
 
 void    Config::printConfig() {
-    std::map<std::string, std::map<std::string, std::string> >
-        ::iterator begin = _config.begin();
-    std::map<std::string, std::map<std::string, std::string> >
-        ::iterator end = _config.end();
-    for (std::map<std::string, std::map<std::string, std::string> >
-        ::iterator itr = begin; itr != end; itr++) {
+    std::map<std::string, string_map>::iterator begin = _config.begin();
+    std::map<std::string, string_map >::iterator end = _config.end();
+    for (std::map<std::string, string_map>
+            ::iterator itr = begin; itr != end; itr++) {
         std::cout << itr->first << std::endl;
-        std::map<std::string, std::string>
-            ::iterator key_begin = itr->second.begin();
-        std::map<std::string, std::string>
-            ::iterator key_end = itr->second.end();
-        for (std::map<std::string, std::string>
-            ::iterator iter = key_begin; iter != key_end; iter++) {
+        string_map::iterator key_begin = itr->second.begin();
+        string_map::iterator key_end = itr->second.end();
+        for (string_map::iterator iter = key_begin; iter != key_end; iter++) {
             std::cout << " " << iter->first << std::endl;
             std::cout << "  " << iter->second << std::endl;
         }

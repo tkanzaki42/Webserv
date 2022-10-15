@@ -6,9 +6,11 @@
 #include <string>
 #include <fstream>
 
+typedef std::map<std::string, std::string> string_map;
+
 class Config {
  private:
-    static std::map<std::string, std::map<std::string, std::string> > _config;
+    static std::map<std::string, string_map> _config;
  public:
     Config();
     ~Config();
