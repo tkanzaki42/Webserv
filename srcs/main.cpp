@@ -24,12 +24,7 @@ int main(int argc, char const *argv[]) {
         std::cout << "Invalid arguments" << std::endl;
         exit(EXIT_FAILURE);
     }
-    try {
-        Config::parseConfig(argv[1]);
-    } catch(const std::exception& e) {
-        std::cerr << e.what() << '\n';
-        exit(EXIT_FAILURE);
-    }
+    Config::init(argv[1]);
     // Webserv serv;
     // serv.init();
     // serv.loop();

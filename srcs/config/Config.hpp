@@ -15,6 +15,7 @@ class Config {
     Config();
     ~Config();
     static void parseConfig(const std::string &path);
+    static void init(const std::string &path);
     static void printConfig();
 
     class ConfigFormatException : public std::exception {
