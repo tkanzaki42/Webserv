@@ -144,3 +144,19 @@ std::vector<std::string> Config::getVectorStr(const std::string& hostname,
                                               const std::string& key) {
     return (_config[hostname][key]);
 }
+
+// test for getter
+void Config::testConfig() {
+    std::cout << "host_1 server_name : "
+     << getSingleStr("host_1", "server_name") << std::endl;
+    std::cout << "host_1 root : "
+     << getSingleStr("host_1", "root") << std::endl;
+    std::cout <<  "host_1 index : "
+     <<getSingleStr("host_1", "index") << std::endl;
+    std::vector<int> intVector = getVectorInt("host_1", "listen");
+    std::vector<int>::iterator begin = intVector.begin();
+    std::vector<int>::iterator end = intVector.end();
+    for (std::vector<int>::iterator iter = begin; iter != end; iter++) {
+        std::cout << "host_1 listen : " << *iter << std::endl;
+    }
+}
