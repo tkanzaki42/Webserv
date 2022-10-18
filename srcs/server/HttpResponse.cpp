@@ -34,7 +34,8 @@ void HttpResponse::make_response() {
     message_body_.clear_contents();
 
     // ファイルタイプの判定
-    std::string file_extension = get_file_extension_();
+    const std::string file_extension
+            = PathUtil::get_file_extension(request_.get_path_to_file());
     if (file_extension == "cgi" || file_extension == "py")
         file_type = FILETYPE_SCRIPT;
     else if (file_extension == "out")
@@ -124,18 +125,6 @@ void HttpResponse::merge_header_and_body_() {
     for (std::size_t i = 0; i < body_content.size(); i++) {
         response_.append(body_content[i].c_str());
     }
-}
-
-const std::string HttpResponse::get_file_extension_() {
-    std::string::size_type extension_pos
-            = request_.get_path_to_file().rfind(".");
-    if (extension_pos == std::string::npos) {
-        // 見つからなかった場合
-        return "";
-    }
-    std::string extension_str
-        = request_.get_path_to_file().substr(extension_pos + 1);
-    return extension_str;
 }
 
 const std::string& HttpResponse::get_response() {

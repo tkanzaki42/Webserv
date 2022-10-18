@@ -11,6 +11,7 @@
 #include "srcs/server/HttpHeader.hpp"
 #include "srcs/server/HttpBody.hpp"
 #include "srcs/server/CGI.hpp"
+#include "srcs/util/PathUtil.hpp"
 
 class HttpResponse {
  private:
@@ -25,7 +26,6 @@ class HttpResponse {
     void                make_message_body_();
     void                make_header_();
     void                merge_header_and_body_();
-    const std::string   get_file_extension_();
 
  public:
     explicit HttpResponse(const HttpRequest& request);
