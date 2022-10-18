@@ -17,10 +17,17 @@ const std::string kBaseHtmlPath = "./public_html";
 const std::string kIndexHtmlFileName = "index.html";
 
 enum HttpMethod {
-    NOT_DEFINED = 0,
+    METHOD_NOT_DEFINED = 0,
     METHOD_POST = 1,
     METHOD_GET = 2,
     METHOD_DELETE = 3
+};
+
+enum FileType {
+    FILETYPE_NOT_DEFINED = 0,
+    FILETYPE_STATIC_HTML = 1,
+    FILETYPE_SCRIPT = 2,
+    FILETYPE_BINARY = 3
 };
 
 #endif  // INCLUDES_WEBSERV_HPP_
