@@ -24,37 +24,48 @@ int CGI::exec_cgi(FileType file_type) {
     int pp[2];
     if (pipe(pp) == -1) {
         std::cerr << "Failed to pipe()" << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     }
 
     pid_t pid = fork();
     if (pid < 0) {
         std::cerr << "Failed to fork()" << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     } else if (pid == 0) {
-        close_pipe_(pp[0]);
-        connect_pipe_(pp[1], 1);
+        if (close_pipe_(pp[0]) == EXIT_FAILURE)
+            return EXIT_FAILURE;
+        if (connect_pipe_(pp[1], 1) == EXIT_FAILURE)
+            return EXIT_FAILURE;
         run_child_process_();
     }
-    close_pipe_(pp[1]);
+    if (close_pipe_(pp[1]) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+
     int status;
     waitpid(pid, &status, 0);
+    if (WIFEXITED(status) == true && WEXITSTATUS(status) != 0) {
+        std::cerr << "Child process was exited abnormally, status = "
+            << WEXITSTATUS(status) << std::endl;
+        return EXIT_FAILURE;
+    }
 
     // パイプから読み込み
     std::string read_buffer;
-    ssize_t read_size = 0;
-    char    buf[BUF_SIZE];
-    do {
+    ssize_t     read_size = 0;
+    char        buf[BUF_SIZE];
+    while (true) {
         memset(buf, 0, sizeof(char) * BUF_SIZE);
         read_size = read(pp[0], buf, sizeof(char) * BUF_SIZE - 1);
+        if (read_size <= 0)
+            break;
         buf[read_size] = '\0';
         read_buffer += buf;
-    } while (read_size > 0);
+    }
 
     // 改行ごとに切ってヘッダとボディのvectorに入れる
     separate_to_header_and_body_(read_buffer);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 std::size_t CGI::get_content_length() {
@@ -64,7 +75,7 @@ std::size_t CGI::get_content_length() {
             it != body_content_.end(); ++it) {
         content_length += (*it).length();
     }
-    return (content_length);
+    return content_length;
 }
 
 const std::vector<std::string> &CGI::get_header_content() {
@@ -88,19 +99,23 @@ void CGI::run_child_process_() {
 
     int ret = execve(path_[0], path_, exec_envs_);
     std::cerr << "Failed to execve(), ret = " << ret << std::endl;
+    exit(ret);
 }
 
-void CGI::close_pipe_(int pipe_no) {
+int CGI::close_pipe_(int pipe_no) {
     if (close(pipe_no) == -1) {
         std::cerr << "Failed to close()" << std::endl;
+        return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
 }
 
-void CGI::connect_pipe_(int pipe_no_old, int pipe_no_new) {
+int CGI::connect_pipe_(int pipe_no_old, int pipe_no_new) {
     if (dup2(pipe_no_old, pipe_no_new) == -1) {
         std::cerr << "Failed to dup2()" << std::endl;
+        return EXIT_FAILURE;
     }
-    close_pipe_(pipe_no_old);
+    return close_pipe_(pipe_no_old);
 }
 
 void CGI::generate_exec_paths_() {

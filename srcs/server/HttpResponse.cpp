@@ -53,9 +53,10 @@ void HttpResponse::make_message_body_() {
     if (file_type == FILETYPE_SCRIPT || file_type == FILETYPE_BINARY) {
         cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(file_type);
-        if (cgi_ret == -1) {
+        if (cgi_ret == EXIT_FAILURE) {
             delete cgi_;
             cgi_ = NULL;
+            status_code_ = 500;  // Internal Server Error
             file_type = FILETYPE_STATIC_HTML;
         }
     }

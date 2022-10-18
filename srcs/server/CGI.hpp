@@ -13,8 +13,6 @@
 #include <string>
 #include <algorithm>
 
-
-
 #include "srcs/server_request/HttpRequest.hpp"
 
 class CGI {
@@ -38,8 +36,8 @@ class CGI {
     std::vector<std::string>  body_content_;
 
     void         run_child_process_();
-    void         close_pipe_(int pipe_no);
-    void         connect_pipe_(int pipe_no_old, int pipe_no_new);
+    int          close_pipe_(int pipe_no);
+    int          connect_pipe_(int pipe_no_old, int pipe_no_new);
     void         generate_exec_paths_();
     void         generate_env_vars_();
     char*        duplicate_string_(const std::string &str);
