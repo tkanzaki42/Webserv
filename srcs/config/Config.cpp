@@ -82,6 +82,8 @@ void    Config::parseConfig(const std::string &path) {
     // デバッグ用 : コンフィグの中身を全て出力する
     Config::printConfig();
     ifs.close();
+    if (!ConfigChecker::isValidConfig())
+        throw(Config::ConfigFormatException());
 }
 
 std::vector<std::string> Config::parseValue(const std::string &valueStr) {

@@ -15,9 +15,8 @@
 typedef std::map<std::string, std::vector<std::string> > string_vector_map;
 
 class Config {
- private:
-    static std::map<std::string, string_vector_map> _config;
  public:
+    static std::map<std::string, string_vector_map> _config;
     Config();
     ~Config();
     static void parseConfig(const std::string &path);
