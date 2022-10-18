@@ -44,7 +44,7 @@ int CGI::exec_cgi(FileType file_type) {
     int status;
     waitpid(pid, &status, 0);
     if (WIFEXITED(status) == true && WEXITSTATUS(status) != 0) {
-        std::cerr << "Child process was exited abnormally, status = "
+        std::cerr << "Child process exited abnormally, status = "
             << WEXITSTATUS(status) << std::endl;
         return EXIT_FAILURE;
     }
@@ -98,7 +98,9 @@ void CGI::run_child_process_() {
             << path_[0] << std::endl << std::endl;
 
     int ret = execve(path_[0], path_, exec_envs_);
-    std::cerr << "Failed to execve(), ret = " << ret << std::endl;
+    int execve_errno = errno;
+    std::cerr << "Failed to execve(), ret = " << ret
+        << ", errno = " << execve_errno << std::endl;
     exit(ret);
 }
 
