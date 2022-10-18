@@ -124,9 +124,8 @@ void HttpRequest::generate_path_to_file_() {
 
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    struct stat stat_dir;
     std::string dir_path = path_to_file_.substr(0, path_to_file_.rfind('/'));
-    if (stat(dir_path.c_str(), &stat_dir) == -1) {
+    if (PathUtil::is_folder_exists(dir_path) == false) {
         if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             std::cerr << "Could not create dirctory: " << dir_path << std::endl;
             return 500;  // Internal Server Error

@@ -1,8 +1,6 @@
 #ifndef SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
 #define SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
 
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
@@ -12,6 +10,7 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
+#include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
 
 class HttpRequest {
