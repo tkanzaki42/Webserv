@@ -45,7 +45,9 @@ void HttpBody::make_status_response_(int status_code) {
     oss_body << "<html><body><h1>" << status_code << " "
         << HttpHeader::get_reason_phrase(status_code)
         << "</h1><p>" << get_status_description_(status_code)
-        << "</p><hr><address>Webserv</address></body></html>\r\n";
+        << "</p><hr><address>"
+        << kServerSoftwareName
+        << "</address></body></html>\r\n";
 
     content_.clear();
     content_.push_back(oss_body.str());

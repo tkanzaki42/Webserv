@@ -156,7 +156,7 @@ void CGI::generate_env_vars_() {
     std::map<std::string, std::string> env_vars_;
 
     // サーバー固有情報
-    env_vars_["SERVER_SOFTWARE"] = "Webserv/1.0";
+    env_vars_["SERVER_SOFTWARE"] = kServerSoftwareName;
     env_vars_["GATEWAY_INTERFACE"] = "CGI/1.1";
     env_vars_["SERVER_PROTOCOL"] = "HTTP/1.1";
 
