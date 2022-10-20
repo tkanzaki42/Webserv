@@ -1,6 +1,6 @@
 #include "srcs/server/HttpResponse.hpp"
 
-HttpResponse::HttpResponse(const HttpRequest& request)
+HttpResponse::HttpResponse(HttpRequest& request)
         : request_(request),
           header_(HttpHeader()),
           message_body_(HttpBody(request)),

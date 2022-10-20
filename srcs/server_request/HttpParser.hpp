@@ -19,6 +19,7 @@ class HttpParser {
     int                          parse();
     HttpMethod                   get_http_method() const;
     const std::string&           get_request_path() const;
+    const std::string&           get_query_string() const;
     const std::string&           get_http_ver() const;
     const std::map<std::string, std::string>&
                                  get_header_field_map() const;
@@ -32,6 +33,7 @@ class HttpParser {
     // parsed data
     HttpMethod                          http_method_;
     std::string                         request_path_;
+    std::string                         query_string_;
     std::string                         http_ver_;
     std::map<std::string, std::string>  header_field_;
 

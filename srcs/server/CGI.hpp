@@ -6,6 +6,8 @@
 #include <cstring>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <iostream>
 #include <map>
@@ -13,11 +15,13 @@
 #include <string>
 #include <algorithm>
 
+#include "includes/webserv.hpp"
 #include "srcs/server_request/HttpRequest.hpp"
+#include "srcs/config/Config.hpp"
 
 class CGI {
  public:
-    explicit CGI(const HttpRequest& request);
+    explicit CGI(HttpRequest& request);
     ~CGI();
     CGI(const CGI &obj);
     CGI& operator=(const CGI &obj);
@@ -28,7 +32,7 @@ class CGI {
     const std::vector<std::string>&  get_body_content();
 
  private:
-    const HttpRequest&        request_;
+    HttpRequest&              request_;
     char                      **path_;
     char                      **exec_envs_;
     FileType                  file_type_;

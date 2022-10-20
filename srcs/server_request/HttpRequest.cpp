@@ -73,13 +73,15 @@ void HttpRequest::print_debug() {
     std::cout << std::endl;
 
     std::cout << "[request data]" << std::endl;
-    std::cout << "  http_method_   : "
+    std::cout << "  http_method_      : "
         << parser_.get_http_method() << std::endl;
-    std::cout << "  request_path_  : "
+    std::cout << "  request_path_     : "
         << parser_.get_request_path() << std::endl;
-    std::cout << "  http_ver_      : " << parser_.get_http_ver() << std::endl;
-    std::cout << "  base_html_path : " << kBaseHtmlPath << std::endl;
-    std::cout << "  path_to_file_  : " << get_path_to_file() << std::endl;
+    std::cout << "  get_query_string_ : "
+        << parser_.get_query_string() << std::endl;
+    std::cout << "  http_ver_         : " << parser_.get_http_ver() << std::endl;
+    std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
+    std::cout << "  path_to_file_     : " << get_path_to_file() << std::endl;
 
     std::cout << "  header_field_  :" << std::endl;
     for (map_iter it = parser_.get_header_field_map().begin();
@@ -97,8 +99,16 @@ const std::string& HttpRequest::get_request_path() const {
     return parser_.get_request_path();
 }
 
+const std::string& HttpRequest::get_query_string() const {
+    return parser_.get_query_string();
+}
+
 const std::string& HttpRequest::get_http_ver() const {
     return parser_.get_http_ver();
+}
+
+const std::string& HttpRequest::get_header_field(const std::string& key) {
+    return parser_.get_header_field(key);
 }
 
 const std::map<std::string, std::string>&
@@ -112,6 +122,10 @@ int HttpRequest::get_status_code() const {
 
 const std::string& HttpRequest::get_path_to_file() const {
     return path_to_file_;
+}
+
+struct sockaddr_in HttpRequest::get_client_addr() {
+    return fd_manager_->get_client_addr();
 }
 
 void HttpRequest::generate_path_to_file_() {

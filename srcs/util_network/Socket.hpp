@@ -22,12 +22,14 @@ class Socket {
     Socket(const Socket &obj);
     ~Socket();
 
+    void set_port(int port);
     int prepare();
     int cleanup();
     int get_listen_fd() const { return listen_fd_; }
-
-    void set_port(int port);
     int accept();
+
+    // getter
+    struct sockaddr_in  get_client_addr();
 
  private:
     int                 listen_fd_;

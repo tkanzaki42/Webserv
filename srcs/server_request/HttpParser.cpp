@@ -39,6 +39,9 @@ const std::string& HttpParser::get_request_path() const {
     return request_path_;
 }
 
+const std::string& HttpParser::get_query_string() const {
+    return query_string_;
+}
 const std::string& HttpParser::get_http_ver() const {
     return http_ver_;
 }
@@ -81,7 +84,19 @@ void HttpParser::parse_request_path_() {
         read_idx_++;
     }
     buffer[buffer_idx] = '\0';
-    request_path_ = std::string(buffer);
+    std::string request_path_original = std::string(buffer);
+
+    std::string::size_type question_pos = request_path_original.find("?");
+    if (question_pos == std::string::npos) {
+        // query_stringがない場合
+        request_path_ = request_path_original;
+        query_string_ = "";
+    } else {
+        // query_stringがある場合
+        request_path_ = request_path_original.substr(0, question_pos);
+        query_string_ = request_path_original.substr(question_pos + 1,
+            request_path_original.size() - question_pos - 1);
+    }
 
     skip_space_();
 }
