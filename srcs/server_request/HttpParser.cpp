@@ -86,19 +86,27 @@ void HttpParser::parse_request_path_() {
     buffer[buffer_idx] = '\0';
     std::string request_path_original = std::string(buffer);
 
+    std::string remaining_path = split_query_string_(request_path_original);
+
+    skip_space_();
+}
+
+std::string HttpParser::split_query_string_(
+        std::string &request_path_original) {
+    std::string remaining_path;
+
     std::string::size_type question_pos = request_path_original.find("?");
     if (question_pos == std::string::npos) {
         // query_stringがない場合
-        request_path_ = request_path_original;
+        remaining_path = request_path_original;
         query_string_ = "";
     } else {
         // query_stringがある場合
-        request_path_ = request_path_original.substr(0, question_pos);
+        remaining_path = request_path_original.substr(0, question_pos);
         query_string_ = request_path_original.substr(question_pos + 1,
             request_path_original.size() - question_pos - 1);
     }
-
-    skip_space_();
+    return remaining_path;
 }
 
 void HttpParser::parse_http_ver_() {

@@ -38,15 +38,17 @@ class HttpParser {
     std::map<std::string, std::string>  header_field_;
 
     // parser
-    void                                 parse_method_();
-    void                                 parse_request_path_();
-    void                                 parse_http_ver_();
-    void                                 parse_header_field_();
-    std::pair<std::string, std::string>  parse_one_header_field_();
-    void                                 skip_space_();
-    void                                 skip_crlf_();
-    void                                 rtrim_(std::string &str);
-    int                                  validate_parsed_data_();
+    void         parse_method_();
+    void         parse_request_path_();
+    std::string  split_query_string_(std::string &request_path_original);
+    void         parse_http_ver_();
+    void         parse_header_field_();
+    std::pair<std::string, std::string>
+                 parse_one_header_field_();
+    void         skip_space_();
+    void         skip_crlf_();
+    void         rtrim_(std::string &str);
+    int          validate_parsed_data_();
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPPARSER_HPP_
