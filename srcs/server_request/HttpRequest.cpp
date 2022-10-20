@@ -21,10 +21,6 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     return *this;
 }
 
-// void HttpRequest::set_accept_fd(int accept_fd) {
-//     this->accept_fd_ = accept_fd;
-// }
-
 int HttpRequest::receive_header() {
     ssize_t  read_size = 0;
     char     buf[BUF_SIZE];
@@ -79,7 +75,8 @@ void HttpRequest::print_debug() {
         << parser_.get_request_path() << std::endl;
     std::cout << "  get_query_string_ : "
         << parser_.get_query_string() << std::endl;
-    std::cout << "  http_ver_         : " << parser_.get_http_ver() << std::endl;
+    std::cout << "  http_ver_         : "
+        << parser_.get_http_ver() << std::endl;
     std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
     std::cout << "  path_to_file_     : " << get_path_to_file() << std::endl;
 
