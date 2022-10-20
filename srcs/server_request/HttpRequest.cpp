@@ -50,8 +50,6 @@ int HttpRequest::receive_header() {
 void HttpRequest::analyze_request() {
     status_code_ = parser_.parse();
 
-    generate_path_to_file_();
-
     if (status_code_ == 200) {
         if (get_http_method() == METHOD_POST)
             status_code_ = receive_and_store_to_file_();
@@ -71,14 +69,17 @@ void HttpRequest::print_debug() {
     std::cout << "[request data]" << std::endl;
     std::cout << "  http_method_      : "
         << parser_.get_http_method() << std::endl;
-    std::cout << "  request_path_     : "
-        << parser_.get_request_path() << std::endl;
-    std::cout << "  get_query_string_ : "
+    std::cout << "  request_target_   : "
+        << parser_.get_request_target() << std::endl;
+    std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
+    std::cout << "  query_string_     : "
         << parser_.get_query_string() << std::endl;
+    std::cout << "  path_to_file_     : "
+        << parser_.get_path_to_file() << std::endl;
+    std::cout << "  path_info_        : "
+        << parser_.get_path_info() << std::endl;
     std::cout << "  http_ver_         : "
         << parser_.get_http_ver() << std::endl;
-    std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
-    std::cout << "  path_to_file_     : " << get_path_to_file() << std::endl;
 
     std::cout << "  header_field_  :" << std::endl;
     for (map_iter it = parser_.get_header_field_map().begin();
@@ -92,12 +93,16 @@ HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
 }
 
-const std::string& HttpRequest::get_request_path() const {
-    return parser_.get_request_path();
-}
-
 const std::string& HttpRequest::get_query_string() const {
     return parser_.get_query_string();
+}
+
+const std::string& HttpRequest::get_path_info() const {
+    return parser_.get_path_info();
+}
+
+const std::string& HttpRequest::get_path_to_file() const {
+    return parser_.get_path_to_file();
 }
 
 const std::string& HttpRequest::get_http_ver() const {
@@ -117,25 +122,13 @@ int HttpRequest::get_status_code() const {
     return status_code_;
 }
 
-const std::string& HttpRequest::get_path_to_file() const {
-    return path_to_file_;
-}
-
 struct sockaddr_in HttpRequest::get_client_addr() {
     return fd_manager_->get_client_addr();
 }
 
-void HttpRequest::generate_path_to_file_() {
-    if (get_request_path()[get_request_path().length() - 1] == '/') {
-        path_to_file_ = kBaseHtmlPath + get_request_path() + kIndexHtmlFileName;
-    } else {
-        path_to_file_ = kBaseHtmlPath + get_request_path();
-    }
-}
-
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    std::string dir_path = path_to_file_.substr(0, path_to_file_.rfind('/'));
+    std::string dir_path = get_path_to_file().substr(0, get_path_to_file().rfind('/'));
     if (PathUtil::is_folder_exists(dir_path) == false) {
         if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             std::cerr << "Could not create dirctory: " << dir_path << std::endl;
@@ -145,10 +138,10 @@ int HttpRequest::receive_and_store_to_file_() {
 
     // ファイルのオープン
     std::ofstream ofs_outfile;
-    ofs_outfile.open(path_to_file_.c_str(),
+    ofs_outfile.open(get_path_to_file().c_str(),
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
-        std::cerr << "Could not open file: " << path_to_file_ << std::endl;
+        std::cerr << "Could not open file: " << get_path_to_file() << std::endl;
         return 500;  // Internal Server Error
     }
 
@@ -190,8 +183,8 @@ int HttpRequest::receive_and_store_to_file_() {
 }
 
 int HttpRequest::delete_file_() {
-    if (std::remove(path_to_file_.c_str()) != 0) {
-        std::cerr << "Failed to delete file: " << path_to_file_ << std::endl;
+    if (std::remove(get_path_to_file().c_str()) != 0) {
+        std::cerr << "Failed to delete file: " << get_path_to_file() << std::endl;
         return 204;  // No Content
     }
     return 204;  // No Content

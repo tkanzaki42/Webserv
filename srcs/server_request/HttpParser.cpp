@@ -12,18 +12,21 @@ HttpParser::HttpParser(const HttpParser &obj)
 }
 
 HttpParser& HttpParser::operator=(const HttpParser &obj) {
-    read_idx_      = obj.read_idx_;
-    http_method_   = obj.http_method_;
-    request_path_  = obj.request_path_;
-    http_ver_      = obj.http_ver_;
-    header_field_  = std::map<std::string, std::string>(obj.header_field_);
+    read_idx_       = obj.read_idx_;
+    http_method_    = obj.http_method_;
+    request_target_ = obj.request_target_;
+    query_string_   = obj.query_string_;
+    path_info_      = obj.path_info_;
+    path_to_file_   = obj.path_to_file_;
+    http_ver_       = obj.http_ver_;
+    header_field_   = std::map<std::string, std::string>(obj.header_field_);
 
     return *this;
 }
 
 int HttpParser::parse() {
     parse_method_();
-    parse_request_path_();
+    parse_request_target_();
     parse_http_ver_();
     parse_header_field_();
     int status_code = validate_parsed_data_();
@@ -35,13 +38,22 @@ HttpMethod HttpParser::get_http_method() const {
     return http_method_;
 }
 
-const std::string& HttpParser::get_request_path() const {
-    return request_path_;
+const std::string& HttpParser::get_request_target() const {
+    return request_target_;
 }
 
 const std::string& HttpParser::get_query_string() const {
     return query_string_;
 }
+
+const std::string& HttpParser::get_path_info() const {
+    return path_info_;
+}
+
+const std::string& HttpParser::get_path_to_file() const {
+    return path_to_file_;
+}
+
 const std::string& HttpParser::get_http_ver() const {
     return http_ver_;
 }
@@ -74,7 +86,7 @@ void HttpParser::parse_method_() {
     skip_space_();
 }
 
-void HttpParser::parse_request_path_() {
+void HttpParser::parse_request_target_() {
     char buffer[1280];
     int buffer_idx = 0;
 
@@ -84,29 +96,73 @@ void HttpParser::parse_request_path_() {
         read_idx_++;
     }
     buffer[buffer_idx] = '\0';
-    std::string request_path_original = std::string(buffer);
+    request_target_ = std::string(buffer);
 
-    std::string remaining_path = split_query_string_(request_path_original);
+    // パスからQUERY_STRINGとPATH_INFOを切り出す
+    std::string remaining_path = split_query_string_(request_target_);
+    generate_path_to_file_(remaining_path);
+    split_path_info_();
 
     skip_space_();
 }
 
 std::string HttpParser::split_query_string_(
-        std::string &request_path_original) {
+        std::string &request_target) {
     std::string remaining_path;
 
-    std::string::size_type question_pos = request_path_original.find("?");
+    std::string::size_type question_pos = request_target.find("?");
     if (question_pos == std::string::npos) {
-        // query_stringがない場合
-        remaining_path = request_path_original;
+        // QUERY_STRINGがない場合
+        remaining_path = request_target;
         query_string_ = "";
     } else {
-        // query_stringがある場合
-        remaining_path = request_path_original.substr(0, question_pos);
-        query_string_ = request_path_original.substr(question_pos + 1,
-            request_path_original.size() - question_pos - 1);
+        // QUERY_STRINGがある場合
+        remaining_path = request_target.substr(0, question_pos);
+        query_string_ = request_target.substr(question_pos + 1,
+            request_target.size() - question_pos - 1);
     }
     return remaining_path;
+}
+
+void HttpParser::generate_path_to_file_(std::string &remaining_path) {
+    // ベースパスとくっつけてパスを作成
+    // この時点では末尾にPATH_INFOがついたまま
+    if (remaining_path[remaining_path.length() - 1] == '/') {
+        // path_to_file_ = kBaseHtmlPath + remaining_path + kIndexHtmlFileName;//TODO
+        path_to_file_ = kBaseHtmlPath + remaining_path;
+    } else {
+        path_to_file_ = kBaseHtmlPath + remaining_path;
+    }
+}
+
+void HttpParser::split_path_info_() {
+    // path_to_file_の末尾からPATH_INFOを切り出す
+    std::string::size_type slash_pos_prev = 0;
+    while (true) {
+        std::string::size_type slash_pos
+            = path_to_file_.find("/", slash_pos_prev);
+        if (slash_pos == std::string::npos) {
+            std::string path_candidate = path_to_file_;
+            if (PathUtil::is_file_or_folder_exists(path_candidate)) {
+                path_info_ = "";
+                path_to_file_ = path_candidate;
+            } else {
+                path_info_ = path_to_file_.substr(slash_pos_prev - 1,
+                    path_to_file_.size() - slash_pos_prev + 1);
+                path_to_file_ = path_to_file_.substr(0, slash_pos_prev - 1);
+            }
+            break;
+        } else {
+            std::string path_candidate = path_to_file_.substr(0, slash_pos);
+            if (!PathUtil::is_file_or_folder_exists(path_candidate)) {
+                path_info_ = path_to_file_.substr(slash_pos_prev - 1,
+                    path_to_file_.size() - slash_pos_prev + 1);
+                path_to_file_ = path_to_file_.substr(0, slash_pos_prev - 1);
+                break;
+            }
+        }
+        slash_pos_prev = slash_pos + 1;
+    }
 }
 
 void HttpParser::parse_http_ver_() {
@@ -188,7 +244,7 @@ void HttpParser::rtrim_(std::string &str) {
 int HttpParser::validate_parsed_data_() {
     if (http_method_ == METHOD_NOT_DEFINED)
         return 400;  // Bad Request
-    if (request_path_ == "")
+    if (request_target_ == "")
         return 400;
     if (http_ver_ == "")
         return 400;

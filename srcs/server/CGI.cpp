@@ -185,8 +185,13 @@ void CGI::generate_env_vars_() {
     env_vars_["QUERY_STRING"] = request_.get_query_string();
 
     // リクエストパスのファイルパス以降の部分
-    env_vars_["PATH_INFO"] = "";  // TODO
-    env_vars_["PATH_TRANSLATED"] = "";  // TODO
+    env_vars_["PATH_INFO"] = request_.get_path_info();
+    std::string path_info_full_path
+        = PathUtil::get_full_path(kBaseHtmlPath + request_.get_path_info());
+    if (path_info_full_path != "")
+        env_vars_["PATH_TRANSLATED"] = path_info_full_path;
+    else
+        env_vars_["PATH_TRANSLATED"] = request_.get_path_info();
 
     // クライアント情報
     // REMOTE_HOSTかREMOTE_ADDRのどちらかが設定されていればよいため、REMOTE_HOSTは空にしている
