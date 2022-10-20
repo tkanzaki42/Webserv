@@ -163,9 +163,16 @@ void CGI::generate_env_vars_() {
     // サーバーのホスト名とポート番号
     std::string host_port = request_.get_header_field("Host");
     std::string::size_type colon_pos = host_port.find(":");
-    env_vars_["SERVER_NAME"] = host_port.substr(0, colon_pos);
-    env_vars_["SERVER_PORT"] = host_port.substr(colon_pos + 1,
-        host_port.size() - colon_pos - 1);
+    if (colon_pos == std::string::npos) {
+        // ポート番号指定がない場合、デフォルト80番ポートであると想定される
+        env_vars_["SERVER_NAME"] = host_port;
+        env_vars_["SERVER_PORT"] = "80";
+    } else {
+        // ポート番号指定がある場合
+        env_vars_["SERVER_NAME"] = host_port.substr(0, colon_pos);
+        env_vars_["SERVER_PORT"] = host_port.substr(colon_pos + 1,
+            host_port.size() - colon_pos - 1);
+    }
 
     // クライアントから送付されたリクエスト情報
     if (request_.get_http_method() == METHOD_POST)
@@ -185,7 +192,8 @@ void CGI::generate_env_vars_() {
     // REMOTE_HOSTかREMOTE_ADDRのどちらかが設定されていればよいため、REMOTE_HOSTは空にしている
     env_vars_["REMOTE_HOST"] = "";
     env_vars_["REMOTE_ADDR"] = inet_ntoa(request_.get_client_addr().sin_addr);
-    env_vars_["REMOTE_PORT"] = ntohs(request_.get_client_addr().sin_port);
+    env_vars_["REMOTE_PORT"] =
+        StringConverter::itos(ntohs(request_.get_client_addr().sin_port));
     env_vars_["AUTH_TYPE"] = "";
     env_vars_["REMOTE_USER"] = "";
     env_vars_["REMOTE_IDENT"] = "";
