@@ -15,7 +15,7 @@
 
 class HttpResponse {
  private:
-    HttpRequest&        request_;
+    HttpRequest         *request_;
     HttpHeader          header_;
     HttpBody            message_body_;
     CGI                 *cgi_;
@@ -28,7 +28,7 @@ class HttpResponse {
     void                merge_header_and_body_();
 
  public:
-    explicit HttpResponse(HttpRequest& request);
+    explicit HttpResponse(HttpRequest *request);
     ~HttpResponse();
     HttpResponse(const HttpResponse &obj);
     HttpResponse &operator=(const HttpResponse &obj);

@@ -1,24 +1,24 @@
 #include "srcs/server/HttpResponse.hpp"
 
-HttpResponse::HttpResponse(HttpRequest& request)
+HttpResponse::HttpResponse(HttpRequest *request)
         : request_(request),
           header_(HttpHeader()),
-          message_body_(HttpBody(request)),
+          message_body_(HttpBody(*request)),
           cgi_(NULL),
           response_(std::string()),
-          status_code_(request.get_status_code()) {
+          status_code_(request->get_status_code()) {
 }
 
 HttpResponse::~HttpResponse() {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &obj)
-        : request_(obj.request_),
-          message_body_(HttpBody(obj.request_)) {
+        : message_body_(HttpBody(*obj.request_)) {
     *this = obj;
 }
 
 HttpResponse &HttpResponse::operator=(const HttpResponse &obj) {
+    this->request_      = obj.request_;
     this->header_       = obj.header_;
     this->message_body_ = obj.message_body_;
     this->cgi_          = obj.cgi_;
@@ -35,7 +35,7 @@ void HttpResponse::make_response() {
 
     // ファイルタイプの判定
     const std::string file_extension
-            = PathUtil::get_file_extension(request_.get_path_to_file());
+            = PathUtil::get_file_extension(request_->get_path_to_file());
     if (file_extension == "cgi" || file_extension == "py")
         file_type = FILETYPE_SCRIPT;
     else if (file_extension == "out")
@@ -52,7 +52,7 @@ void HttpResponse::make_response() {
 void HttpResponse::make_message_body_() {
     // CGIの場合実行結果を取得する
     if (file_type == FILETYPE_SCRIPT || file_type == FILETYPE_BINARY) {
-        cgi_ = new CGI(request_);
+        cgi_ = new CGI(*request_);
         int cgi_ret = cgi_->exec_cgi(file_type);
         if (cgi_ret == EXIT_FAILURE) {
             delete cgi_;
