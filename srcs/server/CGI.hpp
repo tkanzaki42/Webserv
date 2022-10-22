@@ -21,7 +21,7 @@
 
 class CGI {
  public:
-    explicit CGI(HttpRequest& request);
+    explicit CGI(HttpRequest *request);
     ~CGI();
     CGI(const CGI &obj);
     CGI& operator=(const CGI &obj);
@@ -32,7 +32,7 @@ class CGI {
     const std::vector<std::string>&  get_body_content();
 
  private:
-    HttpRequest&              request_;
+    HttpRequest               *request_;
     char                      **path_;
     char                      **exec_envs_;
     FileType                  file_type_;
@@ -48,7 +48,6 @@ class CGI {
     std::string  read_shebang_();
     void         separate_to_header_and_body_(const std::string &read_buffer);
     void         cleanup_();
-
 };
 
 #endif  // SRCS_SERVER_CGI_HPP_

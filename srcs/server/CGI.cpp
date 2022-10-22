@@ -1,6 +1,6 @@
 #include "srcs/server/CGI.hpp"
 
-CGI::CGI(HttpRequest& request)
+CGI::CGI(HttpRequest *request)
     : request_(request), path_(NULL),
       exec_envs_(NULL), file_type_(FILETYPE_NOT_DEFINED) {
 }
@@ -121,7 +121,7 @@ int CGI::connect_pipe_(int pipe_no_old, int pipe_no_new) {
 }
 
 void CGI::generate_exec_paths_() {
-    size_t path_length       = request_.get_path_to_file().size();
+    size_t path_length       = request_->get_path_to_file().size();
     size_t path_size         = 2;
     std::string shebang_path = "";
 
@@ -145,7 +145,7 @@ void CGI::generate_exec_paths_() {
 
     // ファイルパスを追加
     path_[path_i] = new char[path_length + 1];
-    strncpy(path_[path_i], request_.get_path_to_file().c_str(), path_length);
+    strncpy(path_[path_i], request_->get_path_to_file().c_str(), path_length);
     path_[path_i][path_length] = '\0';
     path_i++;
 
@@ -161,7 +161,7 @@ void CGI::generate_env_vars_() {
     env_vars_["SERVER_PROTOCOL"] = "HTTP/1.1";
 
     // サーバーのホスト名とポート番号
-    std::string host_port = request_.get_header_field("Host");
+    std::string host_port = request_->get_header_field("Host");
     std::string::size_type colon_pos = host_port.find(":");
     if (colon_pos == std::string::npos) {
         // ポート番号指定がない場合、デフォルト80番ポートであると想定される
@@ -175,37 +175,37 @@ void CGI::generate_env_vars_() {
     }
 
     // クライアントから送付されたリクエスト情報
-    if (request_.get_http_method() == METHOD_POST)
+    if (request_->get_http_method() == METHOD_POST)
         env_vars_["REQUEST_METHOD"] = "POST";
-    else if (request_.get_http_method() == METHOD_GET)
+    else if (request_->get_http_method() == METHOD_GET)
         env_vars_["REQUEST_METHOD"] = "GET";
-    else if (request_.get_http_method() == METHOD_DELETE)
+    else if (request_->get_http_method() == METHOD_DELETE)
         env_vars_["REQUEST_METHOD"] = "DELETE";
-    env_vars_["SCRIPT_NAME"] = request_.get_path_to_file();
-    env_vars_["QUERY_STRING"] = request_.get_query_string();
+    env_vars_["SCRIPT_NAME"] = request_->get_path_to_file();
+    env_vars_["QUERY_STRING"] = request_->get_query_string();
 
     // リクエストパスのファイルパス以降の部分
-    env_vars_["PATH_INFO"] = request_.get_path_info();
+    env_vars_["PATH_INFO"] = request_->get_path_info();
     std::string path_info_full_path
-        = PathUtil::get_full_path(kBaseHtmlPath + request_.get_path_info());
+        = PathUtil::get_full_path(kBaseHtmlPath + request_->get_path_info());
     if (path_info_full_path != "")
         env_vars_["PATH_TRANSLATED"] = path_info_full_path;
     else
-        env_vars_["PATH_TRANSLATED"] = request_.get_path_info();
+        env_vars_["PATH_TRANSLATED"] = request_->get_path_info();
 
     // クライアント情報
     // REMOTE_HOSTかREMOTE_ADDRのどちらかが設定されていればよいため、REMOTE_HOSTは空にしている
     env_vars_["REMOTE_HOST"] = "";
-    env_vars_["REMOTE_ADDR"] = inet_ntoa(request_.get_client_addr().sin_addr);
+    env_vars_["REMOTE_ADDR"] = inet_ntoa(request_->get_client_addr().sin_addr);
     env_vars_["REMOTE_PORT"] =
-        StringConverter::itos(ntohs(request_.get_client_addr().sin_port));
+        StringConverter::itos(ntohs(request_->get_client_addr().sin_port));
     env_vars_["AUTH_TYPE"] = "";
     env_vars_["REMOTE_USER"] = "";
     env_vars_["REMOTE_IDENT"] = "";
 
     // クライアントから送付されたコンテンツ情報
-    env_vars_["CONTENT_TYPE"] = request_.get_header_field("Content-Type");
-    env_vars_["CONTENT_LENGTH"] = request_.get_header_field("Content-Length");
+    env_vars_["CONTENT_TYPE"] = request_->get_header_field("Content-Type");
+    env_vars_["CONTENT_LENGTH"] = request_->get_header_field("Content-Length");
 
     exec_envs_ = new char*[env_vars_.size() + 1];
     size_t exec_envs_i = 0;
@@ -232,10 +232,10 @@ char* CGI::duplicate_string_(const std::string &str) {
 std::string CGI::read_shebang_() {
     std::string shebang_line;
 
-    std::ifstream input_file(request_.get_path_to_file().c_str());
+    std::ifstream input_file(request_->get_path_to_file().c_str());
     if (!input_file.is_open()) {
         std::cerr << "Could not open the file : "
-             << request_.get_path_to_file() << std::endl;
+             << request_->get_path_to_file() << std::endl;
         return "";
     }
     getline(input_file, shebang_line);

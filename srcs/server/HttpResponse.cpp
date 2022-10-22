@@ -52,7 +52,7 @@ void HttpResponse::make_response() {
 void HttpResponse::make_message_body_() {
     // CGIの場合実行結果を取得する
     if (file_type == FILETYPE_SCRIPT || file_type == FILETYPE_BINARY) {
-        cgi_ = new CGI(*request_);
+        cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(file_type);
         if (cgi_ret == EXIT_FAILURE) {
             delete cgi_;
