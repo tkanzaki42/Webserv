@@ -1,22 +1,5 @@
 #include "srcs/server/HttpHeader.hpp"
 
-void HttpHeader::store_header_(std::string header_line) {
-    std::string key;
-    std::string value;
-
-    std::string::size_type colon_pos = header_line.find(":");
-    if (colon_pos == std::string::npos)
-        return;
-
-    key = header_line.substr(0, colon_pos);
-    colon_pos++;  // コロンをスキップ
-    if (header_line[colon_pos] == ' ')
-        colon_pos++;  // コロンの後のスペースをスキップ
-    value = header_line.substr(colon_pos, header_line.size() - colon_pos);
-
-    header_field_[key] = value;
-}
-
 HttpHeader::HttpHeader()
     : header_field_(std::map<std::string, std::string>()),
       body_length_(0) {
@@ -41,16 +24,33 @@ void HttpHeader::make_response(int status_code) {
         << get_reason_phrase(status_code) << "\r\n";
     status_line_ = oss_status_line.str();
 
-    store_header_("Content-Type: text/html; charset=UTF-8\r\n");
+    store_header("Content-Type: text/html; charset=UTF-8\r\n");
     if (status_code == 200 || status_code == 201) {
         std::ostringstream oss_content_length;
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
 
-        store_header_(oss_content_length.str());
-        store_header_("Connection: Keep-Alive\r\n");
+        store_header(oss_content_length.str());
+        store_header("Connection: Keep-Alive\r\n");
     } else {
-        store_header_("Connection: close\r\n");
+        store_header("Connection: close\r\n");
     }
+}
+
+void HttpHeader::store_header(std::string header_line) {
+    std::string key;
+    std::string value;
+
+    std::string::size_type colon_pos = header_line.find(":");
+    if (colon_pos == std::string::npos)
+        return;
+
+    key = header_line.substr(0, colon_pos);
+    colon_pos++;  // コロンをスキップ
+    if (header_line[colon_pos] == ' ')
+        colon_pos++;  // コロンの後のスペースをスキップ
+    value = header_line.substr(colon_pos, header_line.size() - colon_pos);
+
+    header_field_[key] = value;
 }
 
 std::string HttpHeader::get_status_line() {
