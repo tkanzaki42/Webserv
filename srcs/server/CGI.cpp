@@ -219,12 +219,12 @@ char** CGI::generate_env_vars_() {
 
 char* CGI::duplicate_string_(const std::string &str) {
     char *allocated_char = new char[str.size() + 1];
-    strncpy(allocated_char, str.c_str(), str.size() + 1);
-    allocated_char[str.size() + 1] = '\0';
     if (allocated_char == NULL) {
         std::cerr << "Failed to duplicate string" << std::endl;
         return NULL;
     }
+    strncpy(allocated_char, str.c_str(), str.size());
+    allocated_char[str.size()] = '\0';
     return allocated_char;
 }
 
