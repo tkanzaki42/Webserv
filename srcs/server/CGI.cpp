@@ -12,10 +12,10 @@ CGI::CGI(const CGI &obj) : request_(obj.request_) {
 }
 
 CGI &CGI::operator=(const CGI &obj) {
-    request_        = obj.request_;
-    file_type_      = obj.file_type_;
-    header_content_ = obj.header_content_;
-    body_content_   = obj.body_content_;
+    request_      = obj.request_;
+    file_type_    = obj.file_type_;
+    header_field_ = obj.header_field_;
+    body_content_ = obj.body_content_;
     return *this;
 }
 
@@ -70,8 +70,8 @@ std::size_t CGI::get_content_length() {
     return content_length;
 }
 
-const std::vector<std::string> &CGI::get_header_content() {
-    return this->header_content_;
+const std::map<std::string, std::string> &CGI::get_header_content() {
+    return this->header_field_;
 }
 
 const std::vector<std::string> &CGI::get_body_content() {
@@ -297,12 +297,29 @@ void CGI::separate_to_header_and_body_(const std::string& read_buffer) {
         std::string str_line = read_buffer.substr(
                 newline_pos_prev, newline_pos - newline_pos_prev + 1);
         if (is_reading_header)
-            header_content_.push_back(str_line);
+            store_header_(str_line);
         else
             body_content_.push_back(str_line);
 
         newline_pos_prev = newline_pos + 1;
     }
+}
+
+void CGI::store_header_(std::string header_line) {
+    std::string key;
+    std::string value;
+
+    std::string::size_type colon_pos = header_line.find(":");
+    if (colon_pos == std::string::npos)
+        return;
+
+    key = header_line.substr(0, colon_pos);
+    colon_pos++;  // コロンをスキップ
+    if (header_line[colon_pos] == ' ')
+        colon_pos++;  // コロンの後のスペースをスキップ
+    value = header_line.substr(colon_pos, header_line.size() - colon_pos);
+
+    header_field_[key] = value;
 }
 
 void CGI::cleanup_(char **cleanup_var) {

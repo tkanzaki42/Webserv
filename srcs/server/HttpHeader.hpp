@@ -12,6 +12,8 @@ class HttpHeader {
     std::map<std::string, std::string>  header_field_;
     int                                 body_length_;
 
+    void                store_header_(std::string header_line);
+
  public:
     HttpHeader();
     ~HttpHeader();
@@ -19,7 +21,6 @@ class HttpHeader {
     HttpHeader &operator=(const HttpHeader &obj);
 
     void                make_response(int status_code);
-    void                store_header(std::string header_line);
     std::string         get_status_line();
     const std::map<std::string, std::string>
                         &get_content();

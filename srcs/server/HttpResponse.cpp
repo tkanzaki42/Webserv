@@ -10,6 +10,10 @@ HttpResponse::HttpResponse(HttpRequest *request)
 }
 
 HttpResponse::~HttpResponse() {
+    if (cgi_ != NULL) {
+        delete cgi_;
+        cgi_ = NULL;
+    }
 }
 
 HttpResponse::HttpResponse(const HttpResponse &obj)
@@ -103,17 +107,21 @@ void HttpResponse::merge_header_and_body_() {
     response_.append(header_.get_status_line());
     std::map<std::string, std::string> header_content
             = header_.get_content();
+    std::map<std::string, std::string> header_content_cgi;
+    if (file_type_ != FILETYPE_STATIC_HTML) {
+        header_content_cgi = cgi_->get_header_content();
+    }
     for (std::map<std::string, std::string>::iterator it
                 = header_content.begin();
             it != header_content.end(); it++) {
-        response_.append(it->first + ": " + it->second);
+        if (header_content_cgi.count(it->first) == 0)
+            response_.append(it->first + ": " + it->second);
     }
-    response_.append("\r\n");
     if (file_type_ != FILETYPE_STATIC_HTML) {
-        std::vector<std::string> header_content_cgi
-                = cgi_->get_header_content();
-        for (std::size_t i = 0; i < header_content_cgi.size(); i++) {
-            response_.append(header_content_cgi[i].c_str());
+        for (std::map<std::string, std::string>::iterator it
+                    = header_content_cgi.begin();
+                it != header_content_cgi.end(); it++) {
+            response_.append(it->first + ": " + it->second);
         }
     }
     response_.append("\r\n");

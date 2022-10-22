@@ -28,14 +28,15 @@ class CGI {
 
     int                              exec_cgi(FileType file_type);
     std::size_t                      get_content_length();
-    const std::vector<std::string>&  get_header_content();
+    const std::map<std::string, std::string>&
+                                     get_header_content();
     const std::vector<std::string>&  get_body_content();
 
  private:
-    HttpRequest               *request_;
-    FileType                  file_type_;
-    std::vector<std::string>  header_content_;
-    std::vector<std::string>  body_content_;
+    HttpRequest                         *request_;
+    FileType                            file_type_;
+    std::map<std::string, std::string>  header_field_;
+    std::vector<std::string>            body_content_;
 
     void         run_child_process_();
     int          close_pipe_(int pipe_no);
@@ -46,6 +47,7 @@ class CGI {
     std::string  read_shebang_();
     void         read_cgi_output_from_pipe_(std::string *read_buffer, int pp);
     void         separate_to_header_and_body_(const std::string &read_buffer);
+    void         store_header_(std::string header_line);
     void         cleanup_(char **cleanup_var);
 };
 
