@@ -3,10 +3,6 @@
 #include "srcs/server/Webserv.hpp"
 #include "srcs/util/StringConverter.hpp"
 FDManager::FDManager() : active_socket_index_(-1) {
-    host0["PORT"] = "5000";
-    host1["PORT"] = "5001";
-    config["0"] = host0;
-    config["1"] = host1;
     // ポート番号をセット
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
         Config::printConfig();
