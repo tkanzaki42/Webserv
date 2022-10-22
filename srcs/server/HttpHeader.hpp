@@ -4,12 +4,15 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <map>
 
 class HttpHeader {
  private:
-    std::vector<std::string>  content_;
-    int                       body_length_;
+    std::string                         status_line_;
+    std::map<std::string, std::string>  header_field_;
+    int                                 body_length_;
 
+    void                store_header_(std::string header_line);
  public:
     HttpHeader();
     ~HttpHeader();
@@ -17,7 +20,8 @@ class HttpHeader {
     HttpHeader &operator=(const HttpHeader &obj);
 
     void                make_response(int status_code);
-    const std::vector<std::string>
+    std::string         get_status_line();
+    const std::map<std::string, std::string>
                         &get_content();
     void                set_body_length(int body_length);
     void                clear_contents();

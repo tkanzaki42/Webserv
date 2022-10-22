@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <map>
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpRequest.hpp"

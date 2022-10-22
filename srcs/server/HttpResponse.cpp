@@ -100,12 +100,15 @@ void HttpResponse::make_header_() {
 
 void HttpResponse::merge_header_and_body_() {
     // ヘッダのマージ
-    std::vector<std::string> header_content = header_.get_content();
-    for (std::size_t i = 0; i < header_content.size(); i++) {
-        if (header_content[i] != "\r\n") {
-            response_.append(header_content[i].c_str());
-        }
+    response_.append(header_.get_status_line());
+    std::map<std::string, std::string> header_content
+            = header_.get_content();
+    for (std::map<std::string, std::string>::iterator it
+                = header_content.begin();
+            it != header_content.end(); it++) {
+        response_.append(it->first + ": " + it->second);
     }
+    response_.append("\r\n");
     if (file_type_ != FILETYPE_STATIC_HTML) {
         std::vector<std::string> header_content_cgi
                 = cgi_->get_header_content();
