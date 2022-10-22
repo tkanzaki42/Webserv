@@ -1,12 +1,10 @@
 #include "srcs/server/CGI.hpp"
 
 CGI::CGI(HttpRequest *request)
-    : request_(request), path_(NULL),
-      exec_envs_(NULL), file_type_(FILETYPE_NOT_DEFINED) {
+    : request_(request), file_type_(FILETYPE_NOT_DEFINED) {
 }
 
 CGI::~CGI() {
-    cleanup_();
 }
 
 CGI::CGI(const CGI &obj) : request_(obj.request_) {
@@ -14,7 +12,10 @@ CGI::CGI(const CGI &obj) : request_(obj.request_) {
 }
 
 CGI &CGI::operator=(const CGI &obj) {
-    (void)obj; //TODO(someone)
+    request_        = obj.request_;
+    file_type_      = obj.file_type_;
+    header_content_ = obj.header_content_;
+    body_content_   = obj.body_content_;
     return *this;
 }
 
@@ -87,20 +88,22 @@ const std::vector<std::string> &CGI::get_body_content() {
 }
 
 void CGI::run_child_process_() {
-    generate_exec_paths_();
-    generate_env_vars_();
+    char **execpath  = generate_exec_paths_();
+    char **exec_envs = generate_env_vars_();
 
     if (file_type_ == FILETYPE_SCRIPT)
         std::cerr << "Executing cgi script: "
-            << path_[0] << " " << path_[1] << std::endl << std::endl;
+            << execpath[0] << " " << execpath[1] << std::endl << std::endl;
     else
         std::cerr << "Eecuting cgi binary: "
-            << path_[0] << std::endl << std::endl;
+            << execpath[0] << std::endl << std::endl;
 
-    int ret = execve(path_[0], path_, exec_envs_);
+    int ret = execve(execpath[0], execpath, exec_envs);
     int execve_errno = errno;
     std::cerr << "Failed to execve(), ret = " << ret
         << ", errno = " << execve_errno << std::endl;
+    cleanup_(execpath);
+    cleanup_(exec_envs);
     exit(ret);
 }
 
@@ -120,39 +123,43 @@ int CGI::connect_pipe_(int pipe_no_old, int pipe_no_new) {
     return close_pipe_(pipe_no_old);
 }
 
-void CGI::generate_exec_paths_() {
-    size_t path_length       = request_->get_path_to_file().size();
-    size_t path_size         = 2;
-    std::string shebang_path = "";
+char** CGI::generate_exec_paths_() {
+    char        **execpath_;
+    size_t      execpath_length = request_->get_path_to_file().size();
+    size_t      execpath_size   = 2;
+    std::string shebang_path    = "";
 
     // シェバンがあるかどうかの判定
     if (file_type_ == FILETYPE_SCRIPT) {
         shebang_path = read_shebang_();
         if (shebang_path != "")
-            path_size++;
+            execpath_size++;
     }
 
-    path_ = new char*[path_size];
+    execpath_ = new char*[execpath_size];
 
     // スクリプトの場合、シェバンを1つ目にする
-    size_t path_i = 0;
+    size_t execpath_i = 0;
     if (shebang_path != "") {
-        path_[path_i] = new char[shebang_path.size() + 1];
-        strncpy(path_[path_i], shebang_path.c_str(), shebang_path.size());
-        path_[path_i][shebang_path.size()] = '\0';
-        path_i++;
+        execpath_[execpath_i] = new char[shebang_path.size() + 1];
+        strncpy(execpath_[execpath_i],
+            shebang_path.c_str(), shebang_path.size());
+        execpath_[execpath_i][shebang_path.size()] = '\0';
+        execpath_i++;
     }
 
     // ファイルパスを追加
-    path_[path_i] = new char[path_length + 1];
-    strncpy(path_[path_i], request_->get_path_to_file().c_str(), path_length);
-    path_[path_i][path_length] = '\0';
-    path_i++;
+    execpath_[execpath_i] = new char[execpath_length + 1];
+    strncpy(execpath_[execpath_i],
+        request_->get_path_to_file().c_str(), execpath_length);
+    execpath_[execpath_i][execpath_length] = '\0';
+    execpath_i++;
 
-    path_[path_i] = NULL;
+    execpath_[execpath_i] = NULL;
+    return execpath_;
 }
 
-void CGI::generate_env_vars_() {
+char** CGI::generate_env_vars_() {
     std::map<std::string, std::string> env_vars_;
 
     // サーバー固有情報
@@ -207,7 +214,7 @@ void CGI::generate_env_vars_() {
     env_vars_["CONTENT_TYPE"] = request_->get_header_field("Content-Type");
     env_vars_["CONTENT_LENGTH"] = request_->get_header_field("Content-Length");
 
-    exec_envs_ = new char*[env_vars_.size() + 1];
+    char **exec_envs_ = new char*[env_vars_.size() + 1];
     size_t exec_envs_i = 0;
     for (std::map<std::string, std::string>::const_iterator env
                 = env_vars_.begin(); env != env_vars_.end(); env++) {
@@ -216,6 +223,7 @@ void CGI::generate_env_vars_() {
         exec_envs_i++;
     }
     exec_envs_[exec_envs_i] = NULL;
+    return exec_envs_;
 }
 
 char* CGI::duplicate_string_(const std::string &str) {
@@ -293,18 +301,11 @@ void CGI::separate_to_header_and_body_(const std::string& read_buffer) {
     }
 }
 
-void CGI::cleanup_() {
-    if (path_ != NULL) {
-        for (size_t i = 0; path_[i] != NULL; ++i) {
-            delete path_[i];
+void CGI::cleanup_(char **cleanup_var) {
+    if (cleanup_var != NULL) {
+        for (size_t i = 0; cleanup_var[i] != NULL; ++i) {
+            delete cleanup_var[i];
         }
-        delete[] path_;
-    }
-
-    if (exec_envs_ != NULL) {
-        for (size_t i = 0; exec_envs_[i] != NULL; ++i) {
-            delete exec_envs_[i];
-        }
-        delete[] exec_envs_;
+        delete[] cleanup_var;
     }
 }
