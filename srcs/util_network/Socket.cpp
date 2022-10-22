@@ -52,6 +52,10 @@ int Socket::accept() {
     return fd;
 }
 
+struct sockaddr_in Socket::get_client_addr() {
+    return from_addr_;
+}
+
 int Socket::open_socket_() {
     listen_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_fd_ == -1) {

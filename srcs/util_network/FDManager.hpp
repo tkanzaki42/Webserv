@@ -15,6 +15,9 @@ class FDManager {
     // ソケット
     Socket          socket_[2];
 
+    // 接続しているソケット
+    int             active_socket_index_;
+
     // 処理用のファイルディスクリプタ
     int             accept_fd_;
 
@@ -62,6 +65,10 @@ class FDManager {
 
     // ソケットを削除
     void destory_socket();
+
+    // getter
+    struct sockaddr_in  get_client_addr();
+
 };
 
 #endif  // SRCS_UTIL_NETWORK_FDMANAGER_HPP_
