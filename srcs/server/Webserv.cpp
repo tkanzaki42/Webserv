@@ -27,7 +27,7 @@ void Webserv::loop() {
         request_.print_debug();
 
         // HTTPレスポンスを作成する
-        HttpResponse response_(request_);
+        HttpResponse response_(&request_);
         response_.make_response();
         std::cout << response_.get_response() << std::endl;
         std::cout << "---------------------------------------" << std::endl;

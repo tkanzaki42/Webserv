@@ -2,7 +2,7 @@
 #include "srcs/util_network/FDManager.hpp"
 #include "srcs/server/Webserv.hpp"
 #include "srcs/util/StringConverter.hpp"
-FDManager::FDManager() {
+FDManager::FDManager() : active_socket_index_(-1) {
     host0["PORT"] = "5000";
     host1["PORT"] = "5001";
     config["0"] = host0;
@@ -40,16 +40,15 @@ bool FDManager::accept() {
     }
 
     // 接続されたソケットを確認
-    int active_socket_index = -1;
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
         if (FD_ISSET(socket_[i].get_listen_fd(), &received_fd_collection_)) {
-            active_socket_index = i;
+            active_socket_index_ = i;
             break;
         }
     }
 
     // 接続されたならクライアントからの接続を確立する
-    accept_fd_ = socket_[active_socket_index].accept();
+    accept_fd_ = socket_[active_socket_index_].accept();
     std::cout << "socket:" << accept_fd_;
     std::cout << " connected." << std::endl;
     return true;
@@ -155,6 +154,7 @@ void FDManager::disconnect() {
     // クライアントとの接続を切断する
     close(accept_fd_);
     accept_fd_ = -1;
+    active_socket_index_ = -1;
 }
 
 void FDManager::create_socket() {
@@ -167,4 +167,8 @@ void FDManager::destory_socket() {
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
         socket_[i].cleanup();
     }
+}
+
+struct sockaddr_in FDManager::get_client_addr() {
+    return socket_[active_socket_index_].get_client_addr();
 }
