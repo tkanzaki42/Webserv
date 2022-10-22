@@ -2,15 +2,13 @@
 #include "srcs/util_network/FDManager.hpp"
 #include "srcs/server/Webserv.hpp"
 #include "srcs/util/StringConverter.hpp"
+#include "srcs/config/Config.hpp"
+
 FDManager::FDManager() {
-    host0["PORT"] = "5000";
-    host1["PORT"] = "5001";
-    config["0"] = host0;
-    config["1"] = host1;
     // ポート番号をセット
     for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        int port = StringConverter::stoi(
-                        config[StringConverter::itos(i)]["PORT"]);
+        Config::printConfig();
+        int port = Config::getSingleInt("host_1","listen");
         socket_[i].set_port(port);
     }
 

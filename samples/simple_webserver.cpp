@@ -74,7 +74,7 @@ int run_webserver_simple() {
     response.append("\r\n");
     response.append(body);
 
-    std::cout << "response:" << response << std::endl;
+    // std::cout << "response:" << response << std::endl;
 
     char inbuf[2048];
     while (true) {
@@ -88,6 +88,7 @@ int run_webserver_simple() {
         // ソケットからメッセージを受け取る
         memset(inbuf, 0, sizeof(inbuf));
         int read_size = recv(connfd, inbuf, sizeof(inbuf), 0);
+        std::cout << inbuf << std::endl;
         if (read_size == -1) {
             std::cout << "Failed to send." << std::endl;
             return 1;

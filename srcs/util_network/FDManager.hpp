@@ -8,6 +8,7 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
+#include "srcs/config/Config.hpp"
 
 class FDManager {
  private:
@@ -30,7 +31,7 @@ class FDManager {
     bool            select_();
 
  public:
-    std::map<std::string, std::map<std::string, std::string> > config;
+    std::map<std::string, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
     std::map<std::string, std::string> host1;
