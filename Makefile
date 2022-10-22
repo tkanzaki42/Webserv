@@ -78,3 +78,24 @@ usage:
 	@echo "  make debug     Build with fsanitize options."
 	@echo "  make test      Build and run tests using google test."
 	@echo "  make lcov      Count line of code."
+
+stestdir  = ./stest
+stestfile = result.log
+stest     = $(stestdir)/$(stestfile)
+.PHONY: siege
+siege:
+ifeq (,$(wildcard $(stestdir)))
+	mkdir $(stestdir)
+endif
+ifeq (,$(wildcard $(stest)))
+	touch $(stest)
+endif
+ifndef MINUTE
+	siege $(URI) --log=$(stest)
+else
+ifndef WORKER
+	siege $(URI) -t $(MINUTE)m --log=$(stest)
+else
+	siege $(URI) -t $(MINUTE)m -c $(WORKER) --log=$(stest)
+endif
+endif
