@@ -50,18 +50,9 @@ int CGI::exec_cgi(FileType file_type) {
         return EXIT_FAILURE;
     }
 
-    // パイプから読み込み
+    // パイプからCGI出力を読み込み
     std::string read_buffer;
-    ssize_t     read_size = 0;
-    char        buf[BUF_SIZE];
-    while (true) {
-        memset(buf, 0, sizeof(char) * BUF_SIZE);
-        read_size = read(pp[0], buf, sizeof(char) * BUF_SIZE - 1);
-        if (read_size <= 0)
-            break;
-        buf[read_size] = '\0';
-        read_buffer += buf;
-    }
+    read_cgi_output_from_pipe_(&read_buffer, pp[0]);
 
     // 改行ごとに切ってヘッダとボディのvectorに入れる
     separate_to_header_and_body_(read_buffer);
@@ -263,6 +254,19 @@ std::string CGI::read_shebang_() {
         return shebang_line.substr(2);
     }
     return "";
+}
+
+void CGI::read_cgi_output_from_pipe_(std::string *read_buffer, int pp) {
+    ssize_t     read_size = 0;
+    char        buf[BUF_SIZE];
+    while (true) {
+        memset(buf, 0, sizeof(char) * BUF_SIZE);
+        read_size = read(pp, buf, sizeof(char) * BUF_SIZE - 1);
+        if (read_size <= 0)
+            break;
+        buf[read_size] = '\0';
+        *read_buffer += buf;
+    }
 }
 
 void CGI::separate_to_header_and_body_(const std::string& read_buffer) {
