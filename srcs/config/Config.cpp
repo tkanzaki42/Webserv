@@ -69,10 +69,11 @@ void    Config::parseConfig(const std::string &path) {
                 isKeySet = true;
                 // map に格納する
                 std::vector<std::string> valueVecotr = parseValue(value);
-                std::pair<std::string, std::vector<std::string> > key_value_pair;
+                std::pair<std::string,
+                     std::vector<std::string> > key_value_pair;
                 key_value_pair = std::make_pair(key, valueVecotr);
                 // もしinsert出来なかったらキーが重複している。その場合はフォーマットエラーを返す。
-                if (!_config[hostname].insert(key_value_pair).second) {                    
+                if (!_config[hostname].insert(key_value_pair).second) {
                     throw(Config::ConfigFormatException());
                 }
             }

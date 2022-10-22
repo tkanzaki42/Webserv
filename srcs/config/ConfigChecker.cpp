@@ -86,7 +86,8 @@ bool isAllNum(const std::string s) {
     return (true);
 }
 
-bool ConfigChecker::isValidClientMaxBodySize(const std::vector<std::string> &v) {
+bool ConfigChecker
+    ::isValidClientMaxBodySize(const std::vector<std::string> &v) {
     std::vector<std::string>::const_iterator begin = v.begin();
     std::vector<std::string>::const_iterator end = v.end();
     for (std::vector<std::string>::const_iterator iter = begin;

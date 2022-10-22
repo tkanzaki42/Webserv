@@ -7,7 +7,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <vector>
-
+#include <utility>
 #include "srcs/config/ConfigChecker.hpp"
 #include "srcs/util/split.hpp"
 #include "srcs/util/StringConverter.hpp"
@@ -26,8 +26,10 @@ class Config {
     static std::vector<std::string> parseValue(const std::string &valueStr);
     static std::string getSingleStr(const std::string&, const std::string&);
     static int getSingleInt(const std::string&, const std::string&);
-    static std::vector<int> getVectorInt(const std::string&, const std::string&);
-    static std::vector<std::string> getVectorStr(const std::string&, const std::string&);
+    static std::vector<int>
+         getVectorInt(const std::string&, const std::string&);
+    static std::vector<std::string>
+         getVectorStr(const std::string&, const std::string&);
 
     class ConfigFormatException : public std::exception {
      public:
