@@ -37,11 +37,11 @@ void HttpResponse::make_response() {
     const std::string file_extension
             = PathUtil::get_file_extension(request_->get_path_to_file());
     if (file_extension == "cgi" || file_extension == "py")
-        file_type = FILETYPE_SCRIPT;
+        file_type_ = FILETYPE_SCRIPT;
     else if (file_extension == "out")
-        file_type = FILETYPE_BINARY;
+        file_type_ = FILETYPE_BINARY;
     else
-        file_type = FILETYPE_STATIC_HTML;
+        file_type_ = FILETYPE_STATIC_HTML;
 
     // リクエストヘッダ、リクエストボディの作成
     make_message_body_();
@@ -51,19 +51,19 @@ void HttpResponse::make_response() {
 
 void HttpResponse::make_message_body_() {
     // CGIの場合実行結果を取得する
-    if (file_type == FILETYPE_SCRIPT || file_type == FILETYPE_BINARY) {
+    if (file_type_ == FILETYPE_SCRIPT || file_type_ == FILETYPE_BINARY) {
         cgi_ = new CGI(request_);
-        int cgi_ret = cgi_->exec_cgi(file_type);
+        int cgi_ret = cgi_->exec_cgi(file_type_);
         if (cgi_ret == EXIT_FAILURE) {
             delete cgi_;
             cgi_ = NULL;
             status_code_ = 500;  // Internal Server Error
-            file_type = FILETYPE_STATIC_HTML;
+            file_type_ = FILETYPE_STATIC_HTML;
         }
     }
 
     // 静的HTMLページの場合、CGI実行が失敗した場合
-    if (file_type == FILETYPE_STATIC_HTML) {
+    if (file_type_ == FILETYPE_STATIC_HTML) {
         // リクエストヘッダ、リクエストボディの作成
         status_code_ = message_body_.make_response(status_code_);
     }
@@ -88,7 +88,7 @@ void HttpResponse::make_header_() {
     // else {
 
     int body_length;
-    if (file_type == FILETYPE_STATIC_HTML) {
+    if (file_type_ == FILETYPE_STATIC_HTML) {
         body_length = message_body_.get_content_length();
     } else {
         body_length = cgi_->get_content_length();
@@ -106,7 +106,7 @@ void HttpResponse::merge_header_and_body_() {
             response_.append(header_content[i].c_str());
         }
     }
-    if (file_type != FILETYPE_STATIC_HTML) {
+    if (file_type_ != FILETYPE_STATIC_HTML) {
         std::vector<std::string> header_content_cgi
                 = cgi_->get_header_content();
         for (std::size_t i = 0; i < header_content_cgi.size(); i++) {
@@ -117,7 +117,7 @@ void HttpResponse::merge_header_and_body_() {
 
     // ボディのマージ
     std::vector<std::string> body_content;
-    if (file_type == FILETYPE_STATIC_HTML) {
+    if (file_type_ == FILETYPE_STATIC_HTML) {
         body_content = message_body_.get_content();
     } else {
         body_content = cgi_->get_body_content();
