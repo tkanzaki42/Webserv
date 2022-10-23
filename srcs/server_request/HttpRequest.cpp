@@ -51,6 +51,9 @@ void HttpRequest::analyze_request() {
     // リクエストのパース
     status_code_ = parser_.parse();
 
+    // HTTPバージョンの確認
+    // TODO(someone)
+
     // デフォルトパスの設定
     // TODO(kfukuata) コンフィグから読む
 

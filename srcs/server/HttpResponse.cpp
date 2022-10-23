@@ -65,23 +65,6 @@ void HttpResponse::make_message_body_() {
 }
 
 void HttpResponse::make_header_() {
-    // TODO(tkanzaki) ここの条件分岐はHttpHeaderクラスに書いてもいいかも
-    // ポリモーフィズムを使うのもあり
-    // (void)version;
-    // (void)is_file_exist;
-    // (void)path;
-
-    // if (HTTP_VERSION == 1 && path != "") {
-    //     return HttpHeader::make_response302(path);
-    // }
-    // else if (HTTP_VERSION == 2) {
-    //     return HttpHeader::make_responseUpgrade();
-    // }
-    // else if (is_file_exist == 1) {
-    //     return HttpHeader::make_response404();
-    // }
-    // else {
-
     int body_length;
     if (request_->get_file_type() == FILETYPE_STATIC_HTML) {
         body_length = message_body_.get_content_length();
@@ -90,7 +73,6 @@ void HttpResponse::make_header_() {
     }
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
-    // }
 }
 
 void HttpResponse::merge_header_and_body_() {
