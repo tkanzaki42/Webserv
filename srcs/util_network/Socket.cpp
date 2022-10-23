@@ -25,6 +25,10 @@ void Socket::set_port(int port) {
     port_ = port;
 }
 
+int Socket::get_port() const {
+    return (this->port_);
+}
+
 int Socket::prepare() {
     serv_addr_len_ = sizeof(serv_addr_);
     from_addr_len_ = sizeof(from_addr_);
@@ -78,7 +82,6 @@ int Socket::bind_address_() {
     serv_addr_.sin_family = AF_INET;
     serv_addr_.sin_port = htons(port_);
     serv_addr_.sin_addr.s_addr = htonl(INADDR_ANY);
-
     if (bind(listen_fd_, (struct sockaddr*)&serv_addr_,
             serv_addr_len_) == -1) {
         std::cerr << "bind() failed.(" << errno << ")" << std::endl;

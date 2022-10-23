@@ -15,7 +15,6 @@ class FDManager {
  private:
     // ソケット
     std::vector<Socket> socketSet_;
-    Socket          socket_[2];
 
     // 接続しているソケット
     int             active_socket_index_;
