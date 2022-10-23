@@ -20,7 +20,6 @@ class HttpResponse {
     HttpHeader          header_;
     HttpBody            message_body_;
     CGI                 *cgi_;
-    FileType            file_type_;
     std::string         response_;
     int                 status_code_;
 

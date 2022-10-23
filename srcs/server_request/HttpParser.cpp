@@ -97,7 +97,9 @@ void HttpParser::parse_request_target_() {
     }
     buffer[buffer_idx] = '\0';
     request_target_ = std::string(buffer);
+}
 
+void HttpParser::separate_querystring_pathinfo() {
     // パスからQUERY_STRINGとPATH_INFOを切り出す
     std::string remaining_path = split_query_string_(request_target_);
     generate_path_to_file_(remaining_path);

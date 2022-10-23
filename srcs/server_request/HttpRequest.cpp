@@ -48,7 +48,24 @@ int HttpRequest::receive_header() {
 }
 
 void HttpRequest::analyze_request() {
+    // リクエストのパース
     status_code_ = parser_.parse();
+
+    // デフォルトパスの設定
+
+
+    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
+    parser_.separate_querystring_pathinfo();
+
+    // ファイルタイプの判定
+    const std::string file_extension
+            = PathUtil::get_file_extension(get_path_to_file());
+    if (file_extension == "cgi" || file_extension == "py")
+        file_type_ = FILETYPE_SCRIPT;
+    else if (file_extension == "out")
+        file_type_ = FILETYPE_BINARY;
+    else
+        file_type_ = FILETYPE_STATIC_HTML;
 
     if (status_code_ == 200) {
         if (get_http_method() == METHOD_POST)
@@ -126,9 +143,18 @@ struct sockaddr_in HttpRequest::get_client_addr() {
     return fd_manager_->get_client_addr();
 }
 
+FileType HttpRequest::get_file_type() {
+    return file_type_;
+}
+
+void HttpRequest::set_file_type(FileType file_type) {
+    file_type_ = file_type;
+}
+
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    std::string dir_path = get_path_to_file().substr(0, get_path_to_file().rfind('/'));
+    std::string dir_path
+        = get_path_to_file().substr(0, get_path_to_file().rfind('/'));
     if (PathUtil::is_folder_exists(dir_path) == false) {
         if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             std::cerr << "Could not create dirctory: " << dir_path << std::endl;
@@ -184,7 +210,8 @@ int HttpRequest::receive_and_store_to_file_() {
 
 int HttpRequest::delete_file_() {
     if (std::remove(get_path_to_file().c_str()) != 0) {
-        std::cerr << "Failed to delete file: " << get_path_to_file() << std::endl;
+        std::cerr << "Failed to delete file: "
+            << get_path_to_file() << std::endl;
         return 204;  // No Content
     }
     return 204;  // No Content
