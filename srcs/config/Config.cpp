@@ -88,6 +88,29 @@ void    Config::parseConfig(const std::string &path) {
         throw(Config::ConfigFormatException());
 }
 
+std::set<int> Config::getAllListen() {
+    std::set<int> allListen;
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    for (std::map<std::string, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        string_vector_map::iterator key_begin = itr->second.begin();
+        string_vector_map::iterator key_end = itr->second.end();
+        for (string_vector_map::iterator iter = key_begin;
+             iter != key_end; iter++) {
+            if (!iter->first.compare("listen")) {
+                std::vector<std::string>::iterator beginV = iter->second.begin();
+                std::vector<std::string>::iterator endV = iter->second.end();
+                for (std::vector<std::string>::iterator iterV = beginV;
+                    iterV != endV; iterV++) {
+                    allListen.insert(StringConverter::stoi(*iterV));
+                }
+            }
+        }
+    }
+    return (allListen);
+}
+
 std::vector<std::string> Config::parseValue(const std::string &valueStr) {
     std::vector<std::string> valueVector;
     if (valueStr.size() < 3) {

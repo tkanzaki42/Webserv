@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <vector>
+#include <set>
 #include <utility>
 #include "srcs/config/ConfigChecker.hpp"
 #include "srcs/util/split.hpp"
@@ -26,6 +27,7 @@ class Config {
     static std::vector<std::string> parseValue(const std::string &valueStr);
     static std::string getSingleStr(const std::string&, const std::string&);
     static int getSingleInt(const std::string&, const std::string&);
+    static std::set<int> getAllListen();
     static std::vector<int>
          getVectorInt(const std::string&, const std::string&);
     static std::vector<std::string>

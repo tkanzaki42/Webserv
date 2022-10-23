@@ -3,11 +3,15 @@
 #include "srcs/server/Webserv.hpp"
 #include "srcs/util/StringConverter.hpp"
 FDManager::FDManager() : active_socket_index_(-1) {
-    // ポート番号をセット
-    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        Config::printConfig();
-        int port = Config::getSingleInt("host_1","listen");
-        socket_[i].set_port(port);
+    std::set<int> set = Config::getAllListen();
+    std::set<int>::iterator begin= set.begin();
+    std::set<int>::iterator end= set.end();
+    for (std::set<int>::iterator iter = begin; iter != end; ++iter) {
+        std::cout << *iter << std::endl;
+        int port = *iter;
+        Socket soc;
+        soc.set_port(port);
+        socketSet_.push_back(soc);
     }
 
     // 処理用のファイルディスクリプタを初期化する
@@ -36,15 +40,15 @@ bool FDManager::accept() {
     }
 
     // 接続されたソケットを確認
-    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        if (FD_ISSET(socket_[i].get_listen_fd(), &received_fd_collection_)) {
+    for (size_t i = 0; i < socketSet_.size(); i++) {
+        if (FD_ISSET(socketSet_[i].get_listen_fd(), &received_fd_collection_)) {
             active_socket_index_ = i;
             break;
         }
     }
 
     // 接続されたならクライアントからの接続を確立する
-    accept_fd_ = socket_[active_socket_index_].accept();
+    accept_fd_ = socketSet_[active_socket_index_].accept();
     std::cout << "socket:" << accept_fd_;
     std::cout << " connected." << std::endl;
     return true;
@@ -54,10 +58,10 @@ void FDManager::prepare_select_() {
     // 接続待ちのディスクリプタをディスクリプタ集合に設定する
     FD_ZERO(&received_fd_collection_);
     max_fd_ = -1;
-    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        FD_SET(socket_[i].get_listen_fd(), &received_fd_collection_);
-        if (max_fd_ < socket_[i].get_listen_fd()) {
-            max_fd_ = socket_[i].get_listen_fd();
+    for (size_t i = 0; i < socketSet_.size(); i++) {
+        FD_SET(socketSet_[i].get_listen_fd(), &received_fd_collection_);
+        if (max_fd_ < socketSet_[i].get_listen_fd()) {
+            max_fd_ = socketSet_[i].get_listen_fd();
         }
     }
 
@@ -154,17 +158,17 @@ void FDManager::disconnect() {
 }
 
 void FDManager::create_socket() {
-    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        socket_[i].prepare();
+    for (size_t i = 0; i < socketSet_.size(); i++) {
+        socketSet_[i].prepare();
     }
 }
 
 void FDManager::destory_socket() {
-    for (size_t i = 0; i < sizeof(socket_)/sizeof(socket_[0]); i++) {
-        socket_[i].cleanup();
+    for (size_t i = 0; i < socketSet_.size(); i++) {
+        socketSet_[i].cleanup();
     }
 }
 
 struct sockaddr_in FDManager::get_client_addr() {
-    return socket_[active_socket_index_].get_client_addr();
+    return socketSet_[active_socket_index_].get_client_addr();
 }

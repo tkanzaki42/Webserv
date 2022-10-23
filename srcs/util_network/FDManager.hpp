@@ -9,10 +9,12 @@
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/config/Config.hpp"
+#include <vector>
 
 class FDManager {
  private:
     // ソケット
+    std::vector<Socket> socketSet_;
     Socket          socket_[2];
 
     // 接続しているソケット
