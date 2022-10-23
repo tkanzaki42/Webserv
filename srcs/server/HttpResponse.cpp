@@ -37,7 +37,6 @@ void HttpResponse::make_response() {
     header_.clear_contents();
     message_body_.clear_contents();
 
-
     // リクエストヘッダ、リクエストボディの作成
     make_message_body_();
     make_header_();
@@ -58,7 +57,7 @@ void HttpResponse::make_message_body_() {
         }
     }
 
-    // 静的HTMLページの場合、CGI実行が失敗した場合
+    // 静的HTMLページの場合、およびCGI実行が失敗した場合
     if (request_->get_file_type() == FILETYPE_STATIC_HTML) {
         // リクエストヘッダ、リクエストボディの作成
         status_code_ = message_body_.make_response(status_code_);
