@@ -47,6 +47,7 @@ class HttpRequest {
     FileType            file_type_;
     int                 status_code_;
 
+    void                check_redirect_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
 };

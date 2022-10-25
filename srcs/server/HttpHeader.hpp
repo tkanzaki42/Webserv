@@ -12,7 +12,6 @@ class HttpHeader {
     std::map<std::string, std::string>  header_field_;
     int                                 body_length_;
 
-    void                store_header_(std::string header_line);
 
  public:
     HttpHeader();
@@ -25,6 +24,7 @@ class HttpHeader {
     const std::map<std::string, std::string>
                         &get_content();
     void                set_body_length(int body_length);
+    void                set_header(std::string header_line);
     void                clear_contents();
     static std::string  get_reason_phrase(int status_code);
 };

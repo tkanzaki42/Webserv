@@ -70,6 +70,10 @@ void HttpRequest::analyze_request() {
     else
         file_type_ = FILETYPE_STATIC_HTML;
 
+    // リダイレクト確認
+    if (status_code_ == 200)
+        check_redirect_();
+
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (status_code_ == 200) {
         if (get_http_method() == METHOD_POST) {
@@ -158,6 +162,29 @@ FileType HttpRequest::get_file_type() {
 
 void HttpRequest::set_file_type(FileType file_type) {
     file_type_ = file_type;
+}
+
+void HttpRequest::check_redirect_() {
+    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
+    std::map<std::string, std::string> temporary_redirect_url;
+    temporary_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+    std::map<std::string, std::string> permanent_redirect_url;
+    permanent_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+
+    if (temporary_redirect_url[get_path_to_file()] != "") {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = 307;  // Temporary Redirect
+        else
+            status_code_ = 302;  // Found
+    }
+    if (permanent_redirect_url[get_path_to_file()] != "") {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = 308;  // Permanent Redirect
+        else
+            status_code_ = 301;  // Moved Permanently
+    }
 }
 
 int HttpRequest::receive_and_store_to_file_() {
