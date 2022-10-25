@@ -18,6 +18,9 @@ class HttpParser {
     HttpParser& operator=(const HttpParser &obj);
 
     int                          parse();
+    void                         separate_querystring_pathinfo();
+
+    // getter
     HttpMethod                   get_http_method() const;
     const std::string&           get_request_target() const;
     const std::string&           get_query_string() const;
