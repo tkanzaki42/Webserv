@@ -176,7 +176,8 @@ int HttpRequest::receive_and_store_to_file_() {
     ofs_outfile.open(get_path_to_file().c_str(),
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
-        std::cerr << "Could not open file: " << get_path_to_file() << std::endl;
+        std::cerr << "Could not open file during receiving the file: "
+            << get_path_to_file() << std::endl;
         return 500;  // Internal Server Error
     }
 
