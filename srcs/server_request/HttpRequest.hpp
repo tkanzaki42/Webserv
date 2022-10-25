@@ -36,11 +36,15 @@ class HttpRequest {
     // getter(HttpRequest)
     int                 get_status_code() const;
     struct sockaddr_in  get_client_addr();
+    FileType            get_file_type();
+    // setter
+    void                set_file_type(FileType file_type);
 
  private:
     FDManager           *fd_manager_;
     HttpParser          parser_;
     std::string         received_line_;
+    FileType            file_type_;
     int                 status_code_;
 
     int                 receive_and_store_to_file_();
