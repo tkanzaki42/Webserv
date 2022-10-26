@@ -32,7 +32,7 @@ int HttpBody::read_contents_from_file_() {
 void HttpBody::make_status_response_(int status_code) {
     std::ostringstream oss_body;
     oss_body << "<html><body><h1>" << status_code << " "
-        << HttpHeader::get_reason_phrase(status_code)
+        << StatusDescription::get_reason(status_code)
         << "</h1><p>" << StatusDescription::get_message(status_code)
         << "</p><hr><address>"
         << kServerSoftwareName

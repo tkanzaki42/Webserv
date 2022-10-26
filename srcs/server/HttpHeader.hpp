@@ -26,7 +26,6 @@ class HttpHeader {
                         &get_content();
     void                set_body_length(int body_length);
     void                clear_contents();
-    static std::string  get_reason_phrase(int status_code);
 };
 
 #endif  // SRCS_SERVER_HTTPHEADER_HPP_
