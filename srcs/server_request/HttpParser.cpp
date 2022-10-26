@@ -112,13 +112,14 @@ std::string HttpParser::split_query_string_(
         std::string &request_target) {
     std::string remaining_path;
 
+    // パスのうち"?"以降をQUERY_STRINGとして切り出す
     std::string::size_type question_pos = request_target.find("?");
     if (question_pos == std::string::npos) {
-        // QUERY_STRINGがない場合
+        // "?"が見つからなければ、QUERY_STRINGはない
         remaining_path = request_target;
         query_string_ = "";
     } else {
-        // QUERY_STRINGがある場合
+        // "?"が見つかれば、QUERY_STRINGがあるのでquery_string_に格納
         remaining_path = request_target.substr(0, question_pos);
         query_string_ = request_target.substr(question_pos + 1,
             request_target.size() - question_pos - 1);
@@ -144,19 +145,24 @@ void HttpParser::split_path_info_() {
         std::string::size_type slash_pos
             = path_to_file_.find("/", slash_pos_prev);
         if (slash_pos == std::string::npos) {
+            // スラッシュが見つからなかった場合
             std::string path_candidate = path_to_file_;
             if (PathUtil::is_file_or_folder_exists(path_candidate)) {
+                // path_candidateが有効な時、PATH_INFOは設定されていない
                 path_info_ = "";
                 path_to_file_ = path_candidate;
             } else {
+                // path_candidateが無効な時、スラッシュ以降をPATH_INFOに格納
                 path_info_ = path_to_file_.substr(slash_pos_prev - 1,
                     path_to_file_.size() - slash_pos_prev + 1);
                 path_to_file_ = path_to_file_.substr(0, slash_pos_prev - 1);
             }
             break;
         } else {
+            // スラッシュが見つかった場合、スラッシュまでのパスが有効か判定
             std::string path_candidate = path_to_file_.substr(0, slash_pos);
             if (!PathUtil::is_file_or_folder_exists(path_candidate)) {
+                // 有効でない場合、有効な部分のみをpath_to_file_とし、残りをPATH_INFOに格納
                 path_info_ = path_to_file_.substr(slash_pos_prev - 1,
                     path_to_file_.size() - slash_pos_prev + 1);
                 path_to_file_ = path_to_file_.substr(0, slash_pos_prev - 1);
