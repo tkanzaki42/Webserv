@@ -30,7 +30,7 @@ void HttpHeader::make_response(int status_code) {
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
 
         set_header(oss_content_length.str());
-        set_header("Connection: Keep-Alive\r\n");
+        set_header("Connection: keep-alive\r\n");
     } else {
         set_header("Connection: close\r\n");
     }
