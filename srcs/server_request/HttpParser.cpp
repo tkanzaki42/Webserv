@@ -138,6 +138,16 @@ void HttpParser::generate_path_to_file_(std::string &remaining_path) {
     }
 }
 
+// 指定パスの無効部分をPATH_INFOとして切り出す
+// 例) /valid/valid.html/invalid
+//     -> path_to_file_ : /valid/valid.html
+//     -> path_info_    : /invalid
+// 例) /valid/invalid.html/invalid
+//     -> path_to_file_ : /valid/invalid.html/invalid
+//     -> path_info_    : (empty)
+// 例) /invalid/invalid.html/invalid
+//     -> path_to_file_ : /invalid/invalid.html/invalid
+//     -> path_info_    : (empty)
 void HttpParser::split_path_info_() {
     // path_to_file_の末尾からPATH_INFOを切り出す
     std::string::size_type slash_pos_prev = 0;
