@@ -20,7 +20,6 @@ class HttpBody {
     // int                      body_content_length_;
 
     int                      read_contents_from_file_();
-    std::string              get_status_description_(int status_code);
     void                     make_status_response_(int status_code);
 
  public:

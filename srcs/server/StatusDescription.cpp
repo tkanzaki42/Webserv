@@ -1,4 +1,4 @@
-#include "srcs/server/ErrorPage.hpp"
+#include "srcs/server/StatusDescription.hpp"
 #include "srcs/util/StringConverter.hpp"
 #include "srcs/server/StatusCode.hpp"
 
@@ -6,11 +6,12 @@
 // https://github.com/apache/httpd/blob/trunk/modules/http/http_protocol.c
 // の get_canned_error_string
 // を参考
-std::string ErrorPage::get(int status_code) {
-    if (status_code < 400 || 599 < status_code)
-        return std::string("No message");
-
+std::string StatusDescription::get_message(int status_code) {
     switch (status_code) {
+      // 正常
+      case StatusCode::HTTP_CREATED:
+          return std::string("Successfully uploaded the file.");
+      // エラー
       case StatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED:
       case StatusCode::HTTP_UNAUTHORIZED:
           return std::string("This server could not verify that you are authorized to access the URL.");
