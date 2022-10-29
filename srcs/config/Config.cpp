@@ -40,12 +40,17 @@ std::map<std::string, string_vector_map>::iterator Config::getDefaultServer() {
 
 std::map<std::string, string_vector_map>::iterator
      Config::getVirtualServer(const std::string &hostname) {
-    std::map<std::string, string_vector_map>::iterator
-         iter = _config.find(hostname);
-    if (iter == _config.end()) {
-        return (getDefaultServer());
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    string_vector_map::iterator defaultIter;
+    for (std::map<std::string, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        defaultIter = itr->second.find("server_name");
+        if (!defaultIter->second[0].compare(hostname)) {
+            return (itr);
+        }
     }
-    return (iter);
+    return (getDefaultServer());
 }
 
 std::map<std::string, string_vector_map> Config::_config;
