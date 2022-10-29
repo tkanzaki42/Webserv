@@ -60,6 +60,9 @@ void HttpRequest::analyze_request() {
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
     parser_.separate_querystring_pathinfo();
 
+    // パスの補完(末尾にindex.htmlをつけるなど)
+    parser_.autocomplete_path();
+
     // ファイルタイプの判定
     const std::string file_extension
             = PathUtil::get_file_extension(get_path_to_file());

@@ -101,9 +101,13 @@ void HttpParser::parse_request_target_() {
 }
 
 void HttpParser::separate_querystring_pathinfo() {
-    // パスからQUERY_STRINGとPATH_INFOを切り出す
+    // パスからQUERY_STRINGを切り出す
     std::string remaining_path = split_query_string_(request_target_);
-    generate_path_to_file_(remaining_path);
+
+    // path_to_file_を仮で設定
+    path_to_file_ = kBaseHtmlPath + remaining_path;
+
+    // パスからPATH_INFOを切り出す
     if (get_http_method() != METHOD_POST)
         split_path_info_();
 }
@@ -127,14 +131,33 @@ std::string HttpParser::split_query_string_(
     return remaining_path;
 }
 
-void HttpParser::generate_path_to_file_(std::string &remaining_path) {
-    // ベースパスとくっつけてパスを作成
-    // この時点では末尾にPATH_INFOがついたまま
-    if (remaining_path[remaining_path.length() - 1] == '/') {
-        // path_to_file_ = kBaseHtmlPath + remaining_path + kIndexHtmlFileName;//TODO
-        path_to_file_ = kBaseHtmlPath + remaining_path;
-    } else {
-        path_to_file_ = kBaseHtmlPath + remaining_path;
+void HttpParser::autocomplete_path() {
+    // パスが正しければ対応不要
+    if (PathUtil::is_file_exists(path_to_file_))
+        return;
+
+    if (PathUtil::is_folder_exists(path_to_file_)) {
+        // 仮のコンフィグ TODO(yonishi) 正しいコンフィグに置き換え
+        std::map<std::string, std::string> autocomp_file;
+        autocomp_file["0"] = "index.html";
+        autocomp_file["1"] = "index.htm";
+
+        for (std::map<std::string, std::string>::iterator it
+                    = autocomp_file.begin();
+                it != autocomp_file.end();
+                it++) {
+            std::string temp_path;
+            if (path_to_file_[path_to_file_.length() - 1] == '/') {
+                temp_path = path_to_file_ + (*it).second;
+            } else {
+                temp_path = path_to_file_ + "/";
+                temp_path += (*it).second;
+            }
+            if (PathUtil::is_file_exists(temp_path)) {
+                path_to_file_ = temp_path;
+                break;
+            }
+        }
     }
 }
 
@@ -171,7 +194,16 @@ void HttpParser::split_path_info_() {
         } else {
             // スラッシュが見つかった場合、スラッシュまでのパスが有効か判定
             std::string path_candidate = path_to_file_.substr(0, slash_pos);
-            if (!PathUtil::is_file_or_folder_exists(path_candidate)) {
+            if (PathUtil::is_folder_exists(path_candidate)) {
+                // ディレクトリが有効な場合、下層のディレクトリチェックに進む
+                {}
+            } else if (PathUtil::is_file_exists(path_candidate)) {
+                // ファイルとして有効な場合、パスはそこまでで完了、残りをPATH_INFOに格納
+                path_info_ = path_to_file_.substr(slash_pos - 1,
+                    path_to_file_.size() - slash_pos + 1);
+                path_to_file_ = path_to_file_.substr(0, slash_pos - 1);
+                break;
+            } else {
                 // 有効でない場合、有効な部分のみをpath_to_file_とし、残りをPATH_INFOに格納
                 path_info_ = path_to_file_.substr(slash_pos_prev - 1,
                     path_to_file_.size() - slash_pos_prev + 1);

@@ -19,6 +19,7 @@ class HttpParser {
 
     int                          parse();
     void                         separate_querystring_pathinfo();
+    void                         autocomplete_path();
 
     // getter
     HttpMethod                   get_http_method() const;
