@@ -54,14 +54,17 @@ void HttpRequest::analyze_request() {
     // HTTPバージョンの確認
     // TODO(someone)
 
-    // デフォルトパスの設定
-    // TODO(kfukuata) コンフィグから読む
-
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
     parser_.separate_querystring_pathinfo();
 
     // パスの補完(末尾にindex.htmlをつけるなど)
     parser_.autocomplete_path();
+
+    // ファイル存在チェック
+    if (!PathUtil::is_file_exists(get_path_to_file())) {
+        std::cerr << "File not found: " << get_path_to_file() << std::endl;
+        status_code_ = 404;  // Not Found
+    }
 
     // ファイルタイプの判定
     const std::string file_extension
