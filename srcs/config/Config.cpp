@@ -24,8 +24,33 @@ void Config::init(const std::string &path) {
     }
 }
 
+std::map<std::string, string_vector_map>::iterator Config::getDefaultServer() {
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    string_vector_map::iterator defaultIter;
+    for (std::map<std::string, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        defaultIter = itr->second.find("default");
+        if (defaultIter != itr->second.end()) {
+            return (itr);
+        }
+    }
+    return (end);
+}
+
+std::map<std::string, string_vector_map>::iterator
+     Config::getVirtualServer(const std::string &hostname) {
+    std::map<std::string, string_vector_map>::iterator
+         iter = _config.find(hostname);
+    if (iter == _config.end()) {
+        return (getDefaultServer());
+    }
+    return (iter);
+}
+
 std::map<std::string, string_vector_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
+    bool isDefault = true;
     std::ifstream ifs(path.c_str());
     if (!ifs) {
         std::cerr << "Can not open file" << std::endl;
@@ -75,6 +100,16 @@ void    Config::parseConfig(const std::string &path) {
                 // もしinsert出来なかったらキーが重複している。その場合はフォーマットエラーを返す。
                 if (!_config[hostname].insert(key_value_pair).second) {
                     throw(Config::ConfigFormatException());
+                }
+                // 最初のサーバーネームの場合は　default フラグを立てる
+                if (isDefault) {
+                    std::vector<std::string> defaultVect;
+                    defaultVect.push_back("true");
+                    if (!_config[hostname].insert(
+                            std::make_pair("default", defaultVect)).second) {
+                        throw(Config::ConfigFormatException());
+                    }
+                    isDefault = false;
                 }
             }
         } else {

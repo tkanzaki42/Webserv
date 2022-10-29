@@ -32,6 +32,8 @@ class Config {
          getVectorInt(const std::string&, const std::string&);
     static std::vector<std::string>
          getVectorStr(const std::string&, const std::string&);
+    static std::map<std::string, string_vector_map>::iterator getDefaultServer();
+    static std::map<std::string, string_vector_map>::iterator getVirtualServer(const std::string &hostname);
 
     class ConfigFormatException : public std::exception {
      public:
