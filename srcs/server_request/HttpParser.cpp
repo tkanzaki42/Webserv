@@ -97,6 +97,7 @@ void HttpParser::parse_request_target_() {
     }
     buffer[buffer_idx] = '\0';
     request_target_ = std::string(buffer);
+    skip_space_();
 }
 
 void HttpParser::separate_querystring_pathinfo() {
