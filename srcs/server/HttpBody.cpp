@@ -1,4 +1,5 @@
 #include "srcs/server/HttpBody.hpp"
+#include "srcs/server/StatusDescription.hpp"
 
 int HttpBody::read_contents_from_file_() {
     // ファイルのオープン
@@ -28,23 +29,11 @@ int HttpBody::read_contents_from_file_() {
     return 200;
 }
 
-std::string HttpBody::get_status_description_(int status_code) {
-    if (status_code == 404)
-        return std::string("The requested URL was not found on this server.");
-    else if (status_code == 201)
-        return std::string("Successfully uploaded the file.");
-
-    if (400 <= status_code && status_code <= 599)
-        return std::string("Unknown Error");
-    else
-        return std::string("No message");
-}
-
 void HttpBody::make_status_response_(int status_code) {
     std::ostringstream oss_body;
     oss_body << "<html><body><h1>" << status_code << " "
-        << HttpHeader::get_reason_phrase(status_code)
-        << "</h1><p>" << get_status_description_(status_code)
+        << StatusDescription::get_reason(status_code)
+        << "</h1><p>" << StatusDescription::get_message(status_code)
         << "</p><hr><address>"
         << kServerSoftwareName
         << "</address></body></html>\r\n";
