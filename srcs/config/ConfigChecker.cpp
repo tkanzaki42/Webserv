@@ -5,11 +5,11 @@ bool isValidIP(const std::string s);
 bool isValidPort(const std::string s);
 
 bool ConfigChecker::isValidConfig() {
-    std::map<std::string, string_vector_map>::iterator begin
+    std::map<int, string_vector_map>::iterator begin
          = Config::_config.begin();
-    std::map<std::string, string_vector_map>::iterator end
+    std::map<int, string_vector_map>::iterator end
          = Config::_config.end();
-    for (std::map<std::string, string_vector_map>
+    for (std::map<int, string_vector_map>
         ::iterator itr = begin; itr != end; itr++) {
         string_vector_map::iterator key_begin = itr->second.begin();
         string_vector_map::iterator key_end = itr->second.end();
