@@ -61,6 +61,12 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
 }
 
 int HttpBody::make_response(int status_code) {
+    // エージェント駆動型交渉(https://developer.mozilla.org/ja/docs/Web/HTTP/Content_negotiation#%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E9%A7%86%E5%8B%95%E5%9E%8B%E4%BA%A4%E6%B8%89)
+    // 300なら利用可能な代替リソースへのリンクを含むページを送り返す
+
+    // 304ならレスポンスは空でブラウザ側でキャッシュが読み込まれる
+    // ETagとは(https://qiita.com/OmeletteCurry19/items/a84d6a7c91df50e7dcd6)
+
     if (status_code == 200 && request_.get_http_method() == METHOD_GET)
         status_code = read_contents_from_file_();
 

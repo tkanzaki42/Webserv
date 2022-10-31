@@ -49,6 +49,7 @@ class HttpRequest {
 
     int                 receive_and_store_to_file_();
     int                 delete_file_();
+    void                check_30x_();
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_

@@ -43,6 +43,7 @@ void HttpHeader::make_response(int status_code) {
     status_line_ = oss_status_line.str();
 
     store_header_("Content-Type: text/html; charset=UTF-8\r\n");
+    // 301,302,308ならコンフィグから読み取ってLocation:を加える
     if (status_code == 200 || status_code == 201) {
         std::ostringstream oss_content_length;
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
@@ -52,6 +53,8 @@ void HttpHeader::make_response(int status_code) {
     } else {
         store_header_("Connection: close\r\n");
     }
+    // 30
+    // コンテンツに対するハッシュ値を計算してEtagヘッダを付加
 }
 
 std::string HttpHeader::get_status_line() {

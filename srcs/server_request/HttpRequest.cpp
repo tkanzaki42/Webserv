@@ -84,8 +84,36 @@ void HttpRequest::analyze_request() {
             }
         } else if (get_http_method() == METHOD_DELETE) {
             status_code_ = delete_file_();
+        }else{
         }
     }
+}
+
+void check_30x_() {
+    // ETagとは(https://qiita.com/OmeletteCurry19/items/a84d6a7c91df50e7dcd6)
+    // パースした情報からIf-None-Matchのハッシュ値を切り出し
+    // 同じ値なら304
+
+    // ターゲットパスがリダイレクション設定されているかコンフィグを確認
+    // ある
+        // 単数
+            // コンフィグの設定が301
+                // GET(またはHEAD)なら
+                    // 301
+                // POST
+                    // 308
+            // コンフィグの設定が302
+                // GET(またはHEAD)なら
+                    // 302
+                // POST
+                    // 307
+            // コンフィグの設定が303
+                // 303
+            // コンフィグの設定が305
+                // 305
+        // 複数
+            // 300
+    // ない
 }
 
 void HttpRequest::print_debug() {
