@@ -55,7 +55,10 @@ void HttpRequest::analyze_request() {
     // TODO(someone)
 
     // デフォルトパスの設定
-    // TODO(kfukuata) コンフィグから読む
+    string_vector_map config =
+        Config::getVirtualServer(parser_.get_header_field("Host"))->second;
+    parser_.setIndexHtmlFileName(config.find("index")->second[0]);
+    parser_.setBaseHtmlPath(config.find("root")->second[0]);
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
     parser_.separate_querystring_pathinfo();
@@ -70,13 +73,14 @@ void HttpRequest::analyze_request() {
     else
         file_type_ = FILETYPE_STATIC_HTML;
 
+    puts("hogefuga");
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (status_code_ == 200) {
         if (get_http_method() == METHOD_POST) {
             if (file_type_ == FILETYPE_STATIC_HTML) {
                 status_code_ = receive_and_store_to_file_();
             } else {
-                // TODO QUERY_STRINGをPOSTデータから読む処理を追加
+                // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
             }
         } else if (get_http_method() == METHOD_DELETE) {
             status_code_ = delete_file_();

@@ -23,6 +23,7 @@ class Socket {
     ~Socket();
 
     void set_port(int port);
+    int get_port() const;
     int prepare();
     int cleanup();
     int get_listen_fd() const { return listen_fd_; }

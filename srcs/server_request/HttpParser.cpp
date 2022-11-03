@@ -72,6 +72,14 @@ const std::string HttpParser::get_remain_buffer() {
             read_idx_, received_line_.length() - read_idx_);
 }
 
+void HttpParser::setIndexHtmlFileName(const std::string &filename) {
+    this->indexHtmlFileName = filename;
+}
+
+void HttpParser::setBaseHtmlPath(const std::string &path) {
+    this->baseHtmlPath = path;
+}
+
 void HttpParser::parse_method_() {
     if (received_line_.compare(read_idx_, 4, "POST") == 0) {
         http_method_ = METHOD_POST;
@@ -97,6 +105,7 @@ void HttpParser::parse_request_target_() {
     }
     buffer[buffer_idx] = '\0';
     request_target_ = std::string(buffer);
+    skip_space_();
 }
 
 void HttpParser::separate_querystring_pathinfo() {
@@ -130,10 +139,10 @@ void HttpParser::generate_path_to_file_(std::string &remaining_path) {
     // ベースパスとくっつけてパスを作成
     // この時点では末尾にPATH_INFOがついたまま
     if (remaining_path[remaining_path.length() - 1] == '/') {
-        // path_to_file_ = kBaseHtmlPath + remaining_path + kIndexHtmlFileName;//TODO
-        path_to_file_ = kBaseHtmlPath + remaining_path;
+        path_to_file_ = this->baseHtmlPath + remaining_path + this->indexHtmlFileName;
+        std::cout << path_to_file_ << std::endl;
     } else {
-        path_to_file_ = kBaseHtmlPath + remaining_path;
+        path_to_file_ = this->baseHtmlPath + remaining_path;
     }
 }
 

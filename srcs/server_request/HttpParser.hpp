@@ -9,6 +9,7 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/util/PathUtil.hpp"
+#include "srcs/config/Config.hpp"
 
 class HttpParser {
  public:
@@ -32,6 +33,10 @@ class HttpParser {
     const std::string&           get_header_field(const std::string& key);
     const std::string            get_remain_buffer();
 
+    //  setter
+    void                setIndexHtmlFileName(const std::string &filename);
+    void                         setBaseHtmlPath(const std::string &path);
+
  private:
     std::size_t                         read_idx_;
     const std::string&                  received_line_;
@@ -44,6 +49,10 @@ class HttpParser {
     std::string                         path_to_file_;
     std::string                         http_ver_;
     std::map<std::string, std::string>  header_field_;
+   
+    // get from confign file data
+    std::string   baseHtmlPath;
+    std::string   indexHtmlFileName;
 
     // parser
     void         parse_method_();
