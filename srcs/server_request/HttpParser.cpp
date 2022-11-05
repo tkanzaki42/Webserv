@@ -189,9 +189,9 @@ void HttpParser::split_path_info_() {
                 {}
             } else if (PathUtil::is_file_exists(path_candidate)) {
                 // ファイルとして有効な場合、パスはそこまでで完了、残りをPATH_INFOに格納
-                path_info_ = path_to_file_.substr(slash_pos - 1,
-                    path_to_file_.size() - slash_pos + 1);
-                path_to_file_ = path_to_file_.substr(0, slash_pos - 1);
+                path_info_ = path_to_file_.substr(slash_pos,
+                    path_to_file_.size() - slash_pos);
+                path_to_file_ = path_to_file_.substr(0, slash_pos);
                 break;
             } else {
                 // 有効でない場合、PATH_INFOは指定されていなかった
