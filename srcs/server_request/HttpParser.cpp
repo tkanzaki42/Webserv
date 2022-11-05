@@ -72,6 +72,14 @@ const std::string HttpParser::get_remain_buffer() {
             read_idx_, received_line_.length() - read_idx_);
 }
 
+void HttpParser::setIndexHtmlFileName(const std::string &filename) {
+    this->indexHtmlFileName = filename;
+}
+
+void HttpParser::setBaseHtmlPath(const std::string &path) {
+    this->baseHtmlPath = path;
+}
+
 void HttpParser::parse_method_() {
     if (received_line_.compare(read_idx_, 4, "POST") == 0) {
         http_method_ = METHOD_POST;

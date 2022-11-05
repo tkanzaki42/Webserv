@@ -24,8 +24,38 @@ void Config::init(const std::string &path) {
     }
 }
 
+std::map<std::string, string_vector_map>::iterator Config::getDefaultServer() {
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    string_vector_map::iterator defaultIter;
+    for (std::map<std::string, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        defaultIter = itr->second.find("default");
+        if (defaultIter != itr->second.end()) {
+            return (itr);
+        }
+    }
+    return (end);
+}
+
+std::map<std::string, string_vector_map>::iterator
+     Config::getVirtualServer(const std::string &hostname) {
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    string_vector_map::iterator defaultIter;
+    for (std::map<std::string, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        defaultIter = itr->second.find("server_name");
+        if (!defaultIter->second[0].compare(hostname)) {
+            return (itr);
+        }
+    }
+    return (getDefaultServer());
+}
+
 std::map<std::string, string_vector_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
+    bool isDefault = true;
     std::ifstream ifs(path.c_str());
     if (!ifs) {
         std::cerr << "Can not open file" << std::endl;
@@ -69,15 +99,56 @@ void    Config::parseConfig(const std::string &path) {
                 isKeySet = true;
                 // map に格納する
                 std::vector<std::string> valueVecotr = parseValue(value);
-                _config[hostname][key] = valueVecotr;
+                std::pair<std::string,
+                     std::vector<std::string> > key_value_pair;
+                key_value_pair = std::make_pair(key, valueVecotr);
+                // もしinsert出来なかったらキーが重複している。その場合はフォーマットエラーを返す。
+                if (!_config[hostname].insert(key_value_pair).second) {
+                    throw(Config::ConfigFormatException());
+                }
+                // 最初のサーバーネームの場合は　default フラグを立てる
+                if (isDefault) {
+                    std::vector<std::string> defaultVect;
+                    defaultVect.push_back("true");
+                    if (!_config[hostname].insert(
+                            std::make_pair("default", defaultVect)).second) {
+                        throw(Config::ConfigFormatException());
+                    }
+                    isDefault = false;
+                }
             }
         } else {
             throw(Config::ConfigFormatException());
         }
     }
     // デバッグ用 : コンフィグの中身を全て出力する
-    Config::printConfig();
+    // Config::printConfig();
     ifs.close();
+    if (!ConfigChecker::isValidConfig())
+        throw(Config::ConfigFormatException());
+}
+
+std::set<int> Config::getAllListen() {
+    std::set<int> allListen;
+    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
+    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    for (std::map<std::string, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        string_vector_map::iterator key_begin = itr->second.begin();
+        string_vector_map::iterator key_end = itr->second.end();
+        for (string_vector_map::iterator iter = key_begin;
+             iter != key_end; iter++) {
+            if (!iter->first.compare("listen")) {
+                std::vector<std::string>::iterator beginV = iter->second.begin();
+                std::vector<std::string>::iterator endV = iter->second.end();
+                for (std::vector<std::string>::iterator iterV = beginV;
+                    iterV != endV; iterV++) {
+                    allListen.insert(StringConverter::stoi(*iterV));
+                }
+            }
+        }
+    }
+    return (allListen);
 }
 
 std::vector<std::string> Config::parseValue(const std::string &valueStr) {

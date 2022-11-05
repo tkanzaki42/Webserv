@@ -7,7 +7,8 @@
 #include <fstream>
 #include <cstdlib>
 #include <vector>
-
+#include <set>
+#include <utility>
 #include "srcs/config/ConfigChecker.hpp"
 #include "srcs/util/split.hpp"
 #include "srcs/util/StringConverter.hpp"
@@ -15,9 +16,8 @@
 typedef std::map<std::string, std::vector<std::string> > string_vector_map;
 
 class Config {
- private:
-    static std::map<std::string, string_vector_map> _config;
  public:
+    static std::map<std::string, string_vector_map> _config;
     Config();
     ~Config();
     static void parseConfig(const std::string &path);
@@ -27,8 +27,13 @@ class Config {
     static std::vector<std::string> parseValue(const std::string &valueStr);
     static std::string getSingleStr(const std::string&, const std::string&);
     static int getSingleInt(const std::string&, const std::string&);
-    static std::vector<int> getVectorInt(const std::string&, const std::string&);
-    static std::vector<std::string> getVectorStr(const std::string&, const std::string&);
+    static std::set<int> getAllListen();
+    static std::vector<int>
+         getVectorInt(const std::string&, const std::string&);
+    static std::vector<std::string>
+         getVectorStr(const std::string&, const std::string&);
+    static std::map<std::string, string_vector_map>::iterator getDefaultServer();
+    static std::map<std::string, string_vector_map>::iterator getVirtualServer(const std::string &hostname);
 
     class ConfigFormatException : public std::exception {
      public:

@@ -8,11 +8,13 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
+#include "srcs/config/Config.hpp"
+#include <vector>
 
 class FDManager {
  private:
     // ソケット
-    Socket          socket_[2];
+    std::vector<Socket> socketSet_;
 
     // 接続しているソケット
     int             active_socket_index_;
@@ -33,7 +35,7 @@ class FDManager {
     bool            select_();
 
  public:
-    std::map<std::string, std::map<std::string, std::string> > config;
+    std::map<std::string, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
     std::map<std::string, std::string> host1;
