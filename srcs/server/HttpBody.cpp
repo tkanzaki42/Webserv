@@ -69,6 +69,49 @@ int HttpBody::make_response(int status_code) {
     return status_code;
 }
 
+void HttpBody::make_autoindex_response() {
+    std::ostringstream oss_body;
+    oss_body << "<html>\n"
+        << "<head><title>Index of " << request_.get_request_target()
+        << "</title></head>\n"
+        << "<body>\n"
+        << "<h1>Index of " << request_.get_request_target()
+        << "</h1><hr><pre>"
+        << "<a href=\"../\">../</a>\n";
+
+    // ファイル一覧をopendr()、readdir()で取得して列挙
+    DIR *dir;
+    struct dirent *dir_read;
+    if ((dir = opendir(request_.get_path_to_file().c_str())) != NULL) {
+        while ((dir_read = readdir(dir)) != NULL) {
+            std::string file_name(dir_read->d_name);
+
+            // . および..はスキップ
+            if (file_name.compare(".") == 0 || file_name.compare("..") == 0)
+                continue;
+
+            oss_body << "<a href=\"" << file_name << "\">"
+                << file_name << "</a>"
+                << "                                          "
+                << PathUtil::get_last_modified_date(
+                    request_.get_path_to_file() + "/" + file_name)
+                << "                  "
+                << PathUtil::get_filesize(
+                    request_.get_path_to_file() + "/" + file_name)
+                << "\r\n";
+        }
+        closedir(dir);
+    } else {
+        std::cerr << "Failed to opendir(), errno = " << errno << std::endl;
+    }
+
+    oss_body << "</pre><hr></body>\n"
+        << "</html>\n";
+
+    content_.clear();
+    content_.push_back(oss_body.str());
+}
+
 std::size_t HttpBody::get_content_length() {
     int content_length = 0;
 

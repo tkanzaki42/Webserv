@@ -1,6 +1,7 @@
 #ifndef SRCS_SERVER_HTTPBODY_HPP_
 #define SRCS_SERVER_HTTPBODY_HPP_
 
+#include <dirent.h>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -29,6 +30,7 @@ class HttpBody {
     HttpBody &operator=(const HttpBody &obj);
 
     int                            make_response(int status_code);
+    void                           make_autoindex_response();
     const std::vector<std::string> &get_content();
     std::size_t                    get_content_length();
     void                           clear_contents();

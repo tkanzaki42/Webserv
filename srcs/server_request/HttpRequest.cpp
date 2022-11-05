@@ -3,7 +3,8 @@
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
-          status_code_(200) {
+          status_code_(200),
+          is_autoindex_(false) {
 }
 
 HttpRequest::~HttpRequest() {
@@ -18,6 +19,7 @@ HttpRequest::HttpRequest(const HttpRequest &obj)
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     parser_       = HttpParser(obj.parser_);
     status_code_  = obj.status_code_;
+    is_autoindex_ = obj.is_autoindex_;
     return *this;
 }
 
@@ -71,6 +73,11 @@ void HttpRequest::analyze_request() {
         std::cerr << "File not found: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
+
+    // オートインデックスの実施
+    bool autoindex = true;
+    if (status_code_ == 404 && autoindex == true)
+        is_autoindex_ = true;
 
     // ファイルタイプの判定
     const std::string file_extension
@@ -137,6 +144,10 @@ HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
 }
 
+const std::string& HttpRequest::get_request_target() const {
+    return parser_.get_request_target();
+}
+
 const std::string& HttpRequest::get_query_string() const {
     return parser_.get_query_string();
 }
@@ -162,16 +173,20 @@ const std::map<std::string, std::string>&
     return parser_.get_header_field_map();
 }
 
+FileType HttpRequest::get_file_type() {
+    return file_type_;
+}
+
 int HttpRequest::get_status_code() const {
     return status_code_;
 }
 
-struct sockaddr_in HttpRequest::get_client_addr() {
-    return fd_manager_->get_client_addr();
+bool HttpRequest::get_is_autoindex() const {
+    return is_autoindex_;
 }
 
-FileType HttpRequest::get_file_type() {
-    return file_type_;
+struct sockaddr_in HttpRequest::get_client_addr() {
+    return fd_manager_->get_client_addr();
 }
 
 void HttpRequest::set_file_type(FileType file_type) {

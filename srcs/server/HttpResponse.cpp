@@ -44,6 +44,13 @@ void HttpResponse::make_response() {
 }
 
 void HttpResponse::make_message_body_() {
+    // オートインデックス表示の場合
+    if (request_->get_is_autoindex()) {
+        message_body_.make_autoindex_response();
+        status_code_ = 200;
+        return;
+    }
+
     // CGIの場合実行結果を取得する
     if (status_code_ == 200 &&
             (request_->get_file_type() == FILETYPE_SCRIPT
