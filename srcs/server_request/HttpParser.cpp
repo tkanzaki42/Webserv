@@ -121,7 +121,7 @@ void HttpParser::separate_querystring_pathinfo() {
     std::string remaining_path = split_query_string_(request_target_);
 
     // path_to_file_を仮で設定
-    path_to_file_ = kBaseHtmlPath + remaining_path;
+    path_to_file_ = this->baseHtmlPath + remaining_path;
 
     // パスからPATH_INFOを切り出す
     if (get_http_method() != METHOD_POST)
