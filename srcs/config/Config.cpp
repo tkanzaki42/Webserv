@@ -43,6 +43,24 @@ std::map<int, string_vector_map>::iterator
     return (getDefaultServer());
 }
 
+int Config::getVirtualServerIndex(const std::string &hostname) {
+    std::map<int, string_vector_map>::iterator begin = _config.begin();
+    std::map<int, string_vector_map >::iterator end = _config.end();
+    string_vector_map::iterator defaultIter;
+    int virtual_host_index = 0;
+    for (std::map<int, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        defaultIter = itr->second.find("server_name");
+        if (!defaultIter->second[0].compare(hostname)) {
+            return (virtual_host_index);
+        }
+        virtual_host_index++;
+    }
+    // もし見つからなかったら一番最初のIndex（0）を返す
+    return (0);
+}
+
+
 std::map<int, string_vector_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
     bool isDefault = true;

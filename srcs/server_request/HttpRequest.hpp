@@ -49,6 +49,7 @@ class HttpRequest {
 
     int                 receive_and_store_to_file_();
     int                 delete_file_();
+    int                 virtual_host_index_;
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
