@@ -6,6 +6,7 @@
 #include <utility>
 #include <map>
 #include <fstream>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/util/PathUtil.hpp"
@@ -32,6 +33,7 @@ class HttpParser {
     const std::map<std::string, std::string>&
                              get_header_field_map() const;
     const std::string&       get_header_field(const std::string& key);
+    const std::string        get_host_name();
     const std::string        get_remain_buffer();
 
     const std::string&      getIndexHtmlFileName() const;

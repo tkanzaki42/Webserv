@@ -55,8 +55,9 @@ void HttpRequest::analyze_request() {
     // TODO(someone)
     // virtual_host_index_の設定
     this->virtual_host_index_ =
-         Config::getVirtualServerIndex(parser_.get_header_field("Host"));
+         Config::getVirtualServerIndex(parser_.get_host_name());
     // デフォルトパスの設定
+    std::cout <<"get_host_name()" << parser_.get_host_name() << "---" << std::endl;
     parser_.setIndexHtmlFileName
         (Config::getSingleStr(this->virtual_host_index_, "index"));
     parser_.setBaseHtmlPath
@@ -87,8 +88,6 @@ void HttpRequest::analyze_request() {
     // リダイレクト確認
     if (status_code_ == 200)
         check_redirect_();
-
-    puts("hogefuga");
 
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (status_code_ == 200) {

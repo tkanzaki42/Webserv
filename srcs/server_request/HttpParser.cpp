@@ -67,6 +67,11 @@ const std::string& HttpParser::get_header_field(const std::string& key) {
     return header_field_[key];
 }
 
+const std::string HttpParser::get_host_name() {
+    std::vector<std::string> field_host = split(header_field_["Host"], ':');
+    return (field_host[0]);
+}
+
 const std::string HttpParser::get_remain_buffer() {
     return received_line_.substr(
             read_idx_, received_line_.length() - read_idx_);
