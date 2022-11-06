@@ -33,6 +33,9 @@ class HttpParser {
     const std::string&           get_header_field(const std::string& key);
     const std::string            get_remain_buffer();
 
+    const std::string&      getIndexHtmlFileName() const;
+    const std::string&           getBaseHtmlPath() const;
+
     //  setter
     void                setIndexHtmlFileName(const std::string &filename);
     void                         setBaseHtmlPath(const std::string &path);

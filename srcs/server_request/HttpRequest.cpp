@@ -59,7 +59,7 @@ void HttpRequest::analyze_request() {
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getSingleStr(this->virtual_host_index_, "index"));
-    parser_.setIndexHtmlFileName
+    parser_.setBaseHtmlPath
         (Config::getSingleStr(this->virtual_host_index_, "root"));
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
@@ -103,7 +103,8 @@ void HttpRequest::print_debug() {
         << parser_.get_http_method() << std::endl;
     std::cout << "  request_target_   : "
         << parser_.get_request_target() << std::endl;
-    std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
+    std::cout << "  base_html_path    : "
+        << parser_.getBaseHtmlPath() << std::endl;
     std::cout << "  query_string_     : "
         << parser_.get_query_string() << std::endl;
     std::cout << "  path_to_file_     : "
@@ -123,6 +124,10 @@ void HttpRequest::print_debug() {
 
 HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
+}
+
+int HttpRequest::get_virtual_host_index() const {
+    return this->virtual_host_index_;
 }
 
 const std::string& HttpRequest::get_query_string() const {

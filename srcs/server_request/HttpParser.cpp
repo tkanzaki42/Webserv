@@ -80,6 +80,14 @@ void HttpParser::setBaseHtmlPath(const std::string &path) {
     this->baseHtmlPath = path;
 }
 
+const std::string& HttpParser::getIndexHtmlFileName() const {
+    return (this->indexHtmlFileName);
+}
+
+const std::string& HttpParser::getBaseHtmlPath() const {
+    return (this->baseHtmlPath);
+}
+
 void HttpParser::parse_method_() {
     if (received_line_.compare(read_idx_, 4, "POST") == 0) {
         http_method_ = METHOD_POST;

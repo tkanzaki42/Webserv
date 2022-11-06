@@ -35,6 +35,7 @@ class HttpRequest {
                         get_header_field_map() const;
     // getter(HttpRequest)
     int                 get_status_code() const;
+    int                 get_virtual_host_index() const;
     struct sockaddr_in  get_client_addr();
     FileType            get_file_type();
     // setter
