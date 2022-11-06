@@ -18,27 +18,28 @@ class HttpParser {
     HttpParser(const HttpParser &obj);
     HttpParser& operator=(const HttpParser &obj);
 
-    int                          parse();
-    void                         separate_querystring_pathinfo();
+    int                      parse();
+    void                     separate_querystring_pathinfo();
+    void                     autocomplete_path();
 
     // getter
-    HttpMethod                   get_http_method() const;
-    const std::string&           get_request_target() const;
-    const std::string&           get_query_string() const;
-    const std::string&           get_path_info() const;
-    const std::string&           get_path_to_file() const;
-    const std::string&           get_http_ver() const;
+    HttpMethod               get_http_method() const;
+    const std::string&       get_request_target() const;
+    const std::string&       get_query_string() const;
+    const std::string&       get_path_info() const;
+    const std::string&       get_path_to_file() const;
+    const std::string&       get_http_ver() const;
     const std::map<std::string, std::string>&
-                                 get_header_field_map() const;
-    const std::string&           get_header_field(const std::string& key);
-    const std::string            get_remain_buffer();
+                             get_header_field_map() const;
+    const std::string&       get_header_field(const std::string& key);
+    const std::string        get_remain_buffer();
 
     const std::string&      getIndexHtmlFileName() const;
     const std::string&           getBaseHtmlPath() const;
 
     //  setter
-    void                setIndexHtmlFileName(const std::string &filename);
-    void                         setBaseHtmlPath(const std::string &path);
+    void                     setIndexHtmlFileName(const std::string &filename);
+    void                     setBaseHtmlPath(const std::string &path);
 
  private:
     std::size_t                         read_idx_;
@@ -52,7 +53,7 @@ class HttpParser {
     std::string                         path_to_file_;
     std::string                         http_ver_;
     std::map<std::string, std::string>  header_field_;
-   
+
     // get from confign file data
     std::string   baseHtmlPath;
     std::string   indexHtmlFileName;
@@ -61,7 +62,6 @@ class HttpParser {
     void         parse_method_();
     void         parse_request_target_();
     std::string  split_query_string_(std::string &request_target);
-    void         generate_path_to_file_(std::string &remaining_path);
     void         split_path_info_();
     void         parse_http_ver_();
     void         parse_header_field_();

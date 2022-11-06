@@ -45,8 +45,9 @@ void HttpResponse::make_response() {
 
 void HttpResponse::make_message_body_() {
     // CGIの場合実行結果を取得する
-    if (request_->get_file_type() == FILETYPE_SCRIPT
-            || request_->get_file_type() == FILETYPE_BINARY) {
+    if (status_code_ == 200 &&
+            (request_->get_file_type() == FILETYPE_SCRIPT
+            || request_->get_file_type() == FILETYPE_BINARY)) {
         cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(request_->get_file_type());
         if (cgi_ret == EXIT_FAILURE) {
@@ -58,7 +59,8 @@ void HttpResponse::make_message_body_() {
     }
 
     // 静的HTMLページの場合、およびCGI実行が失敗した場合
-    if (request_->get_file_type() == FILETYPE_STATIC_HTML) {
+    if (status_code_ != 200
+            || request_->get_file_type() == FILETYPE_STATIC_HTML) {
         // リクエストヘッダ、リクエストボディの作成
         status_code_ = message_body_.make_response(status_code_);
     }
@@ -73,6 +75,27 @@ void HttpResponse::make_header_() {
     }
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
+
+    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
+    std::map<std::string, std::string> temporary_redirect_url;
+    temporary_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+    std::map<std::string, std::string> permanent_redirect_url;
+    permanent_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+
+    // 307 Temporary Redirect / 302 Found
+    if (status_code_ == 307 || status_code_ == 302)
+        header_.set_header("Location: "
+            + temporary_redirect_url[request_->get_path_to_file()]
+            + "\r\n");
+
+    // 308 Permanent Redirect / 301 Moved Permanently
+    if (status_code_ == 308 || status_code_ == 301)
+        header_.set_header("Location: "
+            + permanent_redirect_url[request_->get_path_to_file()]
+            + "\r\n");
+
 }
 
 void HttpResponse::merge_header_and_body_() {
