@@ -77,7 +77,7 @@ const std::string HttpParser::get_remain_buffer() {
             read_idx_, received_line_.length() - read_idx_);
 }
 
-void HttpParser::setIndexHtmlFileName(const std::string &filename) {
+void HttpParser::setIndexHtmlFileName(const std::vector<std::string> &filename) {
     this->indexHtmlFileName = filename;
 }
 
@@ -85,7 +85,7 @@ void HttpParser::setBaseHtmlPath(const std::string &path) {
     this->baseHtmlPath = path;
 }
 
-const std::string& HttpParser::getIndexHtmlFileName() const {
+const std::vector<std::string>& HttpParser::getIndexHtmlFileName() const {
     return (this->indexHtmlFileName);
 }
 
@@ -158,21 +158,18 @@ void HttpParser::autocomplete_path() {
         return;
 
     if (PathUtil::is_folder_exists(path_to_file_)) {
-        // 仮のコンフィグ TODO(yonishi) 正しいコンフィグに置き換え
-        std::map<std::string, std::string> autocomp_file;
-        autocomp_file["0"] = "index.html";
-        autocomp_file["1"] = "index.htm";
+        std::vector<std::string> autocomp_file = getIndexHtmlFileName();
 
-        for (std::map<std::string, std::string>::iterator it
+        for (std::vector<std::string>::iterator it
                     = autocomp_file.begin();
                 it != autocomp_file.end();
                 it++) {
             std::string temp_path;
             if (path_to_file_[path_to_file_.length() - 1] == '/') {
-                temp_path = path_to_file_ + (*it).second;
+                temp_path = path_to_file_ + (*it);
             } else {
                 temp_path = path_to_file_ + "/";
-                temp_path += (*it).second;
+                temp_path += (*it);
             }
             if (PathUtil::is_file_exists(temp_path)) {
                 path_to_file_ = temp_path;

@@ -36,11 +36,12 @@ class HttpParser {
     const std::string        get_host_name();
     const std::string        get_remain_buffer();
 
-    const std::string&      getIndexHtmlFileName() const;
-    const std::string&           getBaseHtmlPath() const;
+    const std::vector<std::string>&
+                             getIndexHtmlFileName() const;
+    const std::string&       getBaseHtmlPath() const;
 
     //  setter
-    void                     setIndexHtmlFileName(const std::string &filename);
+    void                     setIndexHtmlFileName(const std::vector<std::string> &filename);
     void                     setBaseHtmlPath(const std::string &path);
 
  private:
@@ -58,7 +59,7 @@ class HttpParser {
 
     // get from confign file data
     std::string   baseHtmlPath;
-    std::string   indexHtmlFileName;
+    std::vector<std::string> indexHtmlFileName;
 
     // parser
     void         parse_method_();

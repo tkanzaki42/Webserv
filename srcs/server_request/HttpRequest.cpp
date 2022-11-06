@@ -57,9 +57,8 @@ void HttpRequest::analyze_request() {
     this->virtual_host_index_ =
          Config::getVirtualServerIndex(parser_.get_host_name());
     // デフォルトパスの設定
-    std::cout <<"get_host_name()" << parser_.get_host_name() << "---" << std::endl;
     parser_.setIndexHtmlFileName
-        (Config::getSingleStr(this->virtual_host_index_, "index"));
+        (Config::getVectorStr(this->virtual_host_index_, "index"));
     parser_.setBaseHtmlPath
         (Config::getSingleStr(this->virtual_host_index_, "root"));
 
