@@ -76,26 +76,16 @@ void HttpResponse::make_header_() {
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
 
-    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
-    std::map<std::string, std::string> temporary_redirect_url;
-    temporary_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
-    std::map<std::string, std::string> permanent_redirect_url;
-    permanent_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
-
+    // Configから取得したリダイレクトURL（key:status_code, value:redirect_url）
+    std::map<int, std::string> redirect_url_map =
+        Config::getMapIntStr(request_->get_virtual_host_index(), "return");
     // 307 Temporary Redirect / 302 Found
-    if (status_code_ == 307 || status_code_ == 302)
-        header_.set_header("Location: "
-            + temporary_redirect_url[request_->get_path_to_file()]
-            + "\r\n");
-
     // 308 Permanent Redirect / 301 Moved Permanently
-    if (status_code_ == 308 || status_code_ == 301)
+    if (status_code_ == 307 || status_code_ == 302
+     || status_code_ == 308 || status_code_ == 301)
         header_.set_header("Location: "
-            + permanent_redirect_url[request_->get_path_to_file()]
+            + redirect_url_map[status_code_]
             + "\r\n");
-
 }
 
 void HttpResponse::merge_header_and_body_() {

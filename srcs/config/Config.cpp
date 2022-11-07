@@ -228,6 +228,22 @@ std::vector<std::string> Config::getVectorStr(int hostKey,
     return (_config[hostKey][key]);
 }
 
+std::map<int, std::string> Config::getMapIntStr(int hostKey,
+                                             const std::string& key) {
+    std::map<int, std::string> map;
+    std::vector<std::string> vectorStr = getVectorStr(hostKey, key);
+    std::vector<std::string>::iterator begin = vectorStr.begin();
+    std::vector<std::string>::iterator end = vectorStr.end();
+    for (std::vector<std::string>::iterator iter = begin;
+         iter != end; iter++) {
+        // この時点でConfigの構成に従っていれば":"区切りの要素二つの状態のはず TODO(kfukuta)
+        std::vector<std::string> tmp = split(*iter, ':');
+        // mapの挿入方法が問題ないか TODO(kfukuta)
+        map[StringConverter::stoi(tmp[0])] = tmp[1];
+    }
+    return (map);
+}
+
 // test for getter
 void Config::testConfig() {
     std::cout << "host_1 server_name : "
