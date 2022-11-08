@@ -236,9 +236,10 @@ std::map<int, std::string> Config::getMapIntStr(int hostKey,
     std::vector<std::string>::iterator end = vectorStr.end();
     for (std::vector<std::string>::iterator iter = begin;
          iter != end; iter++) {
-        // この時点でConfigの構成に従っていれば":"区切りの要素二つの状態のはず TODO(kfukuta)
-        std::vector<std::string> tmp = split(*iter, ':');
+        // この時点でConfigの構成に従っていれば"|"区切りの要素二つの状態のはず TODO(kfukuta)
+        std::vector<std::string> tmp = split(*iter, '|');
         // mapの挿入方法が問題ないか TODO(kfukuta)
+        std::cout << "tmp[1]:" << tmp[1] << std::endl;
         map[StringConverter::stoi(tmp[0])] = tmp[1];
     }
     return (map);

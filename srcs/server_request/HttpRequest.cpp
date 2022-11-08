@@ -187,10 +187,10 @@ void HttpRequest::check_redirect_() {
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
     temporary_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
+        = "http://127.0.0.1:5050/redirect_to.html";
     std::map<std::string, std::string> permanent_redirect_url;
     permanent_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
+        = "http://127.0.0.1:5050/redirect_to.html";
 
     if (temporary_redirect_url[get_path_to_file()] != "") {
         if (get_http_method() == METHOD_POST)

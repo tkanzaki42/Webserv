@@ -83,6 +83,7 @@ void HttpResponse::make_header_() {
     // 308 Permanent Redirect / 301 Moved Permanently
     if (status_code_ == 307 || status_code_ == 302
      || status_code_ == 308 || status_code_ == 301)
+        std::cout << "redirect_url_map[]:" << redirect_url_map[status_code_] << std::endl;
         header_.set_header("Location: "
             + redirect_url_map[status_code_]
             + "\r\n");
