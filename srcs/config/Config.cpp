@@ -28,30 +28,20 @@ std::map<int, string_vector_map>::iterator Config::getDefaultServer() {
     return (_config.find(0));
 }
 
-std::map<int, string_vector_map>::iterator
-     Config::getVirtualServer(const std::string &hostname) {
+int Config::getVirtualHostIndex(const std::string &hostname,
+                                 const std::string &port) {
     std::map<int, string_vector_map>::iterator begin = _config.begin();
     std::map<int, string_vector_map >::iterator end = _config.end();
-    string_vector_map::iterator defaultIter;
-    for (std::map<int, string_vector_map>
-            ::iterator itr = begin; itr != end; itr++) {
-        defaultIter = itr->second.find("server_name");
-        if (!defaultIter->second[0].compare(hostname)) {
-            return (itr);
-        }
-    }
-    return (getDefaultServer());
-}
-
-int Config::getVirtualHostIndex(const std::string &hostname) {
-    std::map<int, string_vector_map>::iterator begin = _config.begin();
-    std::map<int, string_vector_map >::iterator end = _config.end();
-    string_vector_map::iterator defaultIter;
+    string_vector_map::iterator serverName;
+    string_vector_map::iterator listenNum;
     int virtual_host_index = 0;
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
-        defaultIter = itr->second.find("server_name");
-        if (!defaultIter->second[0].compare(hostname)) {
+        serverName = itr->second.find("server_name");
+        listenNum = itr->second.find("listen");
+        if (!serverName->second[0].compare(hostname)
+            && !listenNum->second[0].compare(port)) {
+            std::cout << "getVirtualHostIndex(:" << listenNum->second[0] << std::endl;
             return (virtual_host_index);
         }
         virtual_host_index++;

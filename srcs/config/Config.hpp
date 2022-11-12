@@ -35,8 +35,8 @@ class Config {
     static std::map<int, std::string>
          getMapIntStr(int, const std::string&);
     static std::map<int, string_vector_map>::iterator getDefaultServer();
-    static std::map<int, string_vector_map>::iterator getVirtualServer(const std::string &hostname);
-    static int getVirtualHostIndex(const std::string &hostname);
+    static int getVirtualHostIndex(const std::string &hostname,
+                                    const std::string &port);
     static int isReturn(int virtualHostIndex);
     static std::pair<int, std::string> getReturn(int virtualServerIndex);
 

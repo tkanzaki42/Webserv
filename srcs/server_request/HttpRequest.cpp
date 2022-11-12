@@ -55,7 +55,8 @@ void HttpRequest::analyze_request() {
     // TODO(someone)
     // virtual_host_index_の設定
     this->virtual_host_index_ =
-         Config::getVirtualHostIndex(parser_.get_host_name());
+         Config::getVirtualHostIndex(parser_.get_host_name(),
+                 StringConverter::itos(5050));
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getVectorStr(this->virtual_host_index_, "index"));
