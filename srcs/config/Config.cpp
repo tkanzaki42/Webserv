@@ -43,7 +43,7 @@ std::map<int, string_vector_map>::iterator
     return (getDefaultServer());
 }
 
-int Config::getVirtualServerIndex(const std::string &hostname) {
+int Config::getVirtualHostIndex(const std::string &hostname) {
     std::map<int, string_vector_map>::iterator begin = _config.begin();
     std::map<int, string_vector_map >::iterator end = _config.end();
     string_vector_map::iterator defaultIter;
@@ -60,6 +60,29 @@ int Config::getVirtualServerIndex(const std::string &hostname) {
     return (0);
 }
 
+int Config::isReturn(int virtualServerIndex) {
+    string_vector_map::iterator end = _config[virtualServerIndex].end();
+    if (_config[virtualServerIndex].find("return") != end) {
+        return (true);
+    }
+    return (0);
+}
+
+std::pair<int, std::string> Config::getReturn(int virtualServerIndex) {
+    int statusCode;
+    std::string url;
+    std::pair<int, std::string> statusUrlPair;
+
+    std::vector<std::string> vectorStr
+         = getVectorStr(virtualServerIndex, "return");
+    std::vector<std::string>::iterator iter = vectorStr.begin();
+    // この時点でConfigの構成に従っていれば"|"区切りの要素二つの状態のはず TODO(kfukuta)
+    std::vector<std::string> tmp = split(*iter, '|');
+    statusCode = StringConverter::stoi(tmp[0]);
+    url = tmp[1];
+    statusUrlPair = std::make_pair(statusCode, url);
+    return (statusUrlPair);
+}
 
 std::map<int, string_vector_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
@@ -239,7 +262,6 @@ std::map<int, std::string> Config::getMapIntStr(int hostKey,
         // この時点でConfigの構成に従っていれば"|"区切りの要素二つの状態のはず TODO(kfukuta)
         std::vector<std::string> tmp = split(*iter, '|');
         // mapの挿入方法が問題ないか TODO(kfukuta)
-        std::cout << "tmp[1]:" << tmp[1] << std::endl;
         map[StringConverter::stoi(tmp[0])] = tmp[1];
     }
     return (map);

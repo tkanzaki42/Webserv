@@ -36,7 +36,9 @@ class Config {
          getMapIntStr(int, const std::string&);
     static std::map<int, string_vector_map>::iterator getDefaultServer();
     static std::map<int, string_vector_map>::iterator getVirtualServer(const std::string &hostname);
-    static int getVirtualServerIndex(const std::string &hostname);
+    static int getVirtualHostIndex(const std::string &hostname);
+    static int isReturn(int virtualHostIndex);
+    static std::pair<int, std::string> getReturn(int virtualServerIndex);
 
     class ConfigFormatException : public std::exception {
      public:

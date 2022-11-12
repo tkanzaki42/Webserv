@@ -55,7 +55,7 @@ void HttpRequest::analyze_request() {
     // TODO(someone)
     // virtual_host_index_の設定
     this->virtual_host_index_ =
-         Config::getVirtualServerIndex(parser_.get_host_name());
+         Config::getVirtualHostIndex(parser_.get_host_name());
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getVectorStr(this->virtual_host_index_, "index"));
@@ -184,26 +184,15 @@ void HttpRequest::set_file_type(FileType file_type) {
 }
 
 void HttpRequest::check_redirect_() {
-    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
-    std::map<std::string, std::string> temporary_redirect_url;
-    temporary_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5050/redirect_to.html";
-    std::map<std::string, std::string> permanent_redirect_url;
-    permanent_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5050/redirect_to.html";
-
-    if (temporary_redirect_url[get_path_to_file()] != "") {
-        if (get_http_method() == METHOD_POST)
-            status_code_ = 307;  // Temporary Redirect
-        else
-            status_code_ = 302;  // Found
+    // リダイレクトが設定されていない場合は何もしない
+    if (!Config::isReturn(this->virtual_host_index_)) {
+        return;
     }
-    if (permanent_redirect_url[get_path_to_file()] != "") {
-        if (get_http_method() == METHOD_POST)
-            status_code_ = 308;  // Permanent Redirect
-        else
-            status_code_ = 301;  // Moved Permanently
-    }
+    std::pair<int, std::string> redirectUrlPair
+         = Config::getReturn(this->virtual_host_index_);
+    std::map<int, std::string> redirectUrlMap
+         = Config::getMapIntStr(this->virtual_host_index_, "return");
+    status_code_ = redirectUrlPair.first;
 }
 
 int HttpRequest::receive_and_store_to_file_() {
