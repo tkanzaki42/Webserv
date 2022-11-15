@@ -234,6 +234,10 @@ int HttpRequest::receive_and_store_to_file_() {
                 >= atoi(parser_.get_header_field("Content-Length").c_str())
             ) {
             break;
+        } else if (total_read_size > 1000000) {
+            // デフォルト値1MB以上なら413
+            ofs_outfile.close();
+            return 413;
         }
 
         read_size = fd_manager_->receive(buf);
