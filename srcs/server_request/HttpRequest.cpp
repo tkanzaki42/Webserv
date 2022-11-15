@@ -203,7 +203,7 @@ void HttpRequest::check_redirect_() {
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
     std::string dir_path
-        = get_path_to_file().substr(0, get_path_to_file().rfind('/'));
+        = "./file/";
     if (PathUtil::is_folder_exists(dir_path) == false) {
         if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             std::cerr << "Could not create dirctory: " << dir_path << std::endl;
