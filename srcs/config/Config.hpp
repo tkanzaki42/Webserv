@@ -17,7 +17,7 @@ typedef std::map<std::string, std::vector<std::string> > string_vector_map;
 
 class Config {
  public:
-    static std::map<std::string, string_vector_map> _config;
+    static std::map<int, string_vector_map> _config;
     Config();
     ~Config();
     static void parseConfig(const std::string &path);
@@ -25,15 +25,16 @@ class Config {
     static void printConfig();
     static void testConfig();
     static std::vector<std::string> parseValue(const std::string &valueStr);
-    static std::string getSingleStr(const std::string&, const std::string&);
-    static int getSingleInt(const std::string&, const std::string&);
+    static std::string getSingleStr(int, const std::string&);
+    static int getSingleInt(int, const std::string&);
     static std::set<int> getAllListen();
     static std::vector<int>
-         getVectorInt(const std::string&, const std::string&);
+         getVectorInt(int, const std::string&);
     static std::vector<std::string>
-         getVectorStr(const std::string&, const std::string&);
-    static std::map<std::string, string_vector_map>::iterator getDefaultServer();
-    static std::map<std::string, string_vector_map>::iterator getVirtualServer(const std::string &hostname);
+         getVectorStr(int, const std::string&);
+    static std::map<int, string_vector_map>::iterator getDefaultServer();
+    static std::map<int, string_vector_map>::iterator getVirtualServer(const std::string &hostname);
+    static int getVirtualServerIndex(const std::string &hostname);
 
     class ConfigFormatException : public std::exception {
      public:

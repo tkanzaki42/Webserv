@@ -6,6 +6,7 @@
 #include <utility>
 #include <map>
 #include <fstream>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/util/PathUtil.hpp"
@@ -32,10 +33,15 @@ class HttpParser {
     const std::map<std::string, std::string>&
                              get_header_field_map() const;
     const std::string&       get_header_field(const std::string& key);
+    const std::string        get_host_name();
     const std::string        get_remain_buffer();
 
+    const std::vector<std::string>&
+                             getIndexHtmlFileName() const;
+    const std::string&       getBaseHtmlPath() const;
+
     //  setter
-    void                     setIndexHtmlFileName(const std::string &filename);
+    void                     setIndexHtmlFileName(const std::vector<std::string> &filename);
     void                     setBaseHtmlPath(const std::string &path);
 
  private:
@@ -53,7 +59,7 @@ class HttpParser {
 
     // get from confign file data
     std::string   baseHtmlPath;
-    std::string   indexHtmlFileName;
+    std::vector<std::string> indexHtmlFileName;
 
     // parser
     void         parse_method_();

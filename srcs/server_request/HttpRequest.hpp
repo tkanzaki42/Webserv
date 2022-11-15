@@ -35,6 +35,7 @@ class HttpRequest {
                         get_header_field_map() const;
     // getter(HttpRequest)
     int                 get_status_code() const;
+    int                 get_virtual_host_index() const;
     struct sockaddr_in  get_client_addr();
     FileType            get_file_type();
     // setter
@@ -50,6 +51,7 @@ class HttpRequest {
     void                check_redirect_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
+    int                 virtual_host_index_;
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
