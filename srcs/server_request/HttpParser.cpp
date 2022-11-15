@@ -67,17 +67,30 @@ const std::string& HttpParser::get_header_field(const std::string& key) {
     return header_field_[key];
 }
 
+const std::string HttpParser::get_host_name() {
+    std::vector<std::string> field_host = split(header_field_["Host"], ':');
+    return (field_host[0]);
+}
+
 const std::string HttpParser::get_remain_buffer() {
     return received_line_.substr(
             read_idx_, received_line_.length() - read_idx_);
 }
 
-void HttpParser::setIndexHtmlFileName(const std::string &filename) {
+void HttpParser::setIndexHtmlFileName(const std::vector<std::string> &filename) {
     this->indexHtmlFileName = filename;
 }
 
 void HttpParser::setBaseHtmlPath(const std::string &path) {
     this->baseHtmlPath = path;
+}
+
+const std::vector<std::string>& HttpParser::getIndexHtmlFileName() const {
+    return (this->indexHtmlFileName);
+}
+
+const std::string& HttpParser::getBaseHtmlPath() const {
+    return (this->baseHtmlPath);
 }
 
 void HttpParser::parse_method_() {
@@ -113,7 +126,7 @@ void HttpParser::separate_querystring_pathinfo() {
     std::string remaining_path = split_query_string_(request_target_);
 
     // path_to_file_を仮で設定
-    path_to_file_ = kBaseHtmlPath + remaining_path;
+    path_to_file_ = this->baseHtmlPath + remaining_path;
 
     // パスからPATH_INFOを切り出す
     if (get_http_method() != METHOD_POST)
@@ -145,21 +158,18 @@ void HttpParser::autocomplete_path() {
         return;
 
     if (PathUtil::is_folder_exists(path_to_file_)) {
-        // 仮のコンフィグ TODO(yonishi) 正しいコンフィグに置き換え
-        std::map<std::string, std::string> autocomp_file;
-        autocomp_file["0"] = "index.html";
-        autocomp_file["1"] = "index.htm";
+        std::vector<std::string> autocomp_file = getIndexHtmlFileName();
 
-        for (std::map<std::string, std::string>::iterator it
+        for (std::vector<std::string>::iterator it
                     = autocomp_file.begin();
                 it != autocomp_file.end();
                 it++) {
             std::string temp_path;
             if (path_to_file_[path_to_file_.length() - 1] == '/') {
-                temp_path = path_to_file_ + (*it).second;
+                temp_path = path_to_file_ + (*it);
             } else {
                 temp_path = path_to_file_ + "/";
-                temp_path += (*it).second;
+                temp_path += (*it);
             }
             if (PathUtil::is_file_exists(temp_path)) {
                 path_to_file_ = temp_path;

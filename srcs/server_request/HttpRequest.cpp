@@ -3,7 +3,7 @@
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
-          status_code_(200) {
+          status_code_(200), virtual_host_index_(-1) {
 }
 
 HttpRequest::~HttpRequest() {
@@ -53,12 +53,14 @@ void HttpRequest::analyze_request() {
 
     // HTTPバージョンの確認
     // TODO(someone)
-
+    // virtual_host_index_の設定
+    this->virtual_host_index_ =
+         Config::getVirtualServerIndex(parser_.get_host_name());
     // デフォルトパスの設定
-    string_vector_map config =
-        Config::getVirtualServer(parser_.get_header_field("Host"))->second;
-    parser_.setIndexHtmlFileName(config.find("index")->second[0]);
-    parser_.setBaseHtmlPath(config.find("root")->second[0]);
+    parser_.setIndexHtmlFileName
+        (Config::getVectorStr(this->virtual_host_index_, "index"));
+    parser_.setBaseHtmlPath
+        (Config::getSingleStr(this->virtual_host_index_, "root"));
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
     parser_.separate_querystring_pathinfo();
@@ -114,7 +116,8 @@ void HttpRequest::print_debug() {
         << parser_.get_http_method() << std::endl;
     std::cout << "  request_target_   : "
         << parser_.get_request_target() << std::endl;
-    std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
+    std::cout << "  base_html_path    : "
+        << parser_.getBaseHtmlPath() << std::endl;
     std::cout << "  query_string_     : "
         << parser_.get_query_string() << std::endl;
     std::cout << "  path_to_file_     : "
@@ -134,6 +137,10 @@ void HttpRequest::print_debug() {
 
 HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
+}
+
+int HttpRequest::get_virtual_host_index() const {
+    return this->virtual_host_index_;
 }
 
 const std::string& HttpRequest::get_query_string() const {
