@@ -66,12 +66,6 @@ void HttpRequest::analyze_request() {
     // パスの補完(末尾にindex.htmlをつけるなど)
     parser_.autocomplete_path();
 
-    // ファイル存在チェック
-    if (!PathUtil::is_file_exists(get_path_to_file())) {
-        std::cerr << "File not found: " << get_path_to_file() << std::endl;
-        status_code_ = 404;  // Not Found
-    }
-
     // ファイルタイプの判定
     const std::string file_extension
             = PathUtil::get_file_extension(get_path_to_file());
@@ -82,23 +76,28 @@ void HttpRequest::analyze_request() {
     else
         file_type_ = FILETYPE_STATIC_HTML;
 
+    // ↓以降ステータスコードの更新処理
     // リダイレクト確認
-    if (status_code_ == 200)
-        check_redirect_();
+    check_redirect_();
+    if (status_code_ != 200) {
+        return ;
+    }
 
-    puts("hogefuga");
-
+    // ファイル存在チェック
+    if (!PathUtil::is_file_exists(get_path_to_file())) {
+        std::cerr << "File not found: " << get_path_to_file() << std::endl;
+        status_code_ = 404;  // Not Found
+        return ;
+    }
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
-    if (status_code_ == 200) {
-        if (get_http_method() == METHOD_POST) {
-            if (file_type_ == FILETYPE_STATIC_HTML) {
-                status_code_ = receive_and_store_to_file_();
-            } else {
-                // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
-            }
-        } else if (get_http_method() == METHOD_DELETE) {
-            status_code_ = delete_file_();
+    if (get_http_method() == METHOD_POST) {
+        if (file_type_ == FILETYPE_STATIC_HTML) {
+            status_code_ = receive_and_store_to_file_();
+        } else {
+            // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
         }
+    } else if (get_http_method() == METHOD_DELETE) {
+        status_code_ = delete_file_();
     }
 }
 

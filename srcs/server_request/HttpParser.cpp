@@ -289,7 +289,7 @@ void HttpParser::rtrim_(std::string &str) {
 
 int HttpParser::validate_parsed_data_() {
     if (http_method_ == METHOD_NOT_DEFINED)
-        return 400;  // Bad Request
+        return 405;  // Bad Request
     if (request_target_ == "")
         return 400;
     if (http_ver_ == "")
