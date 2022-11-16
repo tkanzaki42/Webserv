@@ -95,17 +95,20 @@ void HttpBody::make_autoindex_response() {
             const int display_width = 50;  // 表示する幅を指定
             if (str_width > display_width) {
                 // 文字幅が長い場合は省略表記
-                oss_body << UTF8Util::get_limited_wide_string(
-                    file_name, display_width - 3)
-                    <<  "..&gt;</a> ";
+                std::string limited_str = UTF8Util::get_limited_wide_string(
+                    file_name, display_width - 3);
+                oss_body << limited_str <<  "..&gt;</a> ";
+                str_width = UTF8Util::get_string_width(limited_str) + 3;
             } else {
-                // 文字幅が文字会場合はすべて表示後にスペースで埋める
+                // 文字幅が文字会場合はすべて表示
                 oss_body << file_name <<  "</a> ";
-                while (str_width < display_width) {
-                    oss_body << ' ';
-                    str_width++;
-                }
             }
+            // 文字数不足分をスペースで埋める
+            while (str_width < display_width) {
+                oss_body << ' ';
+                str_width++;
+            }
+
             oss_body << PathUtil::get_last_modified_date(
                         request_.get_path_to_file() + "/" + file_name)
                 << std::setw(20)
