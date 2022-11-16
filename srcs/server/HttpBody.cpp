@@ -90,14 +90,27 @@ void HttpBody::make_autoindex_response() {
             if (file_name.compare(".") == 0 || file_name.compare("..") == 0)
                 continue;
 
-            oss_body << "<a href=\"" << file_name << "\">"
-                << file_name << "</a>"
-                << "                                          "
-                << PathUtil::get_last_modified_date(
-                    request_.get_path_to_file() + "/" + file_name)
-                << "                  "
+            oss_body << "<a href=\"" << file_name << "\">";
+            int str_width = UTF8Util::get_string_width(file_name);
+            const int display_width = 50;  // 表示する幅を指定
+            if (str_width > display_width) {
+                // 文字幅が長い場合は省略表記
+                oss_body << UTF8Util::get_limited_wide_string(
+                    file_name, display_width - 3)
+                    <<  "..&gt;</a> ";
+            } else {
+                // 文字幅が文字会場合はすべて表示後にスペースで埋める
+                oss_body << file_name <<  "</a> ";
+                while (str_width < display_width) {
+                    oss_body << ' ';
+                    str_width++;
+                }
+            }
+            oss_body << PathUtil::get_last_modified_date(
+                        request_.get_path_to_file() + "/" + file_name)
+                << std::setw(20)
                 << PathUtil::get_filesize(
-                    request_.get_path_to_file() + "/" + file_name)
+                        request_.get_path_to_file() + "/" + file_name)
                 << "\r\n";
         }
         closedir(dir);

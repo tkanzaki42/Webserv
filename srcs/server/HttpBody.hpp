@@ -5,11 +5,13 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 
 #include "srcs/server_request/HttpRequest.hpp"
 #include "srcs/server/HttpHeader.hpp"
+#include "srcs/util/UTF8Util.hpp"
 
 class HttpBody {
  private :
