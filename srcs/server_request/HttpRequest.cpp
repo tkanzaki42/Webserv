@@ -147,10 +147,6 @@ HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
 }
 
-int HttpRequest::get_virtual_host_index() const {
-    return this->virtual_host_index_;
-}
-
 const std::string& HttpRequest::get_request_target() const {
     return parser_.get_request_target();
 }
@@ -188,16 +184,16 @@ int HttpRequest::get_status_code() const {
     return status_code_;
 }
 
+int HttpRequest::get_virtual_host_index() const {
+    return this->virtual_host_index_;
+}
+
 bool HttpRequest::get_is_autoindex() const {
     return is_autoindex_;
 }
 
 struct sockaddr_in HttpRequest::get_client_addr() {
     return fd_manager_->get_client_addr();
-}
-
-FileType HttpRequest::get_file_type() {
-    return file_type_;
 }
 
 void HttpRequest::set_file_type(FileType file_type) {

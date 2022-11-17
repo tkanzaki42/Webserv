@@ -49,12 +49,12 @@ class HttpRequest {
     std::string         received_line_;
     FileType            file_type_;
     int                 status_code_;
+    int                 virtual_host_index_;
     bool                is_autoindex_;
 
     void                check_redirect_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
-    int                 virtual_host_index_;
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
