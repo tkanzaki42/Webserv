@@ -1,4 +1,7 @@
 #include "srcs/server_request/HttpRequest.hpp"
+# define TMP_POST_DATA_DIR  "./file/"
+# define TMP_POST_DATA_FILE "./file/tmp.txt"
+# define REQUEST_ENTITY_MAX 1000000
 
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
@@ -209,18 +212,16 @@ void HttpRequest::check_redirect_() {
 
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    std::string dir_path
-        = "./file/";
-    if (PathUtil::is_folder_exists(dir_path) == false) {
-        if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            std::cerr << "Could not create dirctory: " << dir_path << std::endl;
+    if (PathUtil::is_folder_exists(TMP_POST_DATA_DIR) == false) {
+        if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            std::cerr << "Could not create dirctory: " << TMP_POST_DATA_DIR << std::endl;
             return 500;  // Internal Server Error
         }
     }
 
     // ファイルのオープン
     std::ofstream ofs_outfile;
-    ofs_outfile.open("./file/upload.txt",
+    ofs_outfile.open(TMP_POST_DATA_FILE,
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
         std::cerr << "Could not open file during receiving the file: "
@@ -241,9 +242,10 @@ int HttpRequest::receive_and_store_to_file_() {
                 >= atoi(parser_.get_header_field("Content-Length").c_str())
             ) {
             break;
-        } else if (total_read_size > 1000000) {
+        } else if (total_read_size > REQUEST_ENTITY_MAX) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
+            std::remove(TMP_POST_DATA_FILE);
             return 413;
         }
 

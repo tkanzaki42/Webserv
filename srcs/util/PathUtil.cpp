@@ -24,6 +24,18 @@ bool PathUtil::is_folder_exists(const std::string& path) {
     }
 }
 
+bool PathUtil::is_folder_exists(const char *path) {
+    struct stat st;
+
+    if (stat(path, &st) != 0)
+        return false;
+    if (S_ISDIR(st.st_mode)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool PathUtil::is_file_or_folder_exists(const std::string& path) {
     struct stat st;
 
