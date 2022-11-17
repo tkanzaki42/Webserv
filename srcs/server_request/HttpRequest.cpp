@@ -1,7 +1,4 @@
 #include "srcs/server_request/HttpRequest.hpp"
-# define TMP_POST_DATA_DIR  "./file/"
-# define TMP_POST_DATA_FILE "./file/tmp.txt"
-# define REQUEST_ENTITY_MAX 1000000
 
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
