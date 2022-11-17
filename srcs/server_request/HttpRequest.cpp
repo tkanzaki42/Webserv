@@ -78,6 +78,10 @@ void HttpRequest::analyze_request() {
         status_code_ = 404;  // Not Found
     }
 
+    // リダイレクト確認
+    if (status_code_ == 200 || status_code_ == 404)
+        check_redirect_();
+
     // オートインデックスの実施
     bool autoindex = true;
     if (status_code_ == 404 && autoindex == true)
@@ -92,10 +96,6 @@ void HttpRequest::analyze_request() {
         file_type_ = FILETYPE_BINARY;
     else
         file_type_ = FILETYPE_STATIC_HTML;
-
-    // リダイレクト確認
-    if (status_code_ == 200)
-        check_redirect_();
 
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (status_code_ == 200) {
@@ -201,6 +201,17 @@ void HttpRequest::set_file_type(FileType file_type) {
 }
 
 void HttpRequest::check_redirect_() {
+    // ディレクトリ指定で最後のスラッシュがない場合
+    std::cerr << "****" << get_path_to_file()[get_path_to_file().size() - 1]
+        << std::endl;
+    std::cerr << "****" << get_path_to_file()
+        << std::endl;
+    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
+            && PathUtil::is_folder_exists(get_path_to_file()) == true) {
+        status_code_ = 301;  // Moved Permanently
+    }
+
+
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
     temporary_redirect_url["./public_html/redirect_from.html"]

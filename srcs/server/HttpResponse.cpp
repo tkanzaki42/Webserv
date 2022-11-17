@@ -98,11 +98,19 @@ void HttpResponse::make_header_() {
             + "\r\n");
 
     // 308 Permanent Redirect / 301 Moved Permanently
-    if (status_code_ == 308 || status_code_ == 301)
-        header_.set_header("Location: "
-            + permanent_redirect_url[request_->get_path_to_file()]
-            + "\r\n");
-
+    if (status_code_ == 308 || status_code_ == 301) {
+        if (permanent_redirect_url[request_->get_path_to_file()] != "") {
+            header_.set_header("Location: "
+                + permanent_redirect_url[request_->get_path_to_file()]
+                + "\r\n");
+        } else {
+            // ディレクトリ指定時の最後スラッシュなしの場合
+            header_.set_header("Location: http://"
+                + request_->get_header_field("Host")
+                + request_->get_request_target()
+                + "/\r\n");
+        }
+    }
 }
 
 void HttpResponse::merge_header_and_body_() {
