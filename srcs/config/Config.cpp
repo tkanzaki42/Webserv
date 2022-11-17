@@ -24,26 +24,16 @@ void Config::init(const std::string &path) {
     }
 }
 
-std::map<std::string, string_vector_map>::iterator Config::getDefaultServer() {
-    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
-    std::map<std::string, string_vector_map >::iterator end = _config.end();
-    string_vector_map::iterator defaultIter;
-    for (std::map<std::string, string_vector_map>
-            ::iterator itr = begin; itr != end; itr++) {
-        defaultIter = itr->second.find("default");
-        if (defaultIter != itr->second.end()) {
-            return (itr);
-        }
-    }
-    return (end);
+std::map<int, string_vector_map>::iterator Config::getDefaultServer() {
+    return (_config.find(0));
 }
 
-std::map<std::string, string_vector_map>::iterator
+std::map<int, string_vector_map>::iterator
      Config::getVirtualServer(const std::string &hostname) {
-    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
-    std::map<std::string, string_vector_map >::iterator end = _config.end();
+    std::map<int, string_vector_map>::iterator begin = _config.begin();
+    std::map<int, string_vector_map >::iterator end = _config.end();
     string_vector_map::iterator defaultIter;
-    for (std::map<std::string, string_vector_map>
+    for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         defaultIter = itr->second.find("server_name");
         if (!defaultIter->second[0].compare(hostname)) {
@@ -53,7 +43,25 @@ std::map<std::string, string_vector_map>::iterator
     return (getDefaultServer());
 }
 
-std::map<std::string, string_vector_map> Config::_config;
+int Config::getVirtualServerIndex(const std::string &hostname) {
+    std::map<int, string_vector_map>::iterator begin = _config.begin();
+    std::map<int, string_vector_map >::iterator end = _config.end();
+    string_vector_map::iterator defaultIter;
+    int virtual_host_index = 0;
+    for (std::map<int, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        defaultIter = itr->second.find("server_name");
+        if (!defaultIter->second[0].compare(hostname)) {
+            return (virtual_host_index);
+        }
+        virtual_host_index++;
+    }
+    // もし見つからなかったら一番最初のIndex（0）を返す
+    return (0);
+}
+
+
+std::map<int, string_vector_map> Config::_config;
 void    Config::parseConfig(const std::string &path) {
     bool isDefault = true;
     std::ifstream ifs(path.c_str());
@@ -61,9 +69,9 @@ void    Config::parseConfig(const std::string &path) {
         std::cerr << "Can not open file" << std::endl;
         exit(EXIT_FAILURE);
     }
+    int hostKey = -1;
     while (!ifs.eof()) {
         std::string buf;
-        std::string hostname;
         std::string key;
         std::string value;
         std::getline(ifs, buf, '\n');
@@ -71,10 +79,14 @@ void    Config::parseConfig(const std::string &path) {
             continue;
         // インデントから始まっていない
         if (buf[0] != ' ') {
-            // hostnameの中身が設定されているかのフラグ
+            // hostKeyの中身が設定されているかのフラグ
             bool isKeySet = false;
-            hostname = buf;
-            // hostname の設定を読みにいく
+            // serverで始まっていないとエラー
+            if (buf.compare("server")) {
+                throw(Config::ConfigFormatException());
+            }
+            hostKey++;
+            // hostKey の設定を読みにいく
             while (!ifs.eof()) {
                 std::getline(ifs, buf, '\n');
                 // インデントのチェック（インデントは１つが正しい）
@@ -103,14 +115,14 @@ void    Config::parseConfig(const std::string &path) {
                      std::vector<std::string> > key_value_pair;
                 key_value_pair = std::make_pair(key, valueVecotr);
                 // もしinsert出来なかったらキーが重複している。その場合はフォーマットエラーを返す。
-                if (!_config[hostname].insert(key_value_pair).second) {
+                if (!_config[hostKey].insert(key_value_pair).second) {
                     throw(Config::ConfigFormatException());
                 }
                 // 最初のサーバーネームの場合は　default フラグを立てる
                 if (isDefault) {
                     std::vector<std::string> defaultVect;
                     defaultVect.push_back("true");
-                    if (!_config[hostname].insert(
+                    if (!_config[hostKey].insert(
                             std::make_pair("default", defaultVect)).second) {
                         throw(Config::ConfigFormatException());
                     }
@@ -130,9 +142,9 @@ void    Config::parseConfig(const std::string &path) {
 
 std::set<int> Config::getAllListen() {
     std::set<int> allListen;
-    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
-    std::map<std::string, string_vector_map >::iterator end = _config.end();
-    for (std::map<std::string, string_vector_map>
+    std::map<int, string_vector_map>::iterator begin = _config.begin();
+    std::map<int, string_vector_map >::iterator end = _config.end();
+    for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         string_vector_map::iterator key_begin = itr->second.begin();
         string_vector_map::iterator key_end = itr->second.end();
@@ -168,9 +180,9 @@ std::vector<std::string> Config::parseValue(const std::string &valueStr) {
 
 
 void    Config::printConfig() {
-    std::map<std::string, string_vector_map>::iterator begin = _config.begin();
-    std::map<std::string, string_vector_map >::iterator end = _config.end();
-    for (std::map<std::string, string_vector_map>
+    std::map<int, string_vector_map>::iterator begin = _config.begin();
+    std::map<int, string_vector_map >::iterator end = _config.end();
+    for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         std::cout << itr->first << std::endl;
         string_vector_map::iterator key_begin = itr->second.begin();
@@ -190,20 +202,20 @@ void    Config::printConfig() {
     }
 }
 
-std::string Config::getSingleStr(const std::string& hostname,
+std::string Config::getSingleStr(int hostKey,
                                  const std::string& key) {
-    return (_config[hostname][key][0]);
+    return (_config[hostKey][key][0]);
 }
 
-int Config::getSingleInt(const std::string& hostname, const std::string& key) {
-    return (StringConverter::stoi(_config[hostname][key][0]));
+int Config::getSingleInt(int hostKey, const std::string& key) {
+    return (StringConverter::stoi(_config[hostKey][key][0]));
 }
 
-std::vector<int> Config::getVectorInt(const std::string& hostname,
+std::vector<int> Config::getVectorInt(int hostKey,
                                       const std::string& key) {
     std::vector<int> intVector;
-    std::vector<std::string>::iterator begin = _config[hostname][key].begin();
-    std::vector<std::string>::iterator end = _config[hostname][key].end();
+    std::vector<std::string>::iterator begin = _config[hostKey][key].begin();
+    std::vector<std::string>::iterator end = _config[hostKey][key].end();
     for (std::vector<std::string>::iterator iter = begin;
          iter != end; iter++) {
         intVector.push_back(StringConverter::stoi(*iter));
@@ -211,20 +223,20 @@ std::vector<int> Config::getVectorInt(const std::string& hostname,
     return (intVector);
 }
 
-std::vector<std::string> Config::getVectorStr(const std::string& hostname,
+std::vector<std::string> Config::getVectorStr(int hostKey,
                                               const std::string& key) {
-    return (_config[hostname][key]);
+    return (_config[hostKey][key]);
 }
 
 // test for getter
 void Config::testConfig() {
     std::cout << "host_1 server_name : "
-     << getSingleStr("host_1", "server_name") << std::endl;
+     << getSingleStr(1, "server_name") << std::endl;
     std::cout << "host_1 root : "
-     << getSingleStr("host_1", "root") << std::endl;
+     << getSingleStr(1, "root") << std::endl;
     std::cout <<  "host_1 index : "
-     <<getSingleStr("host_1", "index") << std::endl;
-    std::vector<int> intVector = getVectorInt("host_1", "listen");
+     <<getSingleStr(1, "index") << std::endl;
+    std::vector<int> intVector = getVectorInt(1, "listen");
     std::vector<int>::iterator begin = intVector.begin();
     std::vector<int>::iterator end = intVector.end();
     for (std::vector<int>::iterator iter = begin; iter != end; iter++) {

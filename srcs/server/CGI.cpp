@@ -184,8 +184,10 @@ char** CGI::generate_env_vars_() {
 
     // リクエストパスのファイルパス以降の部分
     env_vars_["PATH_INFO"] = request_->get_path_info();
+    std::string baseHtmlPath = Config::getSingleStr
+        (this->request_->get_virtual_host_index(), "root");
     std::string path_info_full_path
-        = PathUtil::get_full_path(kBaseHtmlPath + request_->get_path_info());
+        = PathUtil::get_full_path(baseHtmlPath + request_->get_path_info());
     if (path_info_full_path != "")
         env_vars_["PATH_TRANSLATED"] = path_info_full_path;
     else
