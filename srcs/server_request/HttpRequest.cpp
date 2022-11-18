@@ -202,10 +202,6 @@ void HttpRequest::set_file_type(FileType file_type) {
 
 void HttpRequest::check_redirect_() {
     // ディレクトリ指定で最後のスラッシュがない場合
-    std::cerr << "****" << get_path_to_file()[get_path_to_file().size() - 1]
-        << std::endl;
-    std::cerr << "****" << get_path_to_file()
-        << std::endl;
     if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
             && PathUtil::is_folder_exists(get_path_to_file()) == true) {
         status_code_ = 301;  // Moved Permanently

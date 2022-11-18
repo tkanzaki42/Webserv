@@ -100,7 +100,7 @@ void HttpBody::make_autoindex_response() {
                 oss_body << limited_str <<  "..&gt;</a> ";
                 str_width = UTF8Util::get_string_width(limited_str) + 3;
             } else {
-                // 文字幅が文字会場合はすべて表示
+                // 文字幅が短い場合はすべて表示
                 oss_body << file_name <<  "</a> ";
             }
             // 文字数不足分をスペースで埋める
