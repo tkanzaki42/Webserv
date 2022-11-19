@@ -235,17 +235,16 @@ int HttpRequest::receive_and_store_to_file_() {
     ssize_t read_size = 0;
     char    buf[BUF_SIZE];
     do {
-        if (total_read_size
-                >= atoi(parser_.get_header_field("Content-Length").c_str())
-            ) {
-            break;
-        } else if (total_read_size > REQUEST_ENTITY_MAX) {
+        if (total_read_size > REQUEST_ENTITY_MAX) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
             std::remove(TMP_POST_DATA_FILE);
             return 413;
+        } else if (total_read_size
+                >= atoi(parser_.get_header_field("Content-Length").c_str())
+            ) {
+            break;
         }
-
         read_size = fd_manager_->receive(buf);
         if (read_size == -1) {
             std::cerr << "recv() failed in "
