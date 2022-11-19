@@ -5,7 +5,7 @@
 int main(int argc, char const *argv[]) {
     switch (argc) {
     case 1:
-        Config::init("configs/00_default.conf");
+        Config::init("configs/default.conf");
         break;
     case 2:
         Config::init(argv[1]);

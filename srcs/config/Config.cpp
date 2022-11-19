@@ -117,6 +117,7 @@ void    Config::parseConfig(const std::string &path) {
                 if (ifs.eof() || buf.size() < 3 || buf[0] != ' '
                  || buf[1] != ' ' || buf[2] == ' ') {
                     ifs.close();
+                    puts("HERE");
                     throw(Config::ConfigFormatException());
                 }
                 // インデントの次から格納する
@@ -181,16 +182,15 @@ std::vector<std::string> Config::parseValue(const std::string &valueStr) {
     if (valueStr.size() < 3) {
         throw(Config::ConfigFormatException());
     }
-    if (valueStr[0] != '[') {
+    if (valueStr[0] != '{') {
         valueVector.push_back(valueStr);
-    } else if (valueStr.at(valueStr.size() - 1) != ']') {
+    } else if (valueStr.at(valueStr.size() - 1) != '}') {
         throw(Config::ConfigFormatException());
     } else {
         valueVector = split(valueStr.substr(1, valueStr.size() - 2), ',');
     }
     return (valueVector);
 }
-
 
 void    Config::printConfig() {
     std::map<int, string_vector_map>::iterator begin = _config.begin();
