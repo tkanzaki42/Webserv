@@ -3,11 +3,18 @@
 #include "config/Config.hpp"
 
 int main(int argc, char const *argv[]) {
-    if (argc != 2) {
+    switch (argc) {
+    case 1:
+        Config::init("configs/00_default.conf");
+        break;
+    case 2:
+        Config::init(argv[1]);
+        break;
+    default:
         std::cout << "Invalid arguments" << std::endl;
         exit(EXIT_FAILURE);
+        break;
     }
-    Config::init(argv[1]);
     Webserv serv;
     serv.init();
     serv.loop();
