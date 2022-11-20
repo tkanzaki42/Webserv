@@ -17,6 +17,8 @@ class PathUtil {
      static bool                is_folder_exists(const std::string& path);
      static bool                is_file_or_folder_exists(
                                     const std::string& path);
+     static bool                is_folder_exists(
+                                    const char *path);
      static const std::string   get_file_extension(const std::string& path);
      static const std::string   get_full_path(const std::string& relative_path);
      static const std::string   get_last_modified_date(

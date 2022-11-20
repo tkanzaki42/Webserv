@@ -13,6 +13,10 @@
 #include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
 
+# define TMP_POST_DATA_DIR  "./file/"
+# define TMP_POST_DATA_FILE "./file/upload_file"
+# define REQUEST_ENTITY_MAX 1000000
+
 class HttpRequest {
  public:
     explicit HttpRequest(FDManager *fd_manager);

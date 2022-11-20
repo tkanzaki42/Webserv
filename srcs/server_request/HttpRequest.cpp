@@ -83,9 +83,13 @@ void HttpRequest::analyze_request() {
         check_redirect_();
 
     // オートインデックスの実施
-    bool autoindex = true;
+    bool autoindex = true;  // TODO(kfukuta) コンフィグで指定
     if (status_code_ == 404 && autoindex == true)
         is_autoindex_ = true;
+
+    if (status_code_ != 200) {
+        return;
+    }
 
     // ファイルタイプの判定
     const std::string file_extension
@@ -98,16 +102,14 @@ void HttpRequest::analyze_request() {
         file_type_ = FILETYPE_STATIC_HTML;
 
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
-    if (status_code_ == 200) {
-        if (get_http_method() == METHOD_POST) {
-            if (file_type_ == FILETYPE_STATIC_HTML) {
-                status_code_ = receive_and_store_to_file_();
-            } else {
-                // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
-            }
-        } else if (get_http_method() == METHOD_DELETE) {
-            status_code_ = delete_file_();
+    if (get_http_method() == METHOD_POST) {
+        if (file_type_ == FILETYPE_STATIC_HTML) {
+            status_code_ = receive_and_store_to_file_();
+        } else {
+            // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
         }
+    } else if (get_http_method() == METHOD_DELETE) {
+        status_code_ = delete_file_();
     }
 }
 
@@ -232,18 +234,16 @@ void HttpRequest::check_redirect_() {
 
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    std::string dir_path
-        = get_path_to_file().substr(0, get_path_to_file().rfind('/'));
-    if (PathUtil::is_folder_exists(dir_path) == false) {
-        if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            std::cerr << "Could not create dirctory: " << dir_path << std::endl;
+    if (PathUtil::is_folder_exists(TMP_POST_DATA_DIR) == false) {
+        if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            std::cerr << "Could not create dirctory: " << TMP_POST_DATA_DIR << std::endl;
             return 500;  // Internal Server Error
         }
     }
 
     // ファイルのオープン
     std::ofstream ofs_outfile;
-    ofs_outfile.open(get_path_to_file().c_str(),
+    ofs_outfile.open(TMP_POST_DATA_FILE,
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
         std::cerr << "Could not open file during receiving the file: "
@@ -260,12 +260,16 @@ int HttpRequest::receive_and_store_to_file_() {
     ssize_t read_size = 0;
     char    buf[BUF_SIZE];
     do {
-        if (total_read_size
+        if (total_read_size > REQUEST_ENTITY_MAX) {
+            // デフォルト値1MB以上なら413
+            ofs_outfile.close();
+            std::remove(TMP_POST_DATA_FILE);
+            return 413;
+        } else if (total_read_size
                 >= atoi(parser_.get_header_field("Content-Length").c_str())
             ) {
             break;
         }
-
         read_size = fd_manager_->receive(buf);
         if (read_size == -1) {
             std::cerr << "recv() failed in "
