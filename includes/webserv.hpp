@@ -11,11 +11,12 @@
 #include <sstream>
 #include <map>
 
-const int BUF_SIZE = 8001;
+const int BUF_SIZE           = 8001;
 
 // const std::string kBaseHtmlPath = "./public_html";
 // const std::string kIndexHtmlFileName = "index.html";
 const std::string kServerSoftwareName = "Webserv/1.0";
+
 
 enum HttpMethod {
     METHOD_NOT_DEFINED = 0,
