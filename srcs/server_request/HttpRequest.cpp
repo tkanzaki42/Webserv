@@ -87,10 +87,6 @@ void HttpRequest::analyze_request() {
     if (status_code_ == 404 && autoindex == true)
         is_autoindex_ = true;
 
-    if (status_code_ != 200) {
-        return;
-    }
-
     // ファイルタイプの判定
     const std::string file_extension
             = PathUtil::get_file_extension(get_path_to_file());
@@ -100,6 +96,11 @@ void HttpRequest::analyze_request() {
         file_type_ = FILETYPE_BINARY;
     else
         file_type_ = FILETYPE_STATIC_HTML;
+
+    // エラーの場合は判定終了
+    if (status_code_ != 200) {
+        return;
+    }
 
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (get_http_method() == METHOD_POST) {
