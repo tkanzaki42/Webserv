@@ -76,3 +76,36 @@ const std::string PathUtil::get_full_path(const std::string& relative_path) {
     }
     return resolved_path_str;
 }
+
+const std::string PathUtil::get_last_modified_date(
+        const std::string& relative_path) {
+    // ファイルの情報を取得する
+    struct stat st;
+    if (stat(get_full_path(relative_path).c_str(), &st) != 0)
+        return "";
+
+    // 日付フォーマット変換(time_t -> struct tm)
+    struct tm tm_last_modified_date = {};
+    gmtime_r(&st.st_mtime, &tm_last_modified_date);
+    // ローカル時間にする場合は以下
+    // localtime_r(&st.st_mtime, &tm_last_modified_date);
+
+    // 文字列に変換
+    char last_modified_date[256];
+    strftime(last_modified_date, 255, "%d-%b-%Y %H:%M", &tm_last_modified_date);
+
+    return std::string(last_modified_date);
+}
+
+const std::string PathUtil::get_filesize(const std::string& relative_path) {
+    // ファイルの情報を取得する
+    struct stat st;
+    if (stat(get_full_path(relative_path).c_str(), &st) != 0)
+        return "";
+
+    // 文字列に変換
+    std::ostringstream oss;
+    oss << st.st_size;
+
+    return oss.str();
+}
