@@ -44,9 +44,17 @@ void HttpResponse::make_response() {
 }
 
 void HttpResponse::make_message_body_() {
+    // オートインデックス表示の場合
+    if (request_->get_is_autoindex()) {
+        message_body_.make_autoindex_response();
+        status_code_ = 200;
+        return;
+    }
+
     // CGIの場合実行結果を取得する
-    if (request_->get_file_type() == FILETYPE_SCRIPT
-            || request_->get_file_type() == FILETYPE_BINARY) {
+    if (status_code_ == 200 &&
+            (request_->get_file_type() == FILETYPE_SCRIPT
+            || request_->get_file_type() == FILETYPE_BINARY)) {
         cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(request_->get_file_type());
         if (cgi_ret == EXIT_FAILURE) {
@@ -58,7 +66,8 @@ void HttpResponse::make_message_body_() {
     }
 
     // 静的HTMLページの場合、およびCGI実行が失敗した場合
-    if (request_->get_file_type() == FILETYPE_STATIC_HTML) {
+    if (status_code_ != 200
+            || request_->get_file_type() == FILETYPE_STATIC_HTML) {
         // リクエストヘッダ、リクエストボディの作成
         status_code_ = message_body_.make_response(status_code_);
     }
@@ -66,13 +75,43 @@ void HttpResponse::make_message_body_() {
 
 void HttpResponse::make_header_() {
     int body_length;
-    if (request_->get_file_type() == FILETYPE_STATIC_HTML) {
-        body_length = message_body_.get_content_length();
-    } else {
+    if (request_->get_file_type() == FILETYPE_SCRIPT
+            || request_->get_file_type() == FILETYPE_BINARY) {
         body_length = cgi_->get_content_length();
+    } else {
+        body_length = message_body_.get_content_length();
     }
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
+
+    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
+    std::map<std::string, std::string> temporary_redirect_url;
+    temporary_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+    std::map<std::string, std::string> permanent_redirect_url;
+    permanent_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+
+    // 307 Temporary Redirect / 302 Found
+    if (status_code_ == 307 || status_code_ == 302)
+        header_.set_header("Location: "
+            + temporary_redirect_url[request_->get_path_to_file()]
+            + "\r\n");
+
+    // 308 Permanent Redirect / 301 Moved Permanently
+    if (status_code_ == 308 || status_code_ == 301) {
+        if (permanent_redirect_url[request_->get_path_to_file()] != "") {
+            header_.set_header("Location: "
+                + permanent_redirect_url[request_->get_path_to_file()]
+                + "\r\n");
+        } else {
+            // ディレクトリ指定時の最後スラッシュなしの場合
+            header_.set_header("Location: http://"
+                + request_->get_header_field("Host")
+                + request_->get_request_target()
+                + "/\r\n");
+        }
+    }
 }
 
 void HttpResponse::merge_header_and_body_() {
@@ -81,7 +120,8 @@ void HttpResponse::merge_header_and_body_() {
     std::map<std::string, std::string> header_content
             = header_.get_content();
     std::map<std::string, std::string> header_content_cgi;
-    if (request_->get_file_type() != FILETYPE_STATIC_HTML) {
+    if (request_->get_file_type() == FILETYPE_SCRIPT
+            || request_->get_file_type() == FILETYPE_BINARY) {
         header_content_cgi = cgi_->get_header_content();
     }
     for (std::map<std::string, std::string>::iterator it
@@ -90,7 +130,8 @@ void HttpResponse::merge_header_and_body_() {
         if (header_content_cgi.count(it->first) == 0)
             response_.append(it->first + ": " + it->second);
     }
-    if (request_->get_file_type() != FILETYPE_STATIC_HTML) {
+    if (request_->get_file_type() == FILETYPE_SCRIPT
+            || request_->get_file_type() == FILETYPE_BINARY) {
         for (std::map<std::string, std::string>::iterator it
                     = header_content_cgi.begin();
                 it != header_content_cgi.end(); it++) {
@@ -101,10 +142,11 @@ void HttpResponse::merge_header_and_body_() {
 
     // ボディのマージ
     std::vector<std::string> body_content;
-    if (request_->get_file_type() == FILETYPE_STATIC_HTML) {
-        body_content = message_body_.get_content();
-    } else {
+    if (request_->get_file_type() == FILETYPE_SCRIPT
+            || request_->get_file_type() == FILETYPE_BINARY) {
         body_content = cgi_->get_body_content();
+    } else {
+        body_content = message_body_.get_content();
     }
     for (std::size_t i = 0; i < body_content.size(); i++) {
         response_.append(body_content[i].c_str());

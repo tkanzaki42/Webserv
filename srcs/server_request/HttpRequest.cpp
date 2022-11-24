@@ -3,7 +3,9 @@
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
-          status_code_(200) {
+          status_code_(200),
+          virtual_host_index_(-1),
+          is_autoindex_(false) {
 }
 
 HttpRequest::~HttpRequest() {
@@ -16,8 +18,10 @@ HttpRequest::HttpRequest(const HttpRequest &obj)
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
-    parser_       = HttpParser(obj.parser_);
-    status_code_  = obj.status_code_;
+    parser_             = HttpParser(obj.parser_);
+    status_code_        = obj.status_code_;
+    virtual_host_index_ = obj.virtual_host_index_;
+    is_autoindex_       = obj.is_autoindex_;
     return *this;
 }
 
@@ -53,15 +57,35 @@ void HttpRequest::analyze_request() {
 
     // HTTPバージョンの確認
     // TODO(someone)
-
+    // virtual_host_index_の設定
+    this->virtual_host_index_ =
+         Config::getVirtualServerIndex(parser_.get_host_name());
     // デフォルトパスの設定
-    string_vector_map config =
-        Config::getVirtualServer(parser_.get_header_field("Host"))->second;
-    parser_.setIndexHtmlFileName(config.find("index")->second[0]);
-    parser_.setBaseHtmlPath(config.find("root")->second[0]);
+    parser_.setIndexHtmlFileName
+        (Config::getVectorStr(this->virtual_host_index_, "index"));
+    parser_.setBaseHtmlPath
+        (Config::getSingleStr(this->virtual_host_index_, "root"));
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
     parser_.separate_querystring_pathinfo();
+
+    // パスの補完(末尾にindex.htmlをつけるなど)
+    parser_.autocomplete_path();
+
+    // ファイル存在チェック
+    if (!PathUtil::is_file_exists(get_path_to_file())) {
+        std::cerr << "File not found: " << get_path_to_file() << std::endl;
+        status_code_ = 404;  // Not Found
+    }
+
+    // リダイレクト確認
+    if (status_code_ == 200 || status_code_ == 404)
+        check_redirect_();
+
+    // オートインデックスの実施
+    bool autoindex = true;  // TODO(kfukuta) コンフィグで指定
+    if (status_code_ == 404 && autoindex == true)
+        is_autoindex_ = true;
 
     // ファイルタイプの判定
     const std::string file_extension
@@ -73,19 +97,20 @@ void HttpRequest::analyze_request() {
     else
         file_type_ = FILETYPE_STATIC_HTML;
 
-    puts("hogefuga");
+    // エラーの場合は判定終了
+    if (status_code_ != 200) {
+        return;
+    }
+
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
-    if (status_code_ == 200) {
-        if (get_http_method() == METHOD_POST) {
-            if (file_type_ == FILETYPE_STATIC_HTML) {
-                status_code_ = receive_and_store_to_file_();
-            } else {
-                // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
-            }
-        } else if (get_http_method() == METHOD_DELETE) {
-            status_code_ = delete_file_();
-        }else{
+    if (get_http_method() == METHOD_POST) {
+        if (file_type_ == FILETYPE_STATIC_HTML) {
+            status_code_ = receive_and_store_to_file_();
+        } else {
+            // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
         }
+    } else if (get_http_method() == METHOD_DELETE) {
+        status_code_ = delete_file_();
     }
 }
 
@@ -129,7 +154,8 @@ void HttpRequest::print_debug() {
         << parser_.get_http_method() << std::endl;
     std::cout << "  request_target_   : "
         << parser_.get_request_target() << std::endl;
-    std::cout << "  base_html_path    : " << kBaseHtmlPath << std::endl;
+    std::cout << "  base_html_path    : "
+        << parser_.getBaseHtmlPath() << std::endl;
     std::cout << "  query_string_     : "
         << parser_.get_query_string() << std::endl;
     std::cout << "  path_to_file_     : "
@@ -149,6 +175,10 @@ void HttpRequest::print_debug() {
 
 HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
+}
+
+const std::string& HttpRequest::get_request_target() const {
+    return parser_.get_request_target();
 }
 
 const std::string& HttpRequest::get_query_string() const {
@@ -176,39 +206,76 @@ const std::map<std::string, std::string>&
     return parser_.get_header_field_map();
 }
 
+FileType HttpRequest::get_file_type() {
+    return file_type_;
+}
+
 int HttpRequest::get_status_code() const {
     return status_code_;
+}
+
+int HttpRequest::get_virtual_host_index() const {
+    return this->virtual_host_index_;
+}
+
+bool HttpRequest::get_is_autoindex() const {
+    return is_autoindex_;
 }
 
 struct sockaddr_in HttpRequest::get_client_addr() {
     return fd_manager_->get_client_addr();
 }
 
-FileType HttpRequest::get_file_type() {
-    return file_type_;
-}
-
 void HttpRequest::set_file_type(FileType file_type) {
     file_type_ = file_type;
 }
 
+void HttpRequest::check_redirect_() {
+    // ディレクトリ指定で最後のスラッシュがない場合
+    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
+            && PathUtil::is_folder_exists(get_path_to_file()) == true) {
+        status_code_ = 301;  // Moved Permanently
+    }
+
+
+    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
+    std::map<std::string, std::string> temporary_redirect_url;
+    temporary_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+    std::map<std::string, std::string> permanent_redirect_url;
+    permanent_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+
+    if (temporary_redirect_url[get_path_to_file()] != "") {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = 307;  // Temporary Redirect
+        else
+            status_code_ = 302;  // Found
+    }
+    if (permanent_redirect_url[get_path_to_file()] != "") {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = 308;  // Permanent Redirect
+        else
+            status_code_ = 301;  // Moved Permanently
+    }
+}
+
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    std::string dir_path
-        = get_path_to_file().substr(0, get_path_to_file().rfind('/'));
-    if (PathUtil::is_folder_exists(dir_path) == false) {
-        if (mkdir(dir_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            std::cerr << "Could not create dirctory: " << dir_path << std::endl;
+    if (PathUtil::is_folder_exists(TMP_POST_DATA_DIR) == false) {
+        if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            std::cerr << "Could not create dirctory: " << TMP_POST_DATA_DIR << std::endl;
             return 500;  // Internal Server Error
         }
     }
 
     // ファイルのオープン
     std::ofstream ofs_outfile;
-    ofs_outfile.open(get_path_to_file().c_str(),
+    ofs_outfile.open(TMP_POST_DATA_FILE,
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
-        std::cerr << "Could not open file: " << get_path_to_file() << std::endl;
+        std::cerr << "Could not open file during receiving the file: "
+            << get_path_to_file() << std::endl;
         return 500;  // Internal Server Error
     }
 
@@ -221,12 +288,16 @@ int HttpRequest::receive_and_store_to_file_() {
     ssize_t read_size = 0;
     char    buf[BUF_SIZE];
     do {
-        if (total_read_size
+        if (total_read_size > REQUEST_ENTITY_MAX) {
+            // デフォルト値1MB以上なら413
+            ofs_outfile.close();
+            std::remove(TMP_POST_DATA_FILE);
+            return 413;
+        } else if (total_read_size
                 >= atoi(parser_.get_header_field("Content-Length").c_str())
             ) {
             break;
         }
-
         read_size = fd_manager_->receive(buf);
         if (read_size == -1) {
             std::cerr << "recv() failed in "

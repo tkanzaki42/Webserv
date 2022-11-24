@@ -35,7 +35,7 @@ class FDManager {
     bool            select_();
 
  public:
-    std::map<std::string, string_vector_map> config;
+    std::map<int, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
     std::map<std::string, std::string> host1;

@@ -13,6 +13,10 @@
 #include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
 
+# define TMP_POST_DATA_DIR  "./file/"
+# define TMP_POST_DATA_FILE "./file/upload_file"
+# define REQUEST_ENTITY_MAX 1000000
+
 class HttpRequest {
  public:
     explicit HttpRequest(FDManager *fd_manager);
@@ -26,6 +30,7 @@ class HttpRequest {
 
     // getter(HttpParser)
     HttpMethod          get_http_method() const;
+    const std::string&  get_request_target() const;
     const std::string&  get_query_string() const;
     const std::string&  get_path_info() const;
     const std::string&  get_path_to_file() const;
@@ -34,9 +39,11 @@ class HttpRequest {
     const std::map<std::string, std::string>&
                         get_header_field_map() const;
     // getter(HttpRequest)
-    int                 get_status_code() const;
-    struct sockaddr_in  get_client_addr();
     FileType            get_file_type();
+    int                 get_status_code() const;
+    int                 get_virtual_host_index() const;
+    bool                get_is_autoindex() const;
+    struct sockaddr_in  get_client_addr();
     // setter
     void                set_file_type(FileType file_type);
 
@@ -46,7 +53,10 @@ class HttpRequest {
     std::string         received_line_;
     FileType            file_type_;
     int                 status_code_;
+    int                 virtual_host_index_;
+    bool                is_autoindex_;
 
+    void                check_redirect_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
     void                check_30x_();
