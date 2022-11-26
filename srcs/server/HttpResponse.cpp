@@ -89,6 +89,14 @@ void HttpResponse::make_header_() {
         Config::getMapIntStr(request_->get_virtual_host_index(), "return");
     // 307 Temporary Redirect / 302 Found
     // 308 Permanent Redirect / 301 Moved Permanently
+    
+    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
+    std::map<std::string, std::string> temporary_redirect_url;
+    temporary_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+    std::map<std::string, std::string> permanent_redirect_url;
+    permanent_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
     if (status_code_ == 308 || status_code_ == 301) {
         if (permanent_redirect_url[request_->get_path_to_file()] != "") {
             header_.set_header("Location: "
