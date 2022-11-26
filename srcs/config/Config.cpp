@@ -118,7 +118,6 @@ void    Config::parseConfig(const std::string &path) {
                 if (ifs.eof() || buf.size() < 3 || buf[0] != ' '
                  || buf[1] != ' ' || buf[2] == ' ') {
                     ifs.close();
-                    puts("HERE");
                     throw(Config::ConfigFormatException());
                 }
                 // インデントの次から格納する
@@ -298,7 +297,7 @@ void    Config::printConfig() {
             std::cout << std::endl;
         }
     }
-    std::cout << "location / : root " << Config::getLocationString(0, "/", "ro00ot") << std::endl;
+    std::cout << "location / : root " << Config::getLocationString(0, "/", "root") << std::endl;
 }
 
 std::string Config::getSingleStr(int hostKey,
