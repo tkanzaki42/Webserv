@@ -3,7 +3,9 @@
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
-          status_code_(200), virtual_host_index_(-1) {
+          status_code_(200),
+          virtual_host_index_(-1),
+          is_autoindex_(false) {
 }
 
 HttpRequest::~HttpRequest() {
@@ -16,8 +18,10 @@ HttpRequest::HttpRequest(const HttpRequest &obj)
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
-    parser_       = HttpParser(obj.parser_);
-    status_code_  = obj.status_code_;
+    parser_             = HttpParser(obj.parser_);
+    status_code_        = obj.status_code_;
+    virtual_host_index_ = obj.virtual_host_index_;
+    is_autoindex_       = obj.is_autoindex_;
     return *this;
 }
 
@@ -69,6 +73,21 @@ void HttpRequest::analyze_request() {
     // パスの補完(末尾にindex.htmlをつけるなど)
     parser_.autocomplete_path();
 
+    // ファイル存在チェック
+    if (!PathUtil::is_file_exists(get_path_to_file())) {
+        std::cerr << "File not found: " << get_path_to_file() << std::endl;
+        status_code_ = 404;  // Not Found
+    }
+
+    // リダイレクト確認
+    if (status_code_ == 200 || status_code_ == 404)
+        check_redirect_();
+
+    // オートインデックスの実施
+    bool autoindex = true;  // TODO(kfukuta) コンフィグで指定
+    if (status_code_ == 404 && autoindex == true)
+        is_autoindex_ = true;
+
     // ファイルタイプの判定
     const std::string file_extension
             = PathUtil::get_file_extension(get_path_to_file());
@@ -79,19 +98,11 @@ void HttpRequest::analyze_request() {
     else
         file_type_ = FILETYPE_STATIC_HTML;
 
-    // ↓以降ステータスコードの更新処理
-    // リダイレクト確認
-    check_redirect_();
+    // エラーの場合は判定終了
     if (status_code_ != 200) {
-        return ;
+        return;
     }
 
-    // ファイル存在チェック
-    if (!PathUtil::is_file_exists(get_path_to_file())) {
-        std::cerr << "File not found: " << get_path_to_file() << std::endl;
-        status_code_ = 404;  // Not Found
-        return ;
-    }
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (get_http_method() == METHOD_POST) {
         if (file_type_ == FILETYPE_STATIC_HTML) {
@@ -140,8 +151,8 @@ HttpMethod HttpRequest::get_http_method() const {
     return parser_.get_http_method();
 }
 
-int HttpRequest::get_virtual_host_index() const {
-    return this->virtual_host_index_;
+const std::string& HttpRequest::get_request_target() const {
+    return parser_.get_request_target();
 }
 
 const std::string& HttpRequest::get_query_string() const {
@@ -169,16 +180,24 @@ const std::map<std::string, std::string>&
     return parser_.get_header_field_map();
 }
 
+FileType HttpRequest::get_file_type() {
+    return file_type_;
+}
+
 int HttpRequest::get_status_code() const {
     return status_code_;
 }
 
-struct sockaddr_in HttpRequest::get_client_addr() {
-    return fd_manager_->get_client_addr();
+int HttpRequest::get_virtual_host_index() const {
+    return this->virtual_host_index_;
 }
 
-FileType HttpRequest::get_file_type() {
-    return file_type_;
+bool HttpRequest::get_is_autoindex() const {
+    return is_autoindex_;
+}
+
+struct sockaddr_in HttpRequest::get_client_addr() {
+    return fd_manager_->get_client_addr();
 }
 
 void HttpRequest::set_file_type(FileType file_type) {
@@ -186,9 +205,26 @@ void HttpRequest::set_file_type(FileType file_type) {
 }
 
 void HttpRequest::check_redirect_() {
-    // リダイレクトが設定されていない場合は何もしない
-    if (!Config::isReturn(this->virtual_host_index_)) {
-        return;
+    // ディレクトリ指定で最後のスラッシュがない場合
+    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
+            && PathUtil::is_folder_exists(get_path_to_file()) == true) {
+        status_code_ = 301;  // Moved Permanently
+    }
+
+
+    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
+    std::map<std::string, std::string> temporary_redirect_url;
+    temporary_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+    std::map<std::string, std::string> permanent_redirect_url;
+    permanent_redirect_url["./public_html/redirect_from.html"]
+        = "http://127.0.0.1:5000/redirect_to.html";
+
+    if (temporary_redirect_url[get_path_to_file()] != "") {
+        if (get_http_method() == METHOD_POST)
+            status_code_ = 307;  // Temporary Redirect
+        else
+            status_code_ = 302;  // Found
     }
     std::pair<int, std::string> redirectUrlPair
          = Config::getReturn(this->virtual_host_index_);
