@@ -41,6 +41,7 @@ class HttpParser {
     const std::string&       getBaseHtmlPath() const;
 
     //  setter
+    void                     setPathToFile(const std::string &path);
     void                     setIndexHtmlFileName(const std::vector<std::string> &filename);
     void                     setBaseHtmlPath(const std::string &path);
 

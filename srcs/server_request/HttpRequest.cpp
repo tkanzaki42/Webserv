@@ -55,34 +55,40 @@ void HttpRequest::analyze_request() {
     // リクエストのパース
     status_code_ = parser_.parse();
 
-    // HTTPバージョンの確認
-    // TODO(someone)
+    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
+    parser_.separate_querystring_pathinfo();
+    // TODO(someone) HTTPバージョンの確認
+
     // virtual_host_index_の設定
     this->virtual_host_index_ =
          Config::getVirtualHostIndex(parser_.get_host_name(),
                  StringConverter::itos(5050));
+    // Locationの決定
+    std::string path = get_path_to_file();
+    std::vector<std::string> v = Config::getAllLocation(this->virtual_host_index_);
+    std::cout << v.front() << std::endl;
+    std::string location = Config::findLongestMatchLocation(path, Config::getAllLocation(this->virtual_host_index_));
+    std::string root = Config::getLocationString(this->virtual_host_index_, location, "root");
+
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
-        (Config::getVectorStr(this->virtual_host_index_, "index"));
+        (Config::getLocationVector(this->virtual_host_index_, location, "index"));
     parser_.setBaseHtmlPath
-        (Config::getSingleStr(this->virtual_host_index_, "root"));
-
-    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
-    parser_.separate_querystring_pathinfo();
+        (Config::getLocationString(this->virtual_host_index_, location, "root"));
 
     // パスの補完(末尾にindex.htmlをつけるなど)
+    parser_.setPathToFile(HttpRequest::replacePathToLocation(location, path, root));
     parser_.autocomplete_path();
+    std::cout   << "path_to_file" << get_path_to_file() << std::endl;
 
     // ファイル存在チェック
     if (!PathUtil::is_file_exists(get_path_to_file())) {
         std::cerr << "File not found: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
-
     // リダイレクト確認
     if (status_code_ == 200 || status_code_ == 404)
         check_redirect_();
-
     // オートインデックスの実施
     bool autoindex = true;  // TODO(kfukuta) コンフィグで指定
     if (status_code_ == 404 && autoindex == true)
@@ -113,6 +119,13 @@ void HttpRequest::analyze_request() {
     } else if (get_http_method() == METHOD_DELETE) {
         status_code_ = delete_file_();
     }
+}
+
+std::string HttpRequest::replacePathToLocation(std::string &location,
+                                              std::string &path,
+                                              std::string &root) {
+    std::string newUrl = root + path.substr(location.size() + 1, path.size() - 1);
+    return (newUrl);
 }
 
 void HttpRequest::print_debug() {
@@ -211,7 +224,6 @@ void HttpRequest::check_redirect_() {
         status_code_ = 301;  // Moved Permanently
     }
 
-
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
     temporary_redirect_url["./public_html/redirect_from.html"]
@@ -226,11 +238,11 @@ void HttpRequest::check_redirect_() {
         else
             status_code_ = 302;  // Found
     }
-    std::pair<int, std::string> redirectUrlPair
-         = Config::getReturn(this->virtual_host_index_);
-    std::map<int, std::string> redirectUrlMap
-         = Config::getMapIntStr(this->virtual_host_index_, "return");
-    status_code_ = redirectUrlPair.first;
+    // std::pair<int, std::string> redirectUrlPair
+    //      = Config::getReturn(this->virtual_host_index_);
+    // std::map<int, std::string> redirectUrlMap
+    //      = Config::getMapIntStr(this->virtual_host_index_, "return");
+    // status_code_ = redirectUrlPair.first;
 }
 
 int HttpRequest::receive_and_store_to_file_() {

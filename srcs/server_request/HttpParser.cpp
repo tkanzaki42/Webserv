@@ -85,6 +85,10 @@ void HttpParser::setBaseHtmlPath(const std::string &path) {
     this->baseHtmlPath = path;
 }
 
+void HttpParser::setPathToFile(const std::string &path) {
+    this->path_to_file_ = path;
+}
+
 const std::vector<std::string>& HttpParser::getIndexHtmlFileName() const {
     return (this->indexHtmlFileName);
 }

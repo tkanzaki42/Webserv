@@ -27,6 +27,9 @@ class HttpRequest {
     int                 receive_header();
     void                analyze_request();
     void                print_debug();
+    std::string         replacePathToLocation(std::string &location,
+                                              std::string &path, 
+                                              std::string &root);
 
     // getter(HttpParser)
     HttpMethod          get_http_method() const;

@@ -194,7 +194,6 @@ std::map<std::string, std::string> Config::getLocation(int hostkey, const std::s
 std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
     int biggesttMathDepth = 0;
     std::vector<std::string> urlVector = split(url, '/');
-
     std::vector<std::string>::iterator begin = locationVector.begin();
     std::vector<std::string>::iterator end = locationVector.end();
     std::string longestMatchLocation;
@@ -206,7 +205,7 @@ std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::
         if (url.size() < itr->size()) {
             continue;
         }
-        for (std::vector<std::string>::iterator iter = url_begin; itr != url_end; iter++) {
+        for (std::vector<std::string>::iterator iter = url_begin; iter != url_end; iter++) {
             // パスの検索結果が一致した場合
             if (iter->compare(*itr) == 0) {
                 matchDepth++;
@@ -297,7 +296,6 @@ void    Config::printConfig() {
             std::cout << std::endl;
         }
     }
-    std::cout << "location / : root " << Config::getLocationString(0, "/", "root") << std::endl;
 }
 
 std::string Config::getSingleStr(int hostKey,
