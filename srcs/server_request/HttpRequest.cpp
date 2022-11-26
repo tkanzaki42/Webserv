@@ -67,7 +67,9 @@ void HttpRequest::analyze_request() {
     std::string path = get_path_to_file();
     std::vector<std::string> v = Config::getAllLocation(this->virtual_host_index_);
     std::cout << v.front() << std::endl;
+    puts("hoge");
     std::string location = Config::findLongestMatchLocation(path, Config::getAllLocation(this->virtual_host_index_));
+    puts("fuga");
     std::string root = Config::getLocationString(this->virtual_host_index_, location, "root");
 
     // デフォルトパスの設定
