@@ -15,10 +15,10 @@ int main(int argc, char const *argv[]) {
         exit(EXIT_FAILURE);
         break;
     }
-    Webserv serv;
-    serv.init();
-    serv.loop();
-    serv.finalize();
+    // Webserv serv;
+    // serv.init();
+    // serv.loop();
+    // serv.finalize();
 
     return 0;
 }

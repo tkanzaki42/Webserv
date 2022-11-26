@@ -75,6 +75,7 @@ std::pair<int, std::string> Config::getReturn(int virtualServerIndex) {
 }
 
 std::map<int, string_vector_map> Config::_config;
+
 void    Config::parseConfig(const std::string &path) {
     bool isDefault = true;
     std::ifstream ifs(path.c_str());
@@ -148,10 +149,94 @@ void    Config::parseConfig(const std::string &path) {
         }
     }
     // デバッグ用 : コンフィグの中身を全て出力する
-    // Config::printConfig();
+    Config::printConfig();
     ifs.close();
     if (!ConfigChecker::isValidConfig())
         throw(Config::ConfigFormatException());
+}
+
+// 与えられたURLとキーからLocationの中の設定を取得する。rootなど単数の場合その設定をStringで返却する。
+std::string Config::getLocationString(int hostkey, const std::string &url, const std::string &key) {
+    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, url);
+    std::map<std::string, std::string>::iterator iter = locationMap.find(key);
+    if (iter == locationMap.end()) {
+        std::cout << "Not found" << std::endl;
+        return NULL;
+    }
+    return (iter->second);
+}
+
+// 与えられたURLとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（スペースで分割されていた）で返却する。
+std::vector<std::string> Config::getLocationVector(int hostkey, const std::string &url, const std::string &key) {
+    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, url);
+    std::map<std::string, std::string>::iterator iter = locationMap.find(key);
+    std::vector<std::string> v;
+    if (iter == locationMap.end())
+        return (v);
+    return (split(iter->second, ' '));
+}
+
+// 上二つの関数のためのヘルパー関数
+std::map<std::string, std::string> Config::getLocation(int hostkey, const std::string& url) {
+    std::map<std::string, std::string> locationMap;
+    std::vector<std::string> locationVector = Config::getVectorStr(hostkey, "location " + url);
+    std::vector<std::string>::iterator begin = locationVector.begin();
+    std::vector<std::string>::iterator end = locationVector.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        int sep_position = itr->find(' ');
+        std::string key = itr->substr(0, sep_position);
+        std::string value = itr->substr(sep_position + 1, itr->length());
+        locationMap.insert(std::make_pair(key, value));
+    }
+    return locationMap;
+}
+
+// あたえられたURLからlocationを決定して、そのLocationのパスを返す。
+std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
+    int biggesttMathDepth = 0;
+    std::vector<std::string> urlVector = split(url, '/');
+
+    std::vector<std::string>::iterator begin = locationVector.begin();
+    std::vector<std::string>::iterator end = locationVector.end();
+    std::string longestMatchLocation;
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        int matchDepth = 0;
+        std::vector<std::string> locationUrl = split(*itr, '/');
+        std::vector<std::string>::iterator url_begin = locationUrl.begin();
+        std::vector<std::string>::iterator url_end = locationUrl.end();
+        if (url.size() < itr->size()) {
+            continue;
+        }
+        for (std::vector<std::string>::iterator iter = url_begin; itr != url_end; iter++) {
+            // パスの検索結果が一致した場合
+            if (iter->compare(*itr) == 0) {
+                matchDepth++;
+            } else {
+                // LocationのURLと一致しない階層があったらその時点で不採用
+                matchDepth = 0;
+                break;
+            }
+        }
+        if (matchDepth > biggesttMathDepth) {
+            biggesttMathDepth = matchDepth;
+            longestMatchLocation = *itr;
+        }
+    }
+    return (longestMatchLocation);
+}
+
+// getLocation()の引数に渡すlocationベクタの作成
+std::vector<std::string> Config::getAllLocation(int hostkey) {
+    std::vector<std::string> allLocation;
+    string_vector_map host = _config[hostkey];
+    string_vector_map::iterator begin = host.begin();
+    string_vector_map::iterator end = host.end();
+    for (string_vector_map::iterator itr = begin; itr != end; itr++) {
+        if (itr->first.compare(0, 8, "location") == 0) {
+            allLocation.push_back(itr->first.substr(9, itr->first.size()));
+        }
+    }
+    return (allLocation);
 }
 
 std::set<int> Config::getAllListen() {
@@ -213,6 +298,7 @@ void    Config::printConfig() {
             std::cout << std::endl;
         }
     }
+    std::cout << "location / : root " << Config::getLocationString(0, "/", "ro00ot") << std::endl;
 }
 
 std::string Config::getSingleStr(int hostKey,
