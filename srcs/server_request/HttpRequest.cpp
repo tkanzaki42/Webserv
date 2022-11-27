@@ -68,7 +68,6 @@ void HttpRequest::analyze_request() {
     std::vector<std::string> v = Config::getAllLocation(this->virtual_host_index_);
     std::string location = Config::findLongestMatchLocation(path, Config::getAllLocation(this->virtual_host_index_));
     std::string root = Config::getLocationString(this->virtual_host_index_, location, "root");
-
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(this->virtual_host_index_, location, "index"));
@@ -122,7 +121,16 @@ void HttpRequest::analyze_request() {
 std::string HttpRequest::replacePathToLocation(std::string &location,
                                               std::string &path,
                                               std::string &root) {
-    std::string newUrl = root + path.substr(location.size() + 1, path.size() - 1);
+    std::cout << "location :" << location << std::endl;
+    std::cout << "path :" << path << std::endl;
+    std::cout << "root :" << root << std::endl;
+    std::string newUrl;
+    if (location[0] == '/') {
+        newUrl = root + path.substr(location.size(), path.size() - 1);
+    } else {
+        newUrl = root + path.substr(location.size() + 1, path.size() - 1);
+    }
+    std::cout << "newUrl :" << newUrl << std::endl;
     return (newUrl);
 }
 

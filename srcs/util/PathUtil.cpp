@@ -109,7 +109,3 @@ const std::string PathUtil::get_filesize(const std::string& relative_path) {
 
     return oss.str();
 }
-
-std::string         PathUtil::canonicalUrl(const std::string& row_path) {
-    return row_path;
-}

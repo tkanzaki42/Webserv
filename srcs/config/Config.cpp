@@ -198,22 +198,32 @@ std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::
     std::vector<std::string>::iterator end = locationVector.end();
     std::string longestMatchLocation;
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        // URLとlocationが完全一致したらそのまま返す
+        if (url.compare(*itr) == 0) {
+            return(url);
+        }
         int matchDepth = 0;
         std::vector<std::string> locationUrl = split(*itr, '/');
-        std::vector<std::string>::iterator url_begin = locationUrl.begin();
-        std::vector<std::string>::iterator url_end = locationUrl.end();
+        std::vector<std::string>::iterator url_begin = urlVector.begin();
+        std::vector<std::string>::iterator url_end = urlVector.end();
+        std::vector<std::string>::iterator locationUrl_iter = locationUrl.begin();
         if (url.size() < itr->size()) {
             continue;
         }
         for (std::vector<std::string>::iterator iter = url_begin; iter != url_end; iter++) {
-            // パスの検索結果が一致した場合
-            if (iter->compare(*itr) == 0) {
+            if (locationUrl_iter == locationUrl.end()) {
+                // locationUrlの最深部以降は比較しない
+                break;
+            }
+            if (iter->compare(*locationUrl_iter) == 0) {
+                // パスの検索結果が一致した場合
                 matchDepth++;
             } else {
                 // LocationのURLと一致しない階層があったらその時点で不採用
                 matchDepth = 0;
                 break;
             }
+            locationUrl_iter++;
         }
         if (matchDepth > biggesttMathDepth) {
             biggesttMathDepth = matchDepth;
