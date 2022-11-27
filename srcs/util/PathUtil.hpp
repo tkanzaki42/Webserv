@@ -24,6 +24,7 @@ class PathUtil {
      static const std::string   get_last_modified_date(
                                     const std::string& relative_path);
      static const std::string   get_filesize(const std::string& relative_path);
+     static std::string         canonicalUrl(const std::string& row_path);
 };
 
 #endif  // SRCS_UTIL_PATHUTIL_HPP_

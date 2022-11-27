@@ -159,6 +159,7 @@ std::string Config::getLocationString(int hostkey, const std::string &url, const
     std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, url);
     std::map<std::string, std::string>::iterator iter = locationMap.find(key);
     if (iter == locationMap.end()) {
+        puts("given /");
         return "/";
     }
     return (iter->second);
