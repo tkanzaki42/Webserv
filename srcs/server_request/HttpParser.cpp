@@ -108,11 +108,12 @@ void HttpParser::parse_method_() {
 }
 
 void HttpParser::parse_request_target_() {
-    char buffer[1280];
+    char buffer[BUF_SIZE];
     int buffer_idx = 0;
 
     while (received_line_[read_idx_] != ' '
-            && read_idx_ < received_line_.length()) {
+            && read_idx_ < received_line_.length()
+            && received_line_.length() < BUF_SIZE - 1) {
         buffer[buffer_idx++] = received_line_[read_idx_];
         read_idx_++;
     }
@@ -222,14 +223,15 @@ void HttpParser::split_path_info_() {
 }
 
 void HttpParser::parse_http_ver_() {
-    char buffer[1280];
+    char buffer[BUF_SIZE];
     int buffer_idx = 0;
 
     if (received_line_.compare(read_idx_, 5, "HTTP/") == 0) {
         read_idx_ += 5;
     }
     while (received_line_[read_idx_] != '\r'
-            && read_idx_ < received_line_.length()) {
+            && read_idx_ < received_line_.length()
+            && received_line_.length() < BUF_SIZE - 1) {
         buffer[buffer_idx++] = received_line_[read_idx_];
         read_idx_++;
     }
@@ -249,11 +251,12 @@ void HttpParser::parse_header_field_() {
 }
 
 std::pair<std::string, std::string> HttpParser::parse_one_header_field_() {
-    char buffer[1280];
+    char buffer[BUF_SIZE];
     int buffer_idx = 0;
 
     while (received_line_[read_idx_] != ':'
-            && read_idx_ < received_line_.length()) {
+            && read_idx_ < received_line_.length()
+            && received_line_.length() < BUF_SIZE - 1) {
         buffer[buffer_idx++] = received_line_[read_idx_];
         read_idx_++;
     }
