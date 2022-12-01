@@ -1,34 +1,30 @@
 #!/bin/bash
 
+# デフォルトでlocalhostにアクセス
+if [ $# -lt 1 ]; then
+	HOST="localhost"
+else
+	HOST=$1
+fi
+
+# デフォルトで5050文字のポートにアクセス
+if [ $# -lt 2 ]; then
+	PORT=5050
+else
+	PORT=$2
+fi
+
+# デフォルトで10000文字のHTTPリクエストヘッダを送る
+if [ $# -lt 3 ]; then
+	LENGTH=5000
+else
+	LENGTH=$3
+fi
+
 # 1293文字のURL(Success)
-URL1="localhost:5050/?"
-for i in `seq 1277`
+URL="${HOST}:${PORT}/?"
+for i in `seq ${LENGTH}`
 do
-URL1+="A"
+URL+="A"
 done
-curl $URL1
-
-# 1294文字のURL(Crash)
-# URL2="localhost:5050/?"
-# for i in `seq 1278`
-# do
-# URL2+="A"
-# done
-# curl $URL2
-
-# 7937文字のURL(Crash)
-# URL3="localhost:5050/?"
-# for i in `seq 7920`
-# do
-# URL3+="A"
-# done
-# curl $URL3
-
-# 7937文字のURL(Not crash)
-# URL4="localhost:5050/?"
-# for i in `seq 7921`
-# do
-# URL4+="A"
-# done
-# curl $URL4
-
+curl $URL
