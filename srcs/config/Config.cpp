@@ -191,6 +191,7 @@ std::map<std::string, std::string> Config::getLocation(int hostkey, const std::s
 }
 
 // あたえられたURLからlocationを決定して、そのLocationのパスを返す。
+// TODO:url = /hoge/fuga, location /hoge/fuga/
 std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
     int biggesttMathDepth = 0;
     std::vector<std::string> urlVector = split(url, '/');
