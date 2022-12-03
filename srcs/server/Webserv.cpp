@@ -22,7 +22,8 @@ void Webserv::loop() {
             continue;
 
         // リクエストデータを解析
-        request_.analyze_request();
+        if (request_.get_status_code() == 200)
+            request_.analyze_request();
 
         request_.print_debug();
 

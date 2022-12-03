@@ -3,6 +3,7 @@
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
+          file_type_(FILETYPE_NOT_DEFINED),
           status_code_(200),
           virtual_host_index_(-1),
           is_autoindex_(false) {
@@ -19,6 +20,7 @@ HttpRequest::HttpRequest(const HttpRequest &obj)
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     parser_             = HttpParser(obj.parser_);
+    file_type_          = obj.file_type_;
     status_code_        = obj.status_code_;
     virtual_host_index_ = obj.virtual_host_index_;
     is_autoindex_       = obj.is_autoindex_;
@@ -42,9 +44,9 @@ int HttpRequest::receive_header() {
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
     if (!found_empty_line) {
         std::cerr << "Failed to recognize header." << std::endl;
-        fd_manager_->disconnect();
+        // fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
-        return -1;
+        return -2;
     }
     received_line_.append(buf);
 
