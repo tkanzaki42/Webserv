@@ -189,6 +189,16 @@ std::map<std::string, std::string> Config::getLocation(int hostkey, const std::s
     return locationMap;
 }
 
+std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::string& url) {
+    std::vector<std::string> redirectVector =
+         Config::getLocationVector(hostkey, url, "root");
+    std::cout << Config::getLocationString(hostkey, url, "root") << std::endl;
+    std::pair<int, std::string> redirectPair =
+    std::make_pair(StringConverter::stoi(redirectVector[0]),
+                     redirectVector[1]);
+    return (redirectPair);
+}
+
 // あたえられたURLからlocationを決定して、そのLocationのパスを返す。
 std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
     int biggesttMathDepth = 0;

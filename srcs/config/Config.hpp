@@ -40,6 +40,7 @@ class Config {
     static std::string findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector);
     static std::vector<std::string> getAllLocation(int hostkey);
     static std::map<int, string_vector_map>::iterator getDefaultServer();
+    static std::pair<int, std::string> getRedirectPair(int hostkey, const std::string& url);
     static int getVirtualHostIndex(const std::string &hostname,
                                     const std::string &port);
     static int isReturn(int virtualHostIndex);

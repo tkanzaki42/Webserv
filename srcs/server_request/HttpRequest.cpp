@@ -227,7 +227,9 @@ void HttpRequest::check_redirect_() {
             && PathUtil::is_folder_exists(get_path_to_file()) == true) {
         status_code_ = 301;  // Moved Permanently
     }
-
+    // std::pair<int, std::string> redirectPair =
+    //  Config::getRedirectPair(virtual_host_index_, get_request_target());
+    // std::cout << "redirectPair.first" << redirectPair.first << std::endl;
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
     temporary_redirect_url["./public_html/redirect_from.html"]
