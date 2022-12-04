@@ -53,6 +53,7 @@ class HttpRequest {
     FDManager           *fd_manager_;
     HttpParser          parser_;
     std::string         received_line_;
+    std::string         location_;
     FileType            file_type_;
     int                 status_code_;
     int                 virtual_host_index_;

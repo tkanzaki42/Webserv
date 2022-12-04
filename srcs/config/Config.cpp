@@ -58,22 +58,6 @@ int Config::isReturn(int virtualServerIndex) {
     return (0);
 }
 
-std::pair<int, std::string> Config::getReturn(int virtualServerIndex) {
-    int statusCode;
-    std::string url;
-    std::pair<int, std::string> statusUrlPair;
-
-    std::vector<std::string> vectorStr
-         = getVectorStr(virtualServerIndex, "return");
-    std::vector<std::string>::iterator iter = vectorStr.begin();
-    // この時点でConfigの構成に従っていれば"|"区切りの要素二つの状態のはず TODO(kfukuta)
-    std::vector<std::string> tmp = split(*iter, '|');
-    statusCode = StringConverter::stoi(tmp[0]);
-    url = tmp[1];
-    statusUrlPair = std::make_pair(statusCode, url);
-    return (statusUrlPair);
-}
-
 std::map<int, string_vector_map> Config::_config;
 
 void    Config::parseConfig(const std::string &path) {
@@ -189,10 +173,9 @@ std::map<std::string, std::string> Config::getLocation(int hostkey, const std::s
     return locationMap;
 }
 
-std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::string& url) {
+std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::string& location) {
     std::vector<std::string> redirectVector =
-         Config::getLocationVector(hostkey, url, "root");
-    std::cout << Config::getLocationString(hostkey, url, "root") << std::endl;
+         Config::getLocationVector(hostkey, location, "return");
     std::pair<int, std::string> redirectPair =
     std::make_pair(StringConverter::stoi(redirectVector[0]),
                      redirectVector[1]);

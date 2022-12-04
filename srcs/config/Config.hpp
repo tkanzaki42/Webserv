@@ -44,7 +44,6 @@ class Config {
     static int getVirtualHostIndex(const std::string &hostname,
                                     const std::string &port);
     static int isReturn(int virtualHostIndex);
-    static std::pair<int, std::string> getReturn(int virtualServerIndex);
     static bool getAutoIndex(int virtualHostIndex, const std::string& url);
 
     class ConfigFormatException : public std::exception {
