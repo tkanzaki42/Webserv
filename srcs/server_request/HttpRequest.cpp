@@ -35,22 +35,19 @@ int HttpRequest::receive_header() {
     read_size = fd_manager_->receive(buf);
     // std::cout << "read_size: " << read_size << std::endl;
     if (read_size < 0) {
-        std::cerr << "recv() failed." << std::endl;
-        std::cerr << "ERROR: " << errno << std::endl;
-        fd_manager_->disconnect();
-        status_code_ = 400;  // Bad Request
-        return -1;
+        std::cerr << "recv() failed."
+            << " ERROR: " << errno << std::endl;
+        return EXIT_FAILURE;  // 受信に失敗したので処理中断
     }
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
     if (!found_empty_line) {
         std::cerr << "Failed to recognize header." << std::endl;
-        // fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
-        return -2;
+        return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400を返す正常ルート
     }
     received_line_.append(buf);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void HttpRequest::analyze_request() {

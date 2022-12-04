@@ -11,6 +11,7 @@ class HttpHeader {
     std::string                         status_line_;
     std::map<std::string, std::string>  header_field_;
     int                                 body_length_;
+    bool                                is_keep_alive_;
 
 
  public:
@@ -26,6 +27,7 @@ class HttpHeader {
     void                set_body_length(int body_length);
     void                set_header(std::string header_line);
     void                clear_contents();
+    bool                get_is_keep_alive();
 };
 
 #endif  // SRCS_SERVER_HTTPHEADER_HPP_
