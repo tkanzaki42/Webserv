@@ -83,15 +83,6 @@ void HttpResponse::make_header_() {
     }
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
-
-    // Configから取得したリダイレクトURL（key:status_code, value:redirect_url）
-    // std::pair<int, std::string> redirectPair = Config::getRedirectPair(request_->get_virtual_host_index(), request_->get_request_target());
-    // std::cout << "first" << redirectPair.first << std::endl;
-    // std::cout << "second" << redirectPair.second << std::endl;
-    // std::map<int, std::string> redirect_url_map =
-    //     Config::getMapIntStr(request_->get_virtual_host_index(), "return");
-    std::cout << "path_to_file()" << request_->get_path_to_file() << std::endl;
-    std::cout << "get_request_target()" << request_->get_request_target() << std::endl;
     // 307 Temporary Redirect / 302 Found
     // 308 Permanent Redirect / 301 Moved Permanently
 

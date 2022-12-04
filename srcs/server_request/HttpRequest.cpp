@@ -68,6 +68,9 @@ void HttpRequest::analyze_request() {
     std::vector<std::string> v = Config::getAllLocation(virtual_host_index_);
     this->location_ = Config::findLongestMatchLocation(path, Config::getAllLocation(virtual_host_index_));
     std::string root = Config::getLocationString(virtual_host_index_, location_, "root");
+    if (!root.size()) {
+        root = "/";
+    }
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(virtual_host_index_, location_, "index"));
@@ -83,7 +86,7 @@ void HttpRequest::analyze_request() {
         status_code_ = 404;  // Not Found
     }
     // リダイレクト確認
-    if (Config::isReturn(virtual_host_index_))
+    if (Config::isReturn(virtual_host_index_, location_))
         check_redirect_();
     bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
     if (status_code_ == 404 && autoindex == true)

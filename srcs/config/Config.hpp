@@ -32,8 +32,6 @@ class Config {
          getVectorInt(int, const std::string&);
     static std::vector<std::string>
          getVectorStr(int, const std::string&);
-    static std::map<int, std::string>
-         getMapIntStr(int, const std::string&);
     static std::map<std::string, std::string> getLocation(int hostkey, const std::string& url);
     static std::vector<std::string> getLocationVector(int hostkey, const std::string& url, const std::string &key);
     static std::string getLocationString(int hostkey, const std::string& url, const std::string &key);
@@ -43,7 +41,7 @@ class Config {
     static std::pair<int, std::string> getRedirectPair(int hostkey, const std::string& url);
     static int getVirtualHostIndex(const std::string &hostname,
                                     const std::string &port);
-    static int isReturn(int virtualHostIndex);
+    static bool isReturn(int virtualHostIndex, std::string &url);
     static bool getAutoIndex(int virtualHostIndex, const std::string& url);
 
     class ConfigFormatException : public std::exception {

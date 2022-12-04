@@ -41,7 +41,6 @@ int Config::getVirtualHostIndex(const std::string &hostname,
         listenNum = itr->second.find("listen");
         if (!serverName->second[0].compare(hostname)
             && !listenNum->second[0].compare(port)) {
-            std::cout << "getVirtualHostIndex(:" << listenNum->second[0] << std::endl;
             return (virtual_host_index);
         }
         virtual_host_index++;
@@ -50,12 +49,13 @@ int Config::getVirtualHostIndex(const std::string &hostname,
     return (0);
 }
 
-int Config::isReturn(int virtualServerIndex) {
-    string_vector_map::iterator end = _config[virtualServerIndex].end();
-    if (_config[virtualServerIndex].find("return") != end) {
+// アクセスしたlocationにリダイレクトが設定されているかを返却する
+bool Config::isReturn(int virtualServerIndex, std::string &location) {
+    if (Config::getLocationString(virtualServerIndex,
+                                    location, "return").size()) {
         return (true);
     }
-    return (0);
+    return (false);
 }
 
 std::map<int, string_vector_map> Config::_config;
@@ -138,19 +138,19 @@ void    Config::parseConfig(const std::string &path) {
         throw(Config::ConfigFormatException());
 }
 
-// 与えられたURLとキーからLocationの中の設定を取得する。rootなど単数の場合その設定をStringで返却する。
-std::string Config::getLocationString(int hostkey, const std::string &url, const std::string &key) {
-    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, url);
+// 与えられたlocationとキーからLocationの中の設定を取得する。rootなど単数の場合その設定をStringで返却する。
+std::string Config::getLocationString(int hostkey, const std::string &location, const std::string &key) {
+    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, location);
     std::map<std::string, std::string>::iterator iter = locationMap.find(key);
     if (iter == locationMap.end()) {
-        return "/";
+        return "";
     }
     return (iter->second);
 }
 
-// 与えられたURLとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（スペースで分割されていた）で返却する。
-std::vector<std::string> Config::getLocationVector(int hostkey, const std::string &url, const std::string &key) {
-    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, url);
+// 与えられたlocationとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（スペースで分割されていた）で返却する。
+std::vector<std::string> Config::getLocationVector(int hostkey, const std::string &location, const std::string &key) {
+    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, location);
     std::map<std::string, std::string>::iterator iter = locationMap.find(key);
     std::vector<std::string> v;
     if (iter == locationMap.end())
@@ -159,9 +159,9 @@ std::vector<std::string> Config::getLocationVector(int hostkey, const std::strin
 }
 
 // 上二つの関数のためのヘルパー関数
-std::map<std::string, std::string> Config::getLocation(int hostkey, const std::string& url) {
+std::map<std::string, std::string> Config::getLocation(int hostkey, const std::string& location) {
     std::map<std::string, std::string> locationMap;
-    std::vector<std::string> locationVector = Config::getVectorStr(hostkey, "location " + url);
+    std::vector<std::string> locationVector = Config::getVectorStr(hostkey, "location " + location);
     std::vector<std::string>::iterator begin = locationVector.begin();
     std::vector<std::string>::iterator end = locationVector.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
@@ -331,25 +331,9 @@ std::vector<std::string> Config::getVectorStr(int hostKey,
     return (_config[hostKey][key]);
 }
 
-std::map<int, std::string> Config::getMapIntStr(int hostKey,
-                                             const std::string& key) {
-    std::map<int, std::string> map;
-    std::vector<std::string> vectorStr = getVectorStr(hostKey, key);
-    std::vector<std::string>::iterator begin = vectorStr.begin();
-    std::vector<std::string>::iterator end = vectorStr.end();
-    for (std::vector<std::string>::iterator iter = begin;
-         iter != end; iter++) {
-        // この時点でConfigの構成に従っていれば"|"区切りの要素二つの状態のはず TODO(kfukuta)
-        std::vector<std::string> tmp = split(*iter, '|');
-        // mapの挿入方法が問題ないか TODO(kfukuta)
-        map[StringConverter::stoi(tmp[0])] = tmp[1];
-    }
-    return (map);
-}
-
 bool Config::getAutoIndex(int virtualHostIndex, const std::string& url) {
-    std::string autoIndexString = getLocationString(virtualHostIndex, url, "autoindex");
-    std::cout << "|" << autoIndexString << "|" << std::endl;
+    std::string autoIndexString =
+            getLocationString(virtualHostIndex, url, "autoindex");
     if (!autoIndexString.compare("on"))
         return (true);
     else
