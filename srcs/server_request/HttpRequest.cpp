@@ -86,8 +86,7 @@ void HttpRequest::analyze_request() {
     // リダイレクト確認
     if (status_code_ == 200 || status_code_ == 404)
         check_redirect_();
-    // オートインデックスの実施
-    bool autoindex = true;  // TODO(kfukuta) コンフィグで指定
+    bool autoindex = Config::getAutoIndex(virtual_host_index_, location);
     if (status_code_ == 404 && autoindex == true)
         is_autoindex_ = true;
 

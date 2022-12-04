@@ -171,7 +171,7 @@ std::vector<std::string> Config::getLocationVector(int hostkey, const std::strin
     std::vector<std::string> v;
     if (iter == locationMap.end())
         return (v);
-    return (split(iter->second, ' '));
+    return (split(iter->second, '|'));
 }
 
 // 上二つの関数のためのヘルパー関数
@@ -181,7 +181,7 @@ std::map<std::string, std::string> Config::getLocation(int hostkey, const std::s
     std::vector<std::string>::iterator begin = locationVector.begin();
     std::vector<std::string>::iterator end = locationVector.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
-        int sep_position = itr->find(' ');
+        int sep_position = itr->find('|');
         std::string key = itr->substr(0, sep_position);
         std::string value = itr->substr(sep_position + 1, itr->length());
         locationMap.insert(std::make_pair(key, value));
@@ -352,6 +352,15 @@ std::map<int, std::string> Config::getMapIntStr(int hostKey,
         map[StringConverter::stoi(tmp[0])] = tmp[1];
     }
     return (map);
+}
+
+bool Config::getAutoIndex(int virtualHostIndex, const std::string& url) {
+    std::string autoIndexString = getLocationString(virtualHostIndex, url, "autoindex");
+    std::cout << "|" << autoIndexString << "|" << std::endl;
+    if (!autoIndexString.compare("on"))
+        return (true);
+    else
+        return (false);
 }
 
 // test for getter
