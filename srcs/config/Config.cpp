@@ -159,7 +159,6 @@ std::string Config::getLocationString(int hostkey, const std::string &url, const
     std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, url);
     std::map<std::string, std::string>::iterator iter = locationMap.find(key);
     if (iter == locationMap.end()) {
-        puts("given /");
         return "/";
     }
     return (iter->second);
@@ -191,7 +190,6 @@ std::map<std::string, std::string> Config::getLocation(int hostkey, const std::s
 }
 
 // あたえられたURLからlocationを決定して、そのLocationのパスを返す。
-// TODO:url = /hoge/fuga, location /hoge/fuga/
 std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
     int biggesttMathDepth = 0;
     std::vector<std::string> urlVector = split(url, '/');
@@ -206,12 +204,13 @@ std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::
         int matchDepth = 0;
         std::vector<std::string> locationUrl = split(*itr, '/');
         std::vector<std::string>::iterator url_begin = urlVector.begin();
-        std::vector<std::string>::iterator url_end = urlVector.end();
-        std::vector<std::string>::iterator locationUrl_iter = locationUrl.begin();
-        if (url.size() < itr->size()) {
-            continue;
-        }
-        for (std::vector<std::string>::iterator iter = url_begin; iter != url_end; iter++) {
+        std::vector<std::string>::iterator locationUrl_begin = locationUrl.begin();
+        std::vector<std::string>::iterator locationUrl_iter = locationUrl_begin;
+        // 要素数の少ない方をループ回数として指定する。
+        int loopMax = urlVector.size() > locationUrl.size() ? locationUrl.size() : urlVector.size();
+        int loopCount = 0;
+        for (std::vector<std::string>::iterator iter = url_begin; loopCount < loopMax; iter++) {
+            loopCount++;
             if (locationUrl_iter == locationUrl.end()) {
                 // locationUrlの最深部以降は比較しない
                 break;
@@ -220,6 +219,10 @@ std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::
                 // パスの検索結果が一致した場合
                 matchDepth++;
             } else {
+                if (!locationUrl_iter->size()) {
+                    locationUrl_iter++;
+                    continue;
+                }
                 // LocationのURLと一致しない階層があったらその時点で不採用
                 matchDepth = 0;
                 break;
