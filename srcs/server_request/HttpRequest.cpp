@@ -232,23 +232,8 @@ void HttpRequest::check_redirect_() {
     std::string returnPath = Config::getLocationString(this->virtual_host_index_, location_, "return");
     // int status_code, std::string リダイレクト先
     std::pair<int, std::string> redirectPair =
-     Config::getRedirectPair(virtual_host_index_, location_);
-    std::cout << "redirectPair.first" << redirectPair.first << std::endl;
-    std::cout << "redirectPair.second" << redirectPair.second << std::endl;
-    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
-    std::map<std::string, std::string> temporary_redirect_url;
-    temporary_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
-    std::map<std::string, std::string> permanent_redirect_url;
-    permanent_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
-
-    if (temporary_redirect_url[get_path_to_file()] != "") {
-        if (get_http_method() == METHOD_POST)
-            status_code_ = 307;  // Temporary Redirect
-        else
-            status_code_ = 302;  // Found
-    }
+        Config::getRedirectPair(virtual_host_index_, location_);
+    status_code_ = redirectPair.first;
 }
 
 int HttpRequest::receive_and_store_to_file_() {
