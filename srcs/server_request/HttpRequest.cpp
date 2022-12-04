@@ -279,7 +279,7 @@ int HttpRequest::receive_and_store_to_file_() {
     ssize_t read_size = 0;
     char    buf[BUF_SIZE];
     do {
-        if (total_read_size > REQUEST_ENTITY_MAX) {
+        if (total_read_size > Config::getSingleInt(get_virtual_host_index(), "client_max_body_size")) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
             std::remove(TMP_POST_DATA_FILE);
