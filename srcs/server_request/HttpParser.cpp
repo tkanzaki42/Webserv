@@ -36,7 +36,7 @@ int HttpParser::parse() {
 
     if (!parse_method_()) {
         // メソッドが解析できなかった場合
-        status_code = 400;  // Bad Request
+        status_code = 405;  // Not Allowed
         return status_code;
     }
     if (!parse_request_target_()) {
@@ -89,8 +89,12 @@ const std::string& HttpParser::get_header_field(const std::string& key) {
 }
 
 const std::string HttpParser::get_host_name() {
-    std::vector<std::string> field_host = split(header_field_["Host"], ':');
-    return (field_host[0]);
+    if (header_field_.count("Host")) {
+        std::vector<std::string> field_host = split(header_field_["Host"], ':');
+        return field_host[0];
+    } else {
+        return "";
+    }
 }
 
 const std::string HttpParser::get_remain_buffer() {
@@ -115,13 +119,13 @@ const std::string& HttpParser::getBaseHtmlPath() const {
 }
 
 bool HttpParser::parse_method_() {
-    if (received_line_.compare(read_idx_, 4, "POST") == 0) {
+    if (received_line_.compare(read_idx_, 5, "POST ") == 0) {
         http_method_ = METHOD_POST;
         read_idx_ += 4;
-    } else if (received_line_.compare(read_idx_, 3, "GET") == 0) {
+    } else if (received_line_.compare(read_idx_, 4, "GET ") == 0) {
         http_method_ = METHOD_GET;
         read_idx_ += 3;
-    } else if (received_line_.compare(read_idx_, 6, "DELETE") == 0) {
+    } else if (received_line_.compare(read_idx_, 7, "DELETE ") == 0) {
         http_method_ = METHOD_DELETE;
         read_idx_ += 6;
     } else {
@@ -133,12 +137,12 @@ bool HttpParser::parse_method_() {
 }
 
 bool HttpParser::parse_request_target_() {
-    char buffer[BUF_SIZE];
+    char buffer[MAX_URL_LENGTH + 1];
     int buffer_idx = 0;
 
     while (received_line_[read_idx_] != ' '
             && read_idx_ < received_line_.length()) {
-        if (buffer_idx >= BUF_SIZE - 1) {
+        if (buffer_idx >= MAX_URL_LENGTH) {
             // 内部バッファ容量超え(=URLが長すぎ)の場合はエラー
             return false;
         }

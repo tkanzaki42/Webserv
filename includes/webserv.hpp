@@ -11,8 +11,9 @@
 #include <sstream>
 #include <map>
 
-const int BUF_SIZE           = 8001;
+const int BUF_SIZE           = 9001;
 const int CGI_TIMEOUT_SEC    = 5;
+const int MAX_URL_LENGTH     = 8177;
 
 // const std::string kBaseHtmlPath = "./public_html";
 // const std::string kIndexHtmlFileName = "index.html";
