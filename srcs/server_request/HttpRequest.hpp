@@ -58,6 +58,7 @@ class HttpRequest {
 
     void                check_redirect_();
     int                 receive_and_store_to_file_();
+    int                 receive_normal_data_(std::ofstream &ofs_outfile);
     int                 delete_file_();
 };
 

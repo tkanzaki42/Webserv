@@ -252,6 +252,22 @@ int HttpRequest::receive_and_store_to_file_() {
         return 500;  // Internal Server Error
     }
 
+    int status_code_ret = 200;
+    if (parser_.get_header_field("Transfer-Encoding").compare("chunked") == 0) {
+        std::cout << "<<chunked>>" << std::endl;
+        ;
+    } else if (parser_.get_header_field("Content-Length").compare("") != 0) {
+        status_code_ret = receive_normal_data_(ofs_outfile);
+    } else {
+        std::cerr << "Both Transfer-Encoding and Content-Length headers are"
+            << "not specified." << std::endl;
+    }
+
+    ofs_outfile.close();
+    return status_code_ret;
+}
+
+int HttpRequest::receive_normal_data_(std::ofstream &ofs_outfile) {
     // ヘッダ読み込み時にバッファに残っている分を書きだす
     std::string remain_buffer = parser_.get_remain_buffer();
     ofs_outfile.write(remain_buffer.c_str(), remain_buffer.length());
@@ -289,7 +305,6 @@ int HttpRequest::receive_and_store_to_file_() {
         }
     } while (read_size > 0);
 
-    ofs_outfile.close();
     return 201;  // Created
 }
 
