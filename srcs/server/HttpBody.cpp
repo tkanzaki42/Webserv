@@ -20,7 +20,7 @@ int HttpBody::read_contents_from_file_() {
     }
 
     // ファイル読み込み
-    char          read_line[256];
+    char          read_line[BUF_SIZE];
 
     // Accept-Ranges & 416対応
     const std::map<std::string, std::string>& map = request_.get_header_field_map();
@@ -35,7 +35,7 @@ int HttpBody::read_contents_from_file_() {
         size_t len   = end - start;
         size_t total = 0;
         bool once = false;
-        while (ifs_readfile.getline(read_line, 256 - 1)) {
+        while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
             total += std::string(read_line).length();
             if (total < start){
                 // Rangeの先頭までスキップ
@@ -65,7 +65,7 @@ int HttpBody::read_contents_from_file_() {
         }
     }
 
-    while (ifs_readfile.getline(read_line, 256 - 1)) {
+    while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
         content_.push_back(std::string(read_line));
     }
 
