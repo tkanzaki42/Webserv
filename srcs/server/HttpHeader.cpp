@@ -32,6 +32,7 @@ void HttpHeader::make_response(int status_code) {
 
         set_header(oss_content_length.str());
         set_header("Connection: keep-alive\r\n");
+        set_header("Accept-Ranges: bytes\r\n");
     } else {
         set_header("Connection: close\r\n");
     }

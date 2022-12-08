@@ -210,7 +210,6 @@ void HttpRequest::check_redirect_() {
         status_code_ = 301;  // Moved Permanently
     }
 
-
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
     temporary_redirect_url["./public_html/redirect_from.html"]

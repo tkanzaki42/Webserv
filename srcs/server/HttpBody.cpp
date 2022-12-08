@@ -21,6 +21,50 @@ int HttpBody::read_contents_from_file_() {
 
     // ファイル読み込み
     char          read_line[256];
+
+    // Accept-Ranges & 416対応
+    const std::map<std::string, std::string>& map = request_.get_header_field_map();
+    if (map.count(std::string("Range")) > 0){
+        std::string range = map.at(std::string("Range"));
+        size_t start = (size_t)StringConverter::stoi(range.substr(std::string("bytes=").length()));
+        size_t end   = (size_t)StringConverter::stoi(range.substr(range.find("-") + 1));
+        if (start > end) {
+            ifs_readfile.close();
+            return 416;
+        }
+        size_t len   = end - start;
+        size_t total = 0;
+        bool once = false;
+        while (ifs_readfile.getline(read_line, 256 - 1)) {
+            total += std::string(read_line).length();
+            if (total < start){
+                // Rangeの先頭までスキップ
+                continue;
+            }
+
+            // 最初の一回だけRangeの先頭までoffsetを進める
+            size_t offset = 0;
+            if (!once){
+                offset = start - (total - std::string(read_line).length());
+                once = true;
+            }
+            if (len < std::string(read_line).length()) {
+                // Rangeの長さ分に達したらbreak
+                content_.push_back(std::string(read_line).substr(offset, len + 1));
+                ifs_readfile.close();
+                return 200;
+            } else {
+                // Rangeの長さまで格納し続ける
+                content_.push_back(std::string(read_line).substr(offset, std::string(read_line).length()));
+                len -= std::string(read_line).length();
+            }
+        }
+        if (total < start){
+            ifs_readfile.close();
+            return 416;
+        }
+    }
+
     while (ifs_readfile.getline(read_line, 256 - 1)) {
         content_.push_back(std::string(read_line));
     }
