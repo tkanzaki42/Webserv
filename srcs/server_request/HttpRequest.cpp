@@ -254,8 +254,7 @@ int HttpRequest::receive_and_store_to_file_() {
 
     int status_code_ret = 200;
     if (parser_.get_header_field("Transfer-Encoding").compare("chunked") == 0) {
-        std::cout << "<<chunked>>" << std::endl;
-        ;
+        status_code_ret = receive_chunked_data_(ofs_outfile);
     } else if (parser_.get_header_field("Content-Length").compare("") != 0) {
         status_code_ret = receive_normal_data_(ofs_outfile);
     } else {
@@ -265,6 +264,118 @@ int HttpRequest::receive_and_store_to_file_() {
 
     ofs_outfile.close();
     return status_code_ret;
+}
+
+int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
+    char    buf[BUF_SIZE];
+    enum ReadMode {
+        READMODE_CHUNKSIZE = 0,
+        READMODE_DATA = 1
+    };
+    enum ReadMode read_mode = READMODE_CHUNKSIZE;
+
+    // ヘッダ読み込み時にバッファに残っている分をバッファへ
+    StringConverter::ft_strlcpy(
+            buf, parser_.get_remain_buffer().c_str(), BUF_SIZE);
+    char *readed_data = strdup(buf);
+    std::size_t total_read_size = StringConverter::ft_strlen(buf);
+
+    // 受信しながらファイルに書き出し
+    std::size_t chunk_size = 0;
+    while (true) {
+        if (read_mode == READMODE_CHUNKSIZE) {
+            // チャンクサイズ読み込み
+            while (!is_found_crlf_(readed_data)) {
+                if (recv_data_(&readed_data) == -1)
+                    return 500;  // Internal Server Error
+            }
+            chunk_size = get_chunk_size_(&readed_data);
+            if (chunk_size == 0) {
+                // チャンクサイズが0の場合、データの終了を意味する
+                ofs_outfile.close();
+                free(readed_data);
+                break;
+            } else if (total_read_size + chunk_size > REQUEST_ENTITY_MAX) {
+                // デフォルト値1MB以上なら413
+                ofs_outfile.close();
+                std::remove(TMP_POST_DATA_FILE);
+                free(readed_data);
+                return 413;
+            }
+            read_mode = READMODE_DATA;
+        } else if (read_mode == READMODE_DATA) {
+            // チャンクサイズ分のデータを読み込んでファイルに書き出し
+            while (chunk_size > strlen(readed_data)) {
+                if (recv_data_(&readed_data) == -1)
+                    return 500;  // Internal Server Error
+            }
+            std::cout << "  write data size:" << chunk_size << std::endl;
+            ofs_outfile.write(readed_data, chunk_size);
+            // 書き出した分をバッファから削除
+            char* tmp = strdup(readed_data + chunk_size);
+            free(readed_data);
+            readed_data = tmp;
+            // モード変更など
+            read_mode = READMODE_CHUNKSIZE;
+            total_read_size += chunk_size;
+        }
+    }
+
+    return 201;  // Created
+}
+
+bool HttpRequest::is_found_crlf_(char *readed_data) {
+    for (int i = 0; readed_data[i] != '\0'; i++) {
+        if (readed_data[i] == '\r' && readed_data[i + 1] == '\n')
+            return true;
+    }
+    return false;
+}
+
+int HttpRequest::recv_data_(char **readed_data) {
+    char    buf[BUF_SIZE];
+
+    int read_size = fd_manager_->receive(buf);
+    if (read_size == -1) {
+        std::cerr << "recv() failed in "
+            << "receive_chunked_data_()." << std::endl;
+        fd_manager_->disconnect();
+        return -1;
+    }
+    if (read_size > 0) {
+        buf[read_size] = '\0';
+        char* tmp = StringConverter::ft_strjoin(*readed_data, buf);
+        free(*readed_data);
+        *readed_data = tmp;
+    }
+    return read_size;
+}
+
+int HttpRequest::get_chunk_size_(char **readed_data) {
+    int chunk_size = 0;
+
+    // チャンクサイズ部分を読み込み
+    int i = 0;
+    while ((*readed_data)[i] != '\r' && i != (*readed_data)[i] != '\0') {
+        if ('a' <= (*readed_data)[i] && (*readed_data)[i] <= 'f') {
+            chunk_size = chunk_size * 16 + (*readed_data)[i] - 'a' + 10;
+        } else if ('A' <= (*readed_data)[i] && (*readed_data)[i] <= 'F') {
+            chunk_size = chunk_size * 16 + (*readed_data)[i] - 'A' + 10;
+        } else if ('0' <= (*readed_data)[i] && (*readed_data)[i] <= '9') {
+            chunk_size = chunk_size * 16 + (*readed_data)[i] - '0';
+        } else {
+            std::cerr << "Failed to recognize chunk size." << std::endl;
+        }
+        i++;
+    }
+    std::cout << "  chunk_size:" << chunk_size << std::endl;
+
+    // チャンクサイズ部分をバッファから削除
+    char* tmp = strdup(*readed_data + i);
+    free(*readed_data);
+    *readed_data = tmp;
+
+    return chunk_size;
 }
 
 int HttpRequest::receive_normal_data_(std::ofstream &ofs_outfile) {
@@ -290,7 +401,7 @@ int HttpRequest::receive_normal_data_(std::ofstream &ofs_outfile) {
         read_size = fd_manager_->receive(buf);
         if (read_size == -1) {
             std::cerr << "recv() failed in "
-                << "receive_and_store_to_file_()." << std::endl;
+                << "receive_normal_data_()." << std::endl;
             // close(accept_fd_);
             // accept_fd_ = -1;
             fd_manager_->disconnect();
