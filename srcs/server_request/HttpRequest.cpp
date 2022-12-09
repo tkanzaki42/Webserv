@@ -35,8 +35,14 @@ int HttpRequest::receive_header() {
     read_size = fd_manager_->receive(buf);
     // std::cout << "read_size: " << read_size << std::endl;
     if (read_size < 0) {
-        std::cerr << "recv() failed."
-            << " ERROR: " << errno << std::endl;
+        int recv_errno = errno;
+        if (recv_errno == 0 || recv_errno == 9) {
+            std::cerr << "connection closed by peer."
+                << " recv() errno: " << recv_errno << std::endl;
+        } else {
+            std::cerr << "recv() failed."
+                << " ERROR: " << recv_errno << std::endl;
+        }
         return EXIT_FAILURE;  // 受信に失敗したので処理中断
     }
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
