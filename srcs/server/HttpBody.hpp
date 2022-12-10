@@ -20,8 +20,12 @@ class HttpBody {
     const HttpRequest&       request_;
     std::vector<std::string> content_;
     std::ifstream            output_file_;
-    // int                      body_content_length_;
+    size_t                   content_length_;
+    size_t                   content_start_;
+    size_t                   content_end_;
 
+    void                     count_content_length_();
+    void                     range_content_();
     int                      read_contents_from_file_();
     void                     make_status_response_(int status_code);
 
@@ -35,6 +39,8 @@ class HttpBody {
     void                           make_autoindex_response();
     const std::vector<std::string> &get_content();
     std::size_t                    get_content_length();
+    std::size_t                    get_content_start();
+    std::size_t                    get_content_end();
     void                           clear_contents();
 };
 

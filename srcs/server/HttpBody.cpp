@@ -22,54 +22,13 @@ int HttpBody::read_contents_from_file_() {
     // ファイル読み込み
     char          read_line[BUF_SIZE];
 
-    // Accept-Ranges & 416対応
-    const std::map<std::string, std::string>& map = request_.get_header_field_map();
-    if (map.count(std::string("Range")) > 0){
-        std::string range = map.at(std::string("Range"));
-        size_t start = (size_t)StringConverter::stoi(range.substr(std::string("bytes=").length()));
-        size_t end   = (size_t)StringConverter::stoi(range.substr(range.find("-") + 1));
-        if (start > end) {
-            ifs_readfile.close();
-            return 416;
-        }
-        size_t len   = end - start;
-        size_t total = 0;
-        bool once = false;
-        while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
-            total += std::string(read_line).length();
-            if (total < start){
-                // Rangeの先頭までスキップ
-                continue;
-            }
-
-            // 最初の一回だけRangeの先頭までoffsetを進める
-            size_t offset = 0;
-            if (!once){
-                offset = start - (total - std::string(read_line).length());
-                once = true;
-            }
-            if (len < std::string(read_line).length()) {
-                // Rangeの長さ分に達したらbreak
-                content_.push_back(std::string(read_line).substr(offset, len + 1));
-                ifs_readfile.close();
-                return 200;
-            } else {
-                // Rangeの長さまで格納し続ける
-                content_.push_back(std::string(read_line).substr(offset, std::string(read_line).length()));
-                len -= std::string(read_line).length();
-            }
-        }
-        if (total < start){
-            ifs_readfile.close();
-            return 416;
-        }
-    }
-
     while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
         content_.push_back(std::string(read_line));
     }
 
     ifs_readfile.close();
+    count_content_length_();
+    range_content_();
     return 200;
 }
 
@@ -88,7 +47,10 @@ void HttpBody::make_status_response_(int status_code) {
 
 HttpBody::HttpBody(const HttpRequest& request)
         : request_(request),
-          content_(std::vector<std::string>()) {
+          content_(std::vector<std::string>()),
+          content_length_(0),
+          content_start_(0),
+          content_end_(0) {
 }
 
 HttpBody::~HttpBody() {
@@ -100,7 +62,10 @@ HttpBody::HttpBody(const HttpBody &obj)
 }
 
 HttpBody &HttpBody::operator=(const HttpBody &obj) {
-    this->content_     = obj.content_;
+    this->content_        = obj.content_;
+    this->content_length_  = obj.content_length_;
+    this->content_start_  = obj.content_start_;
+    this->content_end_    = obj.content_end_;
     return *this;
 }
 
@@ -172,14 +137,38 @@ void HttpBody::make_autoindex_response() {
     content_.push_back(oss_body.str());
 }
 
-std::size_t HttpBody::get_content_length() {
+void HttpBody::range_content_() {
+    
+}
+
+
+void HttpBody::count_content_length_() {
     int content_length = 0;
 
     for (std::vector<std::string>::iterator it = content_.begin();
             it != content_.end(); ++it) {
         content_length += (*it).length();
     }
-    return (content_length);
+    content_length_ = content_length;
+
+    const std::map<std::string, std::string>& map = request_.get_header_field_map();
+    if (map.count(std::string("Range")) > 0){
+        std::string range = map.at(std::string("Range"));
+        content_start_ = (size_t)StringConverter::stoi(range.substr(std::string("bytes=").length()));
+        content_end_   = (size_t)StringConverter::stoi(range.substr(range.find("-") + 1));
+    }
+}
+
+std::size_t HttpBody::get_content_length() {
+    return this->content_length_;
+}
+
+std::size_t HttpBody::get_content_start() {
+    return this->content_start_;
+}
+
+std::size_t HttpBody::get_content_end() {
+    return this->content_end_;
 }
 
 const std::vector<std::string> &HttpBody::get_content() {
