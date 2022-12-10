@@ -67,7 +67,6 @@ void HttpRequest::analyze_request() {
     std::string path = get_path_to_file();
     std::vector<std::string> v = Config::getAllLocation(virtual_host_index_);
     location_ = Config::findLongestMatchLocation(path, Config::getAllLocation(virtual_host_index_));
-    std::cout << "LOCATION : " << location_ << std::endl;
     std::string root = Config::getLocationString(virtual_host_index_, location_, "root");
     if (!root.size()) {
         root = "/";
@@ -117,7 +116,6 @@ void HttpRequest::analyze_request() {
     if (status_code_ != 200) {
         return;
     }
-
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (get_http_method() == METHOD_POST) {
         if (file_type_ == FILETYPE_STATIC_HTML) {
@@ -249,13 +247,13 @@ void HttpRequest::check_redirect_() {
 
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    if (PathUtil::is_folder_exists(TMP_POST_DATA_DIR) == false) {
+    std::string tmp = "./file/";
+    if (PathUtil::is_folder_exists(tmp) == false) {
         if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             std::cerr << "Could not create dirctory: " << TMP_POST_DATA_DIR << std::endl;
             return 500;  // Internal Server Error
         }
     }
-
     // ファイルのオープン
     std::ofstream ofs_outfile;
     ofs_outfile.open(TMP_POST_DATA_FILE,
@@ -265,11 +263,9 @@ int HttpRequest::receive_and_store_to_file_() {
             << get_path_to_file() << std::endl;
         return 500;  // Internal Server Error
     }
-
     // ヘッダ読み込み時にバッファに残っている分を書きだす
     std::string remain_buffer = parser_.get_remain_buffer();
     ofs_outfile.write(remain_buffer.c_str(), remain_buffer.length());
-
     // 受信しながらファイルに書き出し
     ssize_t total_read_size = remain_buffer.length();
     ssize_t read_size = 0;
@@ -277,7 +273,7 @@ int HttpRequest::receive_and_store_to_file_() {
      Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");
     char    buf[BUF_SIZE];
     do {
-        if (total_read_size > client_max_body_size) {
+        if (total_read_size > client_max_body_size && client_max_body_size != -1) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
             std::remove(TMP_POST_DATA_FILE);

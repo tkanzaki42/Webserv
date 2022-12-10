@@ -318,6 +318,9 @@ std::string Config::getSingleStr(int hostKey,
 }
 
 int Config::getSingleInt(int hostKey, const std::string& key) {
+    if (_config[hostKey].empty() || _config[hostKey][key].empty()) {
+        return (-1);
+    }
     return (StringConverter::stoi(_config[hostKey][key][0]));
 }
 
