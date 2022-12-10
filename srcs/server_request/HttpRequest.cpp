@@ -276,19 +276,24 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
     StringConverter::ft_strlcpy(
             buf, parser_.get_remain_buffer().c_str(), BUF_SIZE);
     char *readed_data = strdup(buf);
-    std::size_t total_read_size = StringConverter::ft_strlen(buf);
+    int total_read_size = StringConverter::ft_strlen(buf);
 
     // 受信しながらファイルに書き出し
-    std::size_t chunk_size = 0;
+    int chunk_size = 0;
     while (true) {
         if (read_mode == READMODE_CHUNKSIZE) {
             // チャンクサイズ読み込み
             while (!is_found_crlf_(readed_data)) {
                 if (recv_data_(&readed_data) == -1)
-                    return 500;  // Internal Server Error
+                    return 400;  // Bad Request
             }
-            chunk_size = get_chunk_size_(&readed_data);
-            if (chunk_size == 0) {
+            chunk_size = get_chunk_size_(&readed_data, total_read_size);
+            if (chunk_size == -1) {
+                ofs_outfile.close();
+                std::remove(TMP_POST_DATA_FILE);
+                free(readed_data);
+                return 400;  // Bad Request
+            } else if (chunk_size == 0) {
                 // チャンクサイズが0の場合、データの終了を意味する
                 ofs_outfile.close();
                 free(readed_data);
@@ -298,14 +303,14 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
                 ofs_outfile.close();
                 std::remove(TMP_POST_DATA_FILE);
                 free(readed_data);
-                return 413;
+                return 413;  // Payload Too Large
             }
             read_mode = READMODE_DATA;
         } else if (read_mode == READMODE_DATA) {
             // チャンクサイズ分のデータを読み込んでファイルに書き出し
-            while (chunk_size > strlen(readed_data)) {
+            while (chunk_size > static_cast<int>(strlen(readed_data))) {
                 if (recv_data_(&readed_data) == -1)
-                    return 500;  // Internal Server Error
+                    return 400;  // Bad Request
             }
             std::cout << "  write data size:" << chunk_size << std::endl;
             ofs_outfile.write(readed_data, chunk_size);
@@ -349,7 +354,7 @@ int HttpRequest::recv_data_(char **readed_data) {
     return read_size;
 }
 
-int HttpRequest::get_chunk_size_(char **readed_data) {
+int HttpRequest::get_chunk_size_(char **readed_data, int total_read_size) {
     int chunk_size = 0;
 
     // チャンクサイズ部分を読み込み
@@ -363,7 +368,12 @@ int HttpRequest::get_chunk_size_(char **readed_data) {
             chunk_size = chunk_size * 16 + (*readed_data)[i] - '0';
         } else {
             std::cerr << "Failed to recognize chunk size." << std::endl;
-            chunk_size = 0;
+            return -1;
+        }
+        // チャンクサイズが極端に大きい数値の場合、無限ループにならないよう早めに判定
+        if (total_read_size + chunk_size > REQUEST_ENTITY_MAX) {
+            std::cerr << "Chunk size overflow." << std::endl;
+            return -1;
         }
         i++;
     }
