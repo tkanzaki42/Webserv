@@ -255,11 +255,9 @@ int HttpRequest::receive_and_store_to_file_() {
     int status_code_ret = 200;
     if (parser_.get_header_field("Transfer-Encoding").compare("chunked") == 0) {
         status_code_ret = receive_chunked_data_(ofs_outfile);
-    } else if (parser_.get_header_field("Content-Length").compare("") != 0) {
+    } else  {
+        // Content-Lengthがあってもなくても通常のデータ受信モード
         status_code_ret = receive_normal_data_(ofs_outfile);
-    } else {
-        std::cerr << "Both Transfer-Encoding and Content-Length headers are"
-            << "not specified." << std::endl;
     }
 
     ofs_outfile.close();
@@ -379,6 +377,9 @@ int HttpRequest::get_chunk_size_(char **readed_data) {
 }
 
 int HttpRequest::receive_normal_data_(std::ofstream &ofs_outfile) {
+    int content_length
+        = atoi(parser_.get_header_field("Content-Length").c_str());
+
     // ヘッダ読み込み時にバッファに残っている分を書きだす
     std::string remain_buffer = parser_.get_remain_buffer();
     ofs_outfile.write(remain_buffer.c_str(), remain_buffer.length());
@@ -387,34 +388,39 @@ int HttpRequest::receive_normal_data_(std::ofstream &ofs_outfile) {
     ssize_t total_read_size = remain_buffer.length();
     ssize_t read_size = 0;
     char    buf[BUF_SIZE];
-    do {
+    while (true) {
         if (total_read_size > REQUEST_ENTITY_MAX) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
             std::remove(TMP_POST_DATA_FILE);
             return 413;
-        } else if (total_read_size
-                >= atoi(parser_.get_header_field("Content-Length").c_str())
-            ) {
+        } else if (content_length != 0
+                && total_read_size >= content_length) {
+            // Content-Length分の読み込みが終わった
             break;
         }
         read_size = fd_manager_->receive(buf);
-        if (read_size == -1) {
-            std::cerr << "recv() failed in "
-                << "receive_normal_data_()." << std::endl;
-            // close(accept_fd_);
-            // accept_fd_ = -1;
-            fd_manager_->disconnect();
-            return -1;
-        }
-        if (read_size > 0) {
+        if (read_size < 0) {
+            if (content_length == 0) {
+                // Content-Lengthが指定されていない場合、EOFで通信終了となり
+                // その場合recv()は-1となる
+                break;
+            } else {
+                std::cerr << "recv() failed in "
+                    << "receive_normal_data_()." << std::endl;
+                return 500;  // Internal Server Error
+            }
+        } else if (read_size == 0) {
+            // 読み込めるデータがなくなった
+            break;
+        } else if (read_size > 0) {
             buf[read_size] = '\0';
             ofs_outfile.write(buf, read_size);
             total_read_size += read_size;
             std::cout << "read_size:" << read_size
                 << ", total:" << total_read_size << std::endl;
         }
-    } while (read_size > 0);
+    }
 
     return 201;  // Created
 }
