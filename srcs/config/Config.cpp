@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include <algorithm>
 
 Config::Config() {
 }
@@ -226,6 +227,12 @@ std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::
             biggesttMathDepth = matchDepth;
             longestMatchLocation = *itr;
         }
+    }
+    if (!longestMatchLocation.size()
+     && std::find(locationVector.begin(),
+                     locationVector.end(),
+                      "/") != locationVector.end()) {
+        longestMatchLocation = "/";
     }
     return (longestMatchLocation);
 }

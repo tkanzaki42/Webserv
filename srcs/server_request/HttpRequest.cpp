@@ -66,7 +66,8 @@ void HttpRequest::analyze_request() {
     // Locationの決定
     std::string path = get_path_to_file();
     std::vector<std::string> v = Config::getAllLocation(virtual_host_index_);
-    this->location_ = Config::findLongestMatchLocation(path, Config::getAllLocation(virtual_host_index_));
+    location_ = Config::findLongestMatchLocation(path, Config::getAllLocation(virtual_host_index_));
+    std::cout << "LOCATION : " << location_ << std::endl;
     std::string root = Config::getLocationString(virtual_host_index_, location_, "root");
     if (!root.size()) {
         root = "/";
@@ -77,6 +78,7 @@ void HttpRequest::analyze_request() {
     parser_.setBaseHtmlPath(root);
 
     // パスの補完(末尾にindex.htmlをつけるなど)
+    // TODOここの処理がおかしいよ /subdir でpublic_html/subdirにルーティングされず。
     parser_.setPathToFile(HttpRequest::replacePathToLocation(location_, path, root));
     parser_.autocomplete_path();
 
@@ -86,8 +88,17 @@ void HttpRequest::analyze_request() {
         status_code_ = 404;  // Not Found
     }
     // リダイレクト確認
-    if (Config::isReturn(virtual_host_index_, location_))
+    if (Config::isReturn(virtual_host_index_, location_)) {
         check_redirect_();
+    }
+    // ディレクトリ指定で最後のスラッシュがない場合
+    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
+            && PathUtil::is_folder_exists(get_path_to_file())) {
+        status_code_ = 301;  // Moved Permanently
+        redirect_pair_.first = 301;
+        redirect_pair_.second = "http://"
+                 + get_header_field("Host") + get_request_target();
+    }
     bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
     if (status_code_ == 404 && autoindex == true)
         is_autoindex_ = true;
@@ -219,21 +230,21 @@ struct sockaddr_in HttpRequest::get_client_addr() {
     return fd_manager_->get_client_addr();
 }
 
+const std::pair<int , std::string> HttpRequest::get_redirect_pair() const {
+    return (this->redirect_pair_);
+}
+
 void HttpRequest::set_file_type(FileType file_type) {
     file_type_ = file_type;
 }
 
 void HttpRequest::check_redirect_() {
-    // ディレクトリ指定で最後のスラッシュがない場合
-    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
-            && PathUtil::is_folder_exists(get_path_to_file()) == true) {
-        status_code_ = 301;  // Moved Permanently
-    }
-    std::string returnPath = Config::getLocationString(this->virtual_host_index_, location_, "return");
-    // int status_code, std::string リダイレクト先
-    std::pair<int, std::string> redirectPair =
-        Config::getRedirectPair(virtual_host_index_, location_);
-    status_code_ = redirectPair.first;
+        std::string returnPath =
+            Config::getLocationString(virtual_host_index_, location_, "return");
+        // int status_code, std::string リダイレクト先
+        this->redirect_pair_ =
+            Config::getRedirectPair(virtual_host_index_, location_);
+        status_code_ = this->redirect_pair_.first;
 }
 
 int HttpRequest::receive_and_store_to_file_() {

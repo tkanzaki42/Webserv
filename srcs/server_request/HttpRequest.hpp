@@ -46,6 +46,9 @@ class HttpRequest {
     int                 get_virtual_host_index() const;
     bool                get_is_autoindex() const;
     struct sockaddr_in  get_client_addr();
+    //  getter(HttpResponse)
+    const std::pair<int, std::string>
+                        get_redirect_pair() const;
     // setter
     void                set_file_type(FileType file_type);
 
@@ -58,6 +61,8 @@ class HttpRequest {
     int                 status_code_;
     int                 virtual_host_index_;
     bool                is_autoindex_;
+    std::pair<int, std::string>
+                        redirect_pair_;
 
     void                check_redirect_();
     int                 receive_and_store_to_file_();

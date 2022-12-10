@@ -88,22 +88,14 @@ void HttpResponse::make_header_() {
 
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
-    temporary_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
-    std::map<std::string, std::string> permanent_redirect_url;
-    permanent_redirect_url["./public_html/redirect_from.html"]
-        = "http://127.0.0.1:5000/redirect_to.html";
-    if (status_code_ == 308 || status_code_ == 301) {
-        if (permanent_redirect_url[request_->get_path_to_file()] != "") {
-            header_.set_header("Location: "
-                + permanent_redirect_url[request_->get_path_to_file()]
-                + "\r\n");
+    if (status_code_ == 307 || status_code_ == 302
+     || status_code_ == 308 || status_code_ == 301) {
+        if (!request_->get_redirect_pair().second.size()) {
+            puts("ディレクトリ指定時の最後のスラッシュがない場合");
         } else {
-            // ディレクトリ指定時の最後スラッシュなしの場合
-            header_.set_header("Location: http://"
-                + request_->get_header_field("Host")
-                + request_->get_request_target()
-                + "/\r\n");
+            header_.set_header("Location: "
+                + this->request_->get_redirect_pair().second
+                + "\r\n");
         }
     }
 }
