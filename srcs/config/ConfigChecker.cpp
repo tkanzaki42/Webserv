@@ -92,7 +92,8 @@ bool ConfigChecker
     std::vector<std::string>::const_iterator end = v.end();
     for (std::vector<std::string>::const_iterator iter = begin;
          iter != end; iter++) {
-        std::cout  << StringConverter::stoi(*iter) << std::endl;
+        // std::cout  << StringConverter::stoi(*iter) << std::endl;
+        // 変換エラー処理
     }
     return (true);
 }
