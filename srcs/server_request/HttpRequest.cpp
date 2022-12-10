@@ -253,10 +253,9 @@ void HttpRequest::check_redirect_() {
 
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    std::string tmp = "./file/";
-    if (PathUtil::is_folder_exists(tmp) == false) {
-        if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            std::cerr << "Could not create dirctory: " << TMP_POST_DATA_DIR << std::endl;
+    if (PathUtil::is_folder_exists(upload_dir) == false) {
+        if (mkdir(upload_dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            std::cerr << "Could not create dirctory: " << upload_dir << std::endl;
             return 500;  // Internal Server Error
         }
     }
