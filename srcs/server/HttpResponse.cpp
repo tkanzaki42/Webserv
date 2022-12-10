@@ -83,20 +83,15 @@ void HttpResponse::make_header_() {
     }
     header_.set_body_length(body_length);
     header_.make_response(status_code_);
+
     // 307 Temporary Redirect / 302 Found
     // 308 Permanent Redirect / 301 Moved Permanently
-
-    // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
     if (status_code_ == 307 || status_code_ == 302
      || status_code_ == 308 || status_code_ == 301) {
-        if (!request_->get_redirect_pair().second.size()) {
-            puts("ディレクトリ指定時の最後のスラッシュがない場合");
-        } else {
-            header_.set_header("Location: "
+        header_.set_header("Location: "
                 + this->request_->get_redirect_pair().second
                 + "\r\n");
-        }
     }
 }
 
