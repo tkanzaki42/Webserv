@@ -310,7 +310,8 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
             std::cout << "  write data size:" << chunk_size << std::endl;
             ofs_outfile.write(readed_data, chunk_size);
             // 書き出した分をバッファから削除
-            char* tmp = strdup(readed_data + chunk_size);
+            // +2は"\r\n"分
+            char* tmp = strdup(readed_data + chunk_size + 2);
             free(readed_data);
             readed_data = tmp;
             // モード変更など
@@ -362,13 +363,15 @@ int HttpRequest::get_chunk_size_(char **readed_data) {
             chunk_size = chunk_size * 16 + (*readed_data)[i] - '0';
         } else {
             std::cerr << "Failed to recognize chunk size." << std::endl;
+            chunk_size = 0;
         }
         i++;
     }
     std::cout << "  chunk_size:" << chunk_size << std::endl;
 
     // チャンクサイズ部分をバッファから削除
-    char* tmp = strdup(*readed_data + i);
+    // +2は"\r\n"分
+    char* tmp = strdup(*readed_data + i + 2);
     free(*readed_data);
     *readed_data = tmp;
 
