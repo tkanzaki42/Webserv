@@ -337,7 +337,6 @@ int HttpRequest::recv_data_(char **readed_data) {
     if (read_size == -1) {
         std::cerr << "recv() failed in "
             << "receive_chunked_data_()." << std::endl;
-        fd_manager_->disconnect();
         return -1;
     }
     if (read_size > 0) {
