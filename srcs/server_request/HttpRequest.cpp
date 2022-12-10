@@ -261,7 +261,7 @@ int HttpRequest::receive_and_store_to_file_() {
     }
     // ファイルのオープン
     std::ofstream ofs_outfile;
-    ofs_outfile.open(TMP_POST_DATA_FILE,
+    ofs_outfile.open(upload_dir + TMP_POST_DATA_FILE,
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
         std::cerr << "Could not open file during receiving the file: "
@@ -281,7 +281,8 @@ int HttpRequest::receive_and_store_to_file_() {
         if (total_read_size > client_max_body_size && client_max_body_size != -1) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
-            std::remove(TMP_POST_DATA_FILE);
+            std::string tmp_file_path = upload_dir + TMP_POST_DATA_FILE;
+            std::remove(tmp_file_path.c_str());
             return 413;
         } else if (total_read_size
                 >= atoi(parser_.get_header_field("Content-Length").c_str())
