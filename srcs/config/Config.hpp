@@ -9,6 +9,7 @@
 #include <vector>
 #include <set>
 #include <utility>
+#include <algorithm>
 #include "srcs/config/ConfigChecker.hpp"
 #include "srcs/util/split.hpp"
 #include "srcs/util/StringConverter.hpp"

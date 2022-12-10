@@ -1,5 +1,4 @@
 #include "Config.hpp"
-#include <algorithm>
 
 Config::Config() {
 }

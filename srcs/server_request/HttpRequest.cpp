@@ -65,20 +65,26 @@ void HttpRequest::analyze_request() {
                  StringConverter::itos(5050));
     // Locationの決定
     std::string path = get_path_to_file();
-    std::vector<std::string> v = Config::getAllLocation(virtual_host_index_);
-    location_ = Config::findLongestMatchLocation(path, Config::getAllLocation(virtual_host_index_));
-    std::string root = Config::getLocationString(virtual_host_index_, location_, "root");
+    std::vector<std::string> v =
+     Config::getAllLocation(virtual_host_index_);
+    location_ = Config::findLongestMatchLocation
+        (path, Config::getAllLocation(virtual_host_index_));
+    std::string root =
+        Config::getLocationString(virtual_host_index_, location_, "root");
+    // もしrootが見つからなかった場合
     if (!root.size()) {
         root = "/";
     }
+    upload_dir =
+     Config::getLocationString(virtual_host_index_, location_, "upload_store");
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(virtual_host_index_, location_, "index"));
     parser_.setBaseHtmlPath(root);
 
     // パスの補完(末尾にindex.htmlをつけるなど)
-    // TODOここの処理がおかしいよ /subdir でpublic_html/subdirにルーティングされず。
-    parser_.setPathToFile(HttpRequest::replacePathToLocation(location_, path, root));
+    parser_.setPathToFile
+        (HttpRequest::replacePathToLocation(location_, path, root));
     parser_.autocomplete_path();
 
     // ファイル存在チェック

@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
@@ -63,6 +64,7 @@ class HttpRequest {
     bool                is_autoindex_;
     std::pair<int, std::string>
                         redirect_pair_;
+    std::string         upload_dir;
 
     void                check_redirect_();
     int                 receive_and_store_to_file_();
