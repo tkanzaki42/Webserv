@@ -22,8 +22,8 @@ CGI &CGI::operator=(const CGI &obj) {
 int CGI::exec_cgi(FileType file_type) {
     file_type_ = file_type;
 
-    int pp[2];
-    if (pipe(pp) == -1) {
+    int pp_out[2];
+    if (pipe(pp_out) == -1) {
         std::cerr << "Failed to pipe()" << std::endl;
         return EXIT_FAILURE;
     }
@@ -33,13 +33,13 @@ int CGI::exec_cgi(FileType file_type) {
         std::cerr << "Failed to fork()" << std::endl;
         return EXIT_FAILURE;
     } else if (pid == 0) {
-        if (close_pipe_(pp[0]) == EXIT_FAILURE)
+        if (close_pipe_(pp_out[0]) == EXIT_FAILURE)
             return EXIT_FAILURE;
-        if (connect_pipe_(pp[1], 1) == EXIT_FAILURE)
+        if (connect_pipe_(pp_out[1], 1) == EXIT_FAILURE)
             return EXIT_FAILURE;
         run_child_process_();
     }
-    if (close_pipe_(pp[1]) == EXIT_FAILURE)
+    if (close_pipe_(pp_out[1]) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
     int status;
@@ -66,7 +66,7 @@ int CGI::exec_cgi(FileType file_type) {
 
     // パイプからCGI出力を読み込み
     std::string read_buffer;
-    read_cgi_output_from_pipe_(&read_buffer, pp[0]);
+    read_cgi_output_from_pipe_(&read_buffer, pp_out[0]);
 
     // 改行ごとに切ってヘッダとボディのvectorに入れる
     separate_to_header_and_body_(read_buffer);
@@ -272,12 +272,12 @@ std::string CGI::read_shebang_() {
     return "";
 }
 
-void CGI::read_cgi_output_from_pipe_(std::string *read_buffer, int pp) {
+void CGI::read_cgi_output_from_pipe_(std::string *read_buffer, int pp_out) {
     ssize_t     read_size = 0;
     char        buf[BUF_SIZE];
     while (true) {
         memset(buf, 0, sizeof(char) * BUF_SIZE);
-        read_size = read(pp, buf, sizeof(char) * BUF_SIZE - 1);
+        read_size = read(pp_out, buf, sizeof(char) * BUF_SIZE - 1);
         if (read_size <= 0)
             break;
         buf[read_size] = '\0';
