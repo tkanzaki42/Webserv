@@ -109,11 +109,7 @@ void HttpRequest::analyze_request() {
 
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (get_http_method() == METHOD_POST) {
-        if (file_type_ == FILETYPE_STATIC_HTML) {
-            status_code_ = receive_and_store_to_file_();
-        } else {
-            // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
-        }
+        status_code_ = receive_and_store_to_file_();
     } else if (get_http_method() == METHOD_DELETE) {
         status_code_ = delete_file_();
     }

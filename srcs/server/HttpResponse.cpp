@@ -52,9 +52,10 @@ void HttpResponse::make_message_body_() {
     }
 
     // CGIの場合実行結果を取得する
-    if (status_code_ == 200 &&
+    if ((status_code_ == 200 || status_code_ == 201) &&
             (request_->get_file_type() == FILETYPE_SCRIPT
             || request_->get_file_type() == FILETYPE_BINARY)) {
+        status_code_ = 200;  // status_code_が201の場合、200に戻す
         cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(request_->get_file_type());
         if (cgi_ret == EXIT_FAILURE) {
