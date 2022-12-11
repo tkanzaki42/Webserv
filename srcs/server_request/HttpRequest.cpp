@@ -262,7 +262,7 @@ int HttpRequest::receive_and_store_to_file_() {
         status_code_ret = receive_chunked_data_(ofs_outfile);
     } else  {
         // Content-Lengthがあってもなくても通常のデータ受信モード
-        status_code_ret = receive_normal_data_(ofs_outfile);
+        status_code_ret = receive_plain_data_(ofs_outfile);
     }
 
     ofs_outfile.close();
@@ -289,10 +289,10 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
         if (read_mode == READMODE_CHUNKSIZE) {
             // チャンクサイズ読み込み
             while (!is_found_crlf_(readed_data)) {
-                if (recv_data_(&readed_data) == -1)
+                if (recv_and_join_data_(&readed_data) == -1)
                     return 400;  // Bad Request
             }
-            chunk_size = get_chunk_size_(&readed_data, total_read_size);
+            chunk_size = split_chunk_size_(&readed_data, total_read_size);
             if (chunk_size == -1) {
                 ofs_outfile.close();
                 std::remove(TMP_POST_DATA_FILE);
@@ -314,7 +314,7 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
         } else if (read_mode == READMODE_DATA) {
             // チャンクサイズ分のデータを読み込んでファイルに書き出し
             while (chunk_size > static_cast<int>(strlen(readed_data))) {
-                if (recv_data_(&readed_data) == -1)
+                if (recv_and_join_data_(&readed_data) == -1)
                     return 400;  // Bad Request
             }
             std::cout << "  write data size:" << chunk_size << std::endl;
@@ -341,7 +341,7 @@ bool HttpRequest::is_found_crlf_(char *readed_data) {
     return false;
 }
 
-int HttpRequest::recv_data_(char **readed_data) {
+int HttpRequest::recv_and_join_data_(char **readed_data) {
     char    buf[BUF_SIZE];
 
     int read_size = fd_manager_->receive(buf);
@@ -359,7 +359,7 @@ int HttpRequest::recv_data_(char **readed_data) {
     return read_size;
 }
 
-int HttpRequest::get_chunk_size_(char **readed_data, int total_read_size) {
+int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
     int chunk_size = 0;
 
     // チャンクサイズ部分を読み込み
@@ -393,7 +393,7 @@ int HttpRequest::get_chunk_size_(char **readed_data, int total_read_size) {
     return chunk_size;
 }
 
-int HttpRequest::receive_normal_data_(std::ofstream &ofs_outfile) {
+int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
     int content_length
         = atoi(parser_.get_header_field("Content-Length").c_str());
 
