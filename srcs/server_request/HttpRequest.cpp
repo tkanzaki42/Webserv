@@ -85,13 +85,13 @@ void HttpRequest::analyze_request() {
         (Config::getLocationVector(virtual_host_index_, location_, "index"));
     parser_.setBaseHtmlPath(root);
 
-    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
-    parser_.separate_querystring_pathinfo();
-
     // パスの補完(末尾にindex.htmlをつけるなど)
     parser_.setPathToFile
         (HttpRequest::replacePathToLocation(location_, path, root));
     parser_.autocomplete_path();
+
+    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
+    parser_.separate_querystring_pathinfo();
 
     // ファイル存在チェック
     if (!PathUtil::is_file_exists(get_path_to_file())) {
