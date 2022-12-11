@@ -60,8 +60,6 @@ void HttpRequest::analyze_request() {
     // リクエストのパース
     status_code_ = parser_.parse();
 
-    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
-    parser_.separate_querystring_pathinfo();
     // TODO(someone) HTTPバージョンの確認
 
     // virtual_host_index_の設定
@@ -86,6 +84,9 @@ void HttpRequest::analyze_request() {
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(virtual_host_index_, location_, "index"));
     parser_.setBaseHtmlPath(root);
+
+    // パースした情報からQUERY_STRING、PATH_INFOを切り出し
+    parser_.separate_querystring_pathinfo();
 
     // パスの補完(末尾にindex.htmlをつけるなど)
     parser_.setPathToFile
