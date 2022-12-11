@@ -63,11 +63,11 @@ class HttpParser {
     std::vector<std::string> indexHtmlFileName;
 
     // parser
-    void         parse_method_();
-    void         parse_request_target_();
+    bool         parse_method_();
+    bool         parse_request_target_();
     std::string  split_query_string_(std::string &request_target);
     void         split_path_info_();
-    void         parse_http_ver_();
+    bool         parse_http_ver_();
     void         parse_header_field_();
     std::pair<std::string, std::string>
                  parse_one_header_field_();

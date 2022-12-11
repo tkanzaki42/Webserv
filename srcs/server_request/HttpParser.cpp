@@ -1,7 +1,14 @@
 #include "srcs/server_request/HttpParser.hpp"
 
 HttpParser::HttpParser(const std::string& received_line)
-        : read_idx_(0), received_line_(received_line) {
+        : read_idx_(0),
+          received_line_(received_line),
+          http_method_(METHOD_NOT_DEFINED),
+          request_target_(""),
+          query_string_(""),
+          path_info_(""),
+          path_to_file_(""),
+          http_ver_("") {
 }
 
 HttpParser::~HttpParser() {}
@@ -25,11 +32,25 @@ HttpParser& HttpParser::operator=(const HttpParser &obj) {
 }
 
 int HttpParser::parse() {
-    parse_method_();
-    parse_request_target_();
-    parse_http_ver_();
+    int status_code = 200;
+
+    if (!parse_method_()) {
+        // メソッドが解析できなかった場合
+        status_code = 405;  // Not Allowed
+        return status_code;
+    }
+    if (!parse_request_target_()) {
+        // URLが長すぎる場合
+        status_code = 414;  // URI Too Long
+        return status_code;
+    }
+    if (!parse_http_ver_()) {
+        // HTTPバージョンが対応しているもの以外だった場合
+        status_code = 505;  // HTTP Version Not Supported
+        return status_code;
+    }
     parse_header_field_();
-    int status_code = validate_parsed_data_();
+    status_code = validate_parsed_data_();
 
     return status_code;
 }
@@ -68,8 +89,12 @@ const std::string& HttpParser::get_header_field(const std::string& key) {
 }
 
 const std::string HttpParser::get_host_name() {
-    std::vector<std::string> field_host = split(header_field_["Host"], ':');
-    return (field_host[0]);
+    if (header_field_.count("Host")) {
+        std::vector<std::string> field_host = split(header_field_["Host"], ':');
+        return field_host[0];
+    } else {
+        return "";
+    }
 }
 
 const std::string HttpParser::get_remain_buffer() {
@@ -97,32 +122,41 @@ const std::string& HttpParser::getBaseHtmlPath() const {
     return (this->baseHtmlPath);
 }
 
-void HttpParser::parse_method_() {
-    if (received_line_.compare(read_idx_, 4, "POST") == 0) {
+bool HttpParser::parse_method_() {
+    if (received_line_.compare(read_idx_, 5, "POST ") == 0) {
         http_method_ = METHOD_POST;
         read_idx_ += 4;
-    } else if (received_line_.compare(read_idx_, 3, "GET") == 0) {
+    } else if (received_line_.compare(read_idx_, 4, "GET ") == 0) {
         http_method_ = METHOD_GET;
         read_idx_ += 3;
-    } else if (received_line_.compare(read_idx_, 6, "DELETE") == 0) {
+    } else if (received_line_.compare(read_idx_, 7, "DELETE ") == 0) {
         http_method_ = METHOD_DELETE;
         read_idx_ += 6;
+    } else {
+        // 対応しているメソッド以外の場合はエラー
+        return false;
     }
     skip_space_();
+    return true;
 }
 
-void HttpParser::parse_request_target_() {
-    char buffer[1280];
+bool HttpParser::parse_request_target_() {
+    char buffer[MAX_URL_LENGTH + 1];
     int buffer_idx = 0;
 
     while (received_line_[read_idx_] != ' '
             && read_idx_ < received_line_.length()) {
+        if (buffer_idx >= MAX_URL_LENGTH) {
+            // 内部バッファ容量超え(=URLが長すぎ)の場合はエラー
+            return false;
+        }
         buffer[buffer_idx++] = received_line_[read_idx_];
         read_idx_++;
     }
     buffer[buffer_idx] = '\0';
     request_target_ = std::string(buffer);
     skip_space_();
+    return true;
 }
 
 void HttpParser::separate_querystring_pathinfo() {
@@ -225,22 +259,34 @@ void HttpParser::split_path_info_() {
     }
 }
 
-void HttpParser::parse_http_ver_() {
-    char buffer[1280];
+bool HttpParser::parse_http_ver_() {
+    char buffer[BUF_SIZE];
     int buffer_idx = 0;
 
     if (received_line_.compare(read_idx_, 5, "HTTP/") == 0) {
         read_idx_ += 5;
+    } else {
+        return false;
     }
     while (received_line_[read_idx_] != '\r'
             && read_idx_ < received_line_.length()) {
+        if (buffer_idx >= BUF_SIZE - 1) {
+            // 内部バッファ容量超え(=HTTP verが長すぎ)の場合はエラー
+            return false;
+        }
         buffer[buffer_idx++] = received_line_[read_idx_];
         read_idx_++;
     }
     buffer[buffer_idx] = '\0';
     http_ver_ = std::string(buffer);
 
+    if (http_ver_.compare("1.1") != 0) {
+        // http_ver_が1.1以外の場合はエラー
+        return false;
+    }
+
     skip_crlf_();
+    return true;
 }
 
 void HttpParser::parse_header_field_() {

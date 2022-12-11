@@ -3,7 +3,8 @@
 
 HttpHeader::HttpHeader()
     : header_field_(std::map<std::string, std::string>()),
-      body_length_(0) {
+      body_length_(0),
+      is_keep_alive_(true) {
 }
 
 HttpHeader::~HttpHeader() {
@@ -14,23 +15,34 @@ HttpHeader::HttpHeader(const HttpHeader &obj) {
 }
 
 HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
-    this->header_field_ = obj.header_field_;
-    this->body_length_  = obj.body_length_;
+    this->header_field_  = obj.header_field_;
+    this->body_length_   = obj.body_length_;
+    this->is_keep_alive_ = obj.is_keep_alive_;
     return *this;
 }
 
 void HttpHeader::make_response(int status_code) {
+    // is_keep_alive_を設定
+    if (status_code == 200 || status_code == 201)
+        is_keep_alive_ = true;
+    else
+        is_keep_alive_ = false;
+
+    // ステータス行を生成 (例:HTTP/1.1 200 OK)
     std::ostringstream oss_status_line;
     oss_status_line << "HTTP/1.1 " << status_code << " "
         << StatusDescription::get_reason(status_code) << "\r\n";
     status_line_ = oss_status_line.str();
 
+    // ヘッダ行を生成
     set_header("Content-Type: text/html; charset=UTF-8\r\n");
     if (status_code == 200 || status_code == 201) {
         std::ostringstream oss_content_length;
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
 
         set_header(oss_content_length.str());
+    }
+    if (is_keep_alive_) {
         set_header("Connection: keep-alive\r\n");
     } else {
         set_header("Connection: close\r\n");
@@ -68,4 +80,8 @@ void HttpHeader::set_header(std::string header_line) {
 
 void HttpHeader::clear_contents() {
     header_field_.clear();
+}
+
+bool HttpHeader::get_is_keep_alive() {
+    return is_keep_alive_;
 }

@@ -35,6 +35,7 @@ class HttpResponse {
 
     void                make_response();
     const std::string&  get_response();
+    bool                get_is_keep_alive();
 };
 
 #endif  // SRCS_SERVER_HTTPRESPONSE_HPP_

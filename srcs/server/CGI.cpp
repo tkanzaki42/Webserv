@@ -43,11 +43,25 @@ int CGI::exec_cgi(FileType file_type) {
         return EXIT_FAILURE;
 
     int status;
-    waitpid(pid, &status, 0);
-    if (WIFEXITED(status) == true && WEXITSTATUS(status) != 0) {
-        std::cerr << "Child process exited abnormally, status = "
-            << WEXITSTATUS(status) << std::endl;
-        return EXIT_FAILURE;
+    for (int i = 0; i <= CGI_TIMEOUT_SEC; ++i) {
+        if (i == CGI_TIMEOUT_SEC) {
+            // CGI_TIMEOUT_SEC秒経過しても終了していない場合
+            kill(pid, SIGINT);
+            std::cerr << "CGI process timeout, sent kill signal" << std::endl;
+            return EXIT_FAILURE;
+        }
+        waitpid(pid, &status, WNOHANG);
+        if (WIFEXITED(status) == true) {
+            if (WEXITSTATUS(status) == 0) {
+                // CGI正常終了ケース
+                break;
+            } else {
+                std::cerr << "Child process exited abnormally, status = "
+                    << WEXITSTATUS(status) << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+        sleep(1);
     }
 
     // パイプからCGI出力を読み込み
