@@ -95,10 +95,9 @@ void HttpRequest::analyze_request() {
     // リダイレクト確認
     if (Config::isReturn(virtual_host_index_, location_)) {
         check_redirect_();
-    }
-    // ディレクトリ指定で最後のスラッシュがない場合
-    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
+    } else if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
             && PathUtil::is_folder_exists(get_path_to_file())) {
+        // ディレクトリ指定で最後のスラッシュがない場合
         status_code_ = 301;  // Moved Permanently
         redirect_pair_.first = 301;
         redirect_pair_.second = "http://"
