@@ -67,7 +67,7 @@ void HttpRequest::analyze_request() {
          Config::getVirtualHostIndex(parser_.get_host_name(),
                  StringConverter::itos(5050));
     // Locationの決定
-    std::string path = get_path_to_file();
+    std::string path = get_request_target();
     std::vector<std::string> v =
      Config::getAllLocation(virtual_host_index_);
     location_ = Config::findLongestMatchLocation

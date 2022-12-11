@@ -182,6 +182,17 @@ std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::stri
     return (redirectPair);
 }
 
+// デバッグ用
+void printVector(std::vector<std::string> v) {
+    std::vector<std::string>::iterator begin = v.begin();
+    std::vector<std::string>::iterator end = v.end();
+    std::cout << "### printVector() STRART ####" << std::endl;
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        std::cout << *itr << std::endl;
+    }
+    std::cout << "### printVector() END ####" << std::endl;
+}
+
 // あたえられたURLからlocationを決定して、そのLocationのパスを返す。
 std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
     int biggesttMathDepth = 0;
