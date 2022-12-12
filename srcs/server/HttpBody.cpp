@@ -48,8 +48,14 @@ int HttpBody::read_contents_from_file_() {
     // ファイル読み込み
     char          read_line[BUF_SIZE];
 
-    while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
-        content_.push_back(std::string(read_line) + "\n");
+    while (true) {
+        ifs_readfile.getline(read_line, BUF_SIZE - 1);
+        if (ifs_readfile.eof()) {
+            content_.push_back(std::string(read_line));
+            break ;
+        } else {
+            content_.push_back(std::string(read_line) + "\n");
+        }
     }
 
     ifs_readfile.close();
