@@ -3,8 +3,8 @@
 # Accept-RangesがHTMLの範囲内(206を返す)
 HOST="localhost"
 PORT=5050
-START=10
-END=100
+START=12
+END=50
 
 echo "~~~~~nginx~~~~~"
 RANGE="${START}-${END}"
