@@ -166,3 +166,7 @@ void HttpResponse::merge_header_and_body_() {
 const std::string& HttpResponse::get_response() {
     return response_;
 }
+
+bool HttpResponse::get_is_keep_alive() {
+    return header_.get_is_keep_alive();
+}

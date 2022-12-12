@@ -123,7 +123,7 @@ int FDManager::receive(char *buf) {
     if (read_size <= 0) {
         // 切断された場合、クローズする
         std::cout << "socket:" << accept_fd_;
-        std::cout << "disconnected." << std::endl;
+        std::cout << " disconnected." << std::endl;
         close(accept_fd_);
         accept_fd_ = -1;
         return -1;

@@ -3,6 +3,7 @@
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
           parser_(HttpParser(received_line_)),
+          file_type_(FILETYPE_NOT_DEFINED),
           status_code_(200),
           virtual_host_index_(-1),
           is_autoindex_(false) {
@@ -19,6 +20,7 @@ HttpRequest::HttpRequest(const HttpRequest &obj)
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     parser_             = HttpParser(obj.parser_);
+    file_type_          = obj.file_type_;
     status_code_        = obj.status_code_;
     virtual_host_index_ = obj.virtual_host_index_;
     is_autoindex_       = obj.is_autoindex_;
@@ -33,22 +35,25 @@ int HttpRequest::receive_header() {
     read_size = fd_manager_->receive(buf);
     // std::cout << "read_size: " << read_size << std::endl;
     if (read_size < 0) {
-        std::cerr << "recv() failed." << std::endl;
-        std::cerr << "ERROR: " << errno << std::endl;
-        fd_manager_->disconnect();
-        status_code_ = 400;  // Bad Request
-        return -1;
+        int recv_errno = errno;
+        if (recv_errno == 0 || recv_errno == 9) {
+            std::cerr << "connection closed by peer."
+                << " recv() errno: " << recv_errno << std::endl;
+        } else {
+            std::cerr << "recv() failed."
+                << " ERROR: " << recv_errno << std::endl;
+        }
+        return EXIT_FAILURE;  // 受信に失敗したので処理中断
     }
     const char *found_empty_line = strstr(buf, "\r\n\r\n");
     if (!found_empty_line) {
         std::cerr << "Failed to recognize header." << std::endl;
-        fd_manager_->disconnect();
         status_code_ = 400;  // Bad Request
-        return -1;
+        return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400を返す正常ルート
     }
     received_line_.append(buf);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void HttpRequest::analyze_request() {
