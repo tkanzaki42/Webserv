@@ -39,7 +39,7 @@ class HttpRequest {
     const std::map<std::string, std::string>&
                         get_header_field_map() const;
     // getter(HttpRequest)
-    FileType            get_file_type();
+    FileType            get_file_type() const;
     int                 get_status_code() const;
     int                 get_virtual_host_index() const;
     bool                get_is_autoindex() const;

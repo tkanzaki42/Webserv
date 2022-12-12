@@ -21,11 +21,12 @@ class HttpBody {
     std::vector<std::string> content_;
     std::ifstream            output_file_;
     size_t                   content_length_;
-    size_t                   content_start_;
-    size_t                   content_end_;
+    size_t                   content_head_;
+    size_t                   content_tail_;
+    bool                     is_compressed_;
 
     void                     count_content_length_();
-    void                     range_content_();
+    int                      compress_to_range_();
     int                      read_contents_from_file_();
     void                     make_status_response_(int status_code);
 
@@ -37,10 +38,11 @@ class HttpBody {
 
     int                            make_response(int status_code);
     void                           make_autoindex_response();
-    const std::vector<std::string> &get_content();
-    std::size_t                    get_content_length();
-    std::size_t                    get_content_start();
-    std::size_t                    get_content_end();
+    const std::vector<std::string> &get_content() const;
+    std::size_t                    get_content_length() const;
+    std::size_t                    get_content_head() const;
+    std::size_t                    get_content_tail() const;
+    bool                           is_compressed() const;
     void                           clear_contents();
 };
 

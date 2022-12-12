@@ -78,7 +78,17 @@ void HttpResponse::make_header_() {
     if (request_->get_file_type() == FILETYPE_SCRIPT
             || request_->get_file_type() == FILETYPE_BINARY) {
         body_length = cgi_->get_content_length();
-    } else {
+    } else if(message_body_.is_compressed()) {
+        body_length = message_body_.get_content_tail()
+            - message_body_.get_content_head() + 1;
+        header_.set_header("Content-Range: bytes "
+            + StringConverter::itos(message_body_.get_content_head())
+            + "-"
+            + StringConverter::itos(message_body_.get_content_tail())
+            + "/"
+            + StringConverter::itos(message_body_.get_content_length())
+            + "\r\n");
+    }else {
         body_length = message_body_.get_content_length();
     }
     header_.set_body_length(body_length);
@@ -148,45 +158,8 @@ void HttpResponse::merge_header_and_body_() {
     } else {
         body_content = message_body_.get_content();
     }
-    const std::map<std::string, std::string>& map = request_->get_header_field_map();
-    if (request_->get_file_type() == FILETYPE_STATIC_HTML
-        && map.count(std::string("Range")) > 0){
-        std::string range = map.at(std::string("Range"));
-        if (message_body_.get_content_start() > message_body_.get_content_end()) {
-            status_code_ = 416;
-            return ;
-        }
-        size_t len   = message_body_.get_content_end() - message_body_.get_content_start();
-        size_t total = 0;
-        bool once = false;
-        for (std::size_t i = 0; i < body_content.size(); i++) {
-            total += body_content[i].length();
-            if (total < message_body_.get_content_start()){
-                // Rangeの先頭までスキップ
-                continue;
-            }
-            // 最初の一回だけRangeの先頭までoffsetを進める
-            size_t offset = 0;
-            if (!once){
-                offset = message_body_.get_content_start() - (total - body_content[i].length());
-                once = true;
-            }
-            if (len < body_content[i].length()) {
-                // Rangeの長さ分に達したらbreak
-                response_.append(body_content[i].substr(offset, len + 1).c_str());
-                return ;
-            } else {
-                // Rangeの長さまで格納し続ける
-                response_.append(body_content[i].c_str());
-            }
-        }
-        if (total < message_body_.get_content_start()){
-            status_code_ = 416;
-        }
-    }else{
-        for (std::size_t i = 0; i < body_content.size(); i++) {
-            response_.append(body_content[i].c_str());
-        }
+    for (std::size_t i = 0; i < body_content.size(); i++) {
+        response_.append(body_content[i].c_str());
     }
 }
 

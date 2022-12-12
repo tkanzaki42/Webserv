@@ -1,6 +1,32 @@
 #include "srcs/server/HttpBody.hpp"
 #include "srcs/server/StatusDescription.hpp"
 
+HttpBody::HttpBody(const HttpRequest& request)
+        : request_(request),
+          content_(std::vector<std::string>()),
+          content_length_(0),
+          content_head_(0),
+          content_tail_(0),
+          is_compressed_(false) {
+}
+
+HttpBody::~HttpBody() {
+}
+
+HttpBody::HttpBody(const HttpBody &obj)
+        : request_(obj.request_) {
+    *this = obj;
+}
+
+HttpBody &HttpBody::operator=(const HttpBody &obj) {
+    this->is_compressed_        = obj.is_compressed_;
+    this->content_        = obj.content_;
+    this->content_length_  = obj.content_length_;
+    this->content_head_  = obj.content_head_;
+    this->content_tail_    = obj.content_tail_;
+    return *this;
+}
+
 int HttpBody::read_contents_from_file_() {
     // ファイルのオープン
     std::ifstream ifs_readfile;
@@ -23,13 +49,13 @@ int HttpBody::read_contents_from_file_() {
     char          read_line[BUF_SIZE];
 
     while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
-        content_.push_back(std::string(read_line));
+        content_.push_back(std::string(read_line) + "\n");
     }
 
     ifs_readfile.close();
     count_content_length_();
-    range_content_();
-    return 200;
+    is_compressed_ = false;
+    return compress_to_range_();
 }
 
 void HttpBody::make_status_response_(int status_code) {
@@ -45,35 +71,12 @@ void HttpBody::make_status_response_(int status_code) {
     content_.push_back(oss_body.str());
 }
 
-HttpBody::HttpBody(const HttpRequest& request)
-        : request_(request),
-          content_(std::vector<std::string>()),
-          content_length_(0),
-          content_start_(0),
-          content_end_(0) {
-}
-
-HttpBody::~HttpBody() {
-}
-
-HttpBody::HttpBody(const HttpBody &obj)
-        : request_(obj.request_) {
-    *this = obj;
-}
-
-HttpBody &HttpBody::operator=(const HttpBody &obj) {
-    this->content_        = obj.content_;
-    this->content_length_  = obj.content_length_;
-    this->content_start_  = obj.content_start_;
-    this->content_end_    = obj.content_end_;
-    return *this;
-}
-
 int HttpBody::make_response(int status_code) {
-    if (status_code == 200 && request_.get_http_method() == METHOD_GET)
+    if ((status_code == 200 && request_.get_http_method() == METHOD_GET)
+        || status_code == 206) {
         status_code = read_contents_from_file_();
-
-    if (status_code != 200)
+    }
+    if (status_code != 200 && status_code != 206 )
         make_status_response_(status_code);
     return status_code;
 }
@@ -137,8 +140,66 @@ void HttpBody::make_autoindex_response() {
     content_.push_back(oss_body.str());
 }
 
-void HttpBody::range_content_() {
-    
+// Rangeの範囲にcontent_を圧縮。416エラーはfalse
+int  HttpBody::compress_to_range_() {
+    std::string range_of_content;
+    const std::map<std::string, std::string>& map = request_.get_header_field_map();
+    // 静的ページ or Rangeヘッダがなかったら圧縮しない
+    if (request_.get_file_type() != FILETYPE_STATIC_HTML
+        || map.count(std::string("Range")) == 0){
+        return 200;
+    }
+    std::string range = map.at(std::string("Range"));
+    // 先頭の文字数、末尾の文字数をセット
+    content_head_ = (size_t)StringConverter::stoi(range.substr(std::string("bytes=").length()));
+    content_tail_   = (size_t)StringConverter::stoi(range.substr(range.find("-") + 1));
+    // 先頭の文字数が末尾の文字数より大きかったら416
+    if (content_head_ > content_tail_) {
+        return 416;
+    }
+    size_t len   = content_tail_ - content_head_ + 1;
+    size_t total = 0;
+    bool once = false;
+    for (std::size_t i = 0; i < content_.size(); i++) {
+        total += content_[i].length();
+        if (total < content_head_){
+            // Rangeの先頭までスキップ
+            continue ;
+        }
+        // 最初の一回だけRangeの先頭までoffsetを進める
+        size_t offset = 0;
+        if (!once){
+            offset = content_head_ - (total - content_[i].length());
+            once = true;
+        }
+        std::cout << "Line:" << content_[i].length() - offset<< std::endl;
+        if (total - content_head_ > len) {
+            // Rangeの長さ分に達したらbreak
+            std::cout << "Last Line:" << content_[i].length() - (total - len - content_head_) << std::endl;
+            range_of_content.append(
+                content_[i].substr(
+                    offset, content_[i].length() - (total - content_head_ - len) - offset
+                ).c_str()
+            );
+            break ;
+        } else {
+            // Rangeの長さまで格納し続ける
+            range_of_content.append(
+                content_[i].substr(
+                    offset, content_[i].length() - offset + 1
+                ).c_str()
+            );
+        }
+        std::cout << "range_of_content:" << range_of_content << std::endl;
+    }
+    // content_が1文字もRangeの範囲に含まれなかったら416
+    if (total < content_head_){
+        return 416;
+    }
+    content_.clear();
+    content_.push_back(range_of_content);
+    is_compressed_ = true;
+    return 206;
 }
 
 
@@ -150,28 +211,25 @@ void HttpBody::count_content_length_() {
         content_length += (*it).length();
     }
     content_length_ = content_length;
-
-    const std::map<std::string, std::string>& map = request_.get_header_field_map();
-    if (map.count(std::string("Range")) > 0){
-        std::string range = map.at(std::string("Range"));
-        content_start_ = (size_t)StringConverter::stoi(range.substr(std::string("bytes=").length()));
-        content_end_   = (size_t)StringConverter::stoi(range.substr(range.find("-") + 1));
-    }
 }
 
-std::size_t HttpBody::get_content_length() {
+std::size_t HttpBody::get_content_length() const {
     return this->content_length_;
 }
 
-std::size_t HttpBody::get_content_start() {
-    return this->content_start_;
+std::size_t HttpBody::get_content_head() const {
+    return this->content_head_;
 }
 
-std::size_t HttpBody::get_content_end() {
-    return this->content_end_;
+std::size_t HttpBody::get_content_tail() const {
+    return this->content_tail_;
 }
 
-const std::vector<std::string> &HttpBody::get_content() {
+bool HttpBody::is_compressed() const {
+    return is_compressed_;
+}
+
+const std::vector<std::string> &HttpBody::get_content() const {
     return this->content_;
 }
 

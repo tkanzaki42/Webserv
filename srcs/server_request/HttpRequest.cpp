@@ -179,7 +179,7 @@ const std::map<std::string, std::string>&
     return parser_.get_header_field_map();
 }
 
-FileType HttpRequest::get_file_type() {
+FileType HttpRequest::get_file_type() const {
     return file_type_;
 }
 
