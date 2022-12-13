@@ -30,29 +30,40 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
 int HttpRequest::receive_header() {
     ssize_t  read_size = 0;
     char     buf[BUF_SIZE];
+    int      total_read_size = 0;
+
 
     memset(buf, 0, sizeof(buf));
-    read_size = fd_manager_->receive(buf);
-    // std::cout << "read_size: " << read_size << std::endl;
-    if (read_size < 0) {
-        int recv_errno = errno;
-        if (recv_errno == 0 || recv_errno == 9) {
-            std::cerr << "connection closed by peer."
-                << " recv() errno: " << recv_errno << std::endl;
-        } else {
-            std::cerr << "recv() failed."
-                << " ERROR: " << recv_errno << std::endl;
+    while (true) {
+        read_size = fd_manager_->receive(buf);
+        // std::cout << "read_size: " << read_size << std::endl;
+        if (read_size < 0) {
+            int recv_errno = errno;
+            if (recv_errno == 0 || recv_errno == 9) {
+                std::cerr << "connection closed by peer."
+                    << " recv() errno: " << recv_errno << std::endl;
+            } else {
+                std::cerr << "recv() failed."
+                    << " ERROR: " << recv_errno << std::endl;
+            }
+            return EXIT_FAILURE;  // 受信に失敗したので処理中断
         }
-        return EXIT_FAILURE;  // 受信に失敗したので処理中断
+        received_line_.append(buf);
+        total_read_size += read_size;
+
+        // BUF_SIZE以上読んだら抜ける
+        if (total_read_size > BUF_SIZE - 1)
+            break;
+        // 改行の連続が含まれていればヘッダ部分は読み込めたので抜ける
+        if (received_line_.find("\r\n\r\n") != std::string::npos)
+            break;
     }
-    const char *found_empty_line = strstr(buf, "\r\n\r\n");
-    if (!found_empty_line) {
+    // 読み込んだデータに改行の連続がなければヘッダを認識できない
+    if (received_line_.find("\r\n\r\n") == std::string::npos) {
         std::cerr << "Failed to recognize header." << std::endl;
         status_code_ = 400;  // Bad Request
         return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400を返す正常ルート
     }
-    received_line_.append(buf);
-
     return EXIT_SUCCESS;
 }
 
