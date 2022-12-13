@@ -28,10 +28,9 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
 }
 
 int HttpRequest::receive_header() {
-    ssize_t  read_size = 0;
     char     buf[BUF_SIZE];
+    ssize_t  read_size = 0;
     int      total_read_size = 0;
-
 
     memset(buf, 0, sizeof(buf));
     while (true) {
@@ -249,7 +248,8 @@ int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
     if (PathUtil::is_folder_exists(TMP_POST_DATA_DIR) == false) {
         if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            std::cerr << "Could not create dirctory: " << TMP_POST_DATA_DIR << std::endl;
+            std::cerr << "Could not create dirctory: "
+                << TMP_POST_DATA_DIR << std::endl;
             return 500;  // Internal Server Error
         }
     }
