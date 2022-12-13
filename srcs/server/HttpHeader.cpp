@@ -43,7 +43,9 @@ void HttpHeader::make_response(int status_code) {
         set_header(oss_content_length.str());
     }
     if (status_code == 401) {
-        set_header("WWW-Authenticate: Basic realm=\"Restricted\"\r\n");
+        // TODO(someone)
+        // 設定ファイルから読み取ったメッセージを返す
+        set_header("WWW-Authenticate: Basic realm=\"hogehoge\"\r\n");
     }
     if (is_keep_alive_) {
         set_header("Connection: keep-alive\r\n");
