@@ -1,5 +1,6 @@
 #include "srcs/server_request/HttpAuth.hpp"
 #include "srcs/util/StringConverter.hpp"
+#include <fstream>
 
 HttpAuth::HttpAuth():
     client_info_(""){
@@ -42,10 +43,25 @@ bool HttpAuth::do_basic() {
     ).c_str();
     // TODO(someone)
     // .htpasswdを読み込んで一致したらtrue
-    std::string htpasswd = BASIC_USER_PASS;
-    if (StringConverter::base64_encode(htpasswd) == encoded_info) {
-        return true;
-    } else {
-        return false;
+    std::vector<std::string> user_info;
+    std::ifstream ifs_readfile;
+    ifs_readfile.open("./configs/.htpasswd");
+    if (ifs_readfile.fail()) {
+        // ファイルが存在しない
+        return 500;
     }
+    // ファイル読み込み
+    char          read_line[BUF_SIZE];
+    while (ifs_readfile.getline(read_line, BUF_SIZE - 1)) {
+        user_info.push_back(std::string(read_line));
+    }
+    ifs_readfile.close();
+    for (size_t i = 0; i < user_info.size(); i++)
+    {
+        if (StringConverter::base64_encode(user_info[i])
+            == encoded_info) {
+            return true;
+        }
+    }
+    return false;
 }

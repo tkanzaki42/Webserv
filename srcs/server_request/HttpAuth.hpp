@@ -2,11 +2,10 @@
 #define SRCS_SERVER_REQUEST_HTTPAUTH_HPP_
 
 #include <iostream>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpAuthType.hpp"
-
-# define BASIC_USER_PASS    "tkanzaki:42tokyo"
 
 class HttpAuth {
  public:
