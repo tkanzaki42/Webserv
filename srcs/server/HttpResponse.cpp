@@ -170,3 +170,14 @@ const std::string& HttpResponse::get_response() {
 bool HttpResponse::get_is_keep_alive() {
     return header_.get_is_keep_alive();
 }
+
+bool HttpResponse::is_completed() {
+    if (status_code_ == 401) {
+        return true;
+    }
+    if (header_.get_is_keep_alive()) {
+        return false;
+    } else {
+        return true;
+    }
+}

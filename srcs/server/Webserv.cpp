@@ -39,7 +39,7 @@ void Webserv::loop() {
                 std::cerr << "send() failed." << std::endl;
             }
 
-            if (!response_.get_is_keep_alive())
+            if (response_.is_completed())
                 break;
         }
         fd_manager_.disconnect();

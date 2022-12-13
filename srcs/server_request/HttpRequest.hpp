@@ -10,6 +10,8 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
+#include "srcs/server_request/HttpAuth.hpp"
+#include "srcs/server_request/HttpAuthType.hpp"
 #include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
 
@@ -49,6 +51,7 @@ class HttpRequest {
 
  private:
     FDManager           *fd_manager_;
+    HttpAuth            auth_;
     HttpParser          parser_;
     std::string         received_line_;
     FileType            file_type_;
@@ -57,6 +60,7 @@ class HttpRequest {
     bool                is_autoindex_;
 
     void                check_redirect_();
+    void                check_authorization_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
 };

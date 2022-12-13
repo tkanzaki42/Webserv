@@ -23,7 +23,7 @@ HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
 
 void HttpHeader::make_response(int status_code) {
     // is_keep_alive_を設定
-    if (status_code == 200 || status_code == 201)
+    if (status_code == 200 || status_code == 201 || status_code == 401)
         is_keep_alive_ = true;
     else
         is_keep_alive_ = false;
@@ -41,6 +41,9 @@ void HttpHeader::make_response(int status_code) {
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
 
         set_header(oss_content_length.str());
+    }
+    if (status_code == 401) {
+        set_header("WWW-Authenticate: Basic realm=\"Restricted\"\r\n");
     }
     if (is_keep_alive_) {
         set_header("Connection: keep-alive\r\n");
