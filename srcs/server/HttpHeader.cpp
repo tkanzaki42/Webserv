@@ -36,7 +36,7 @@ void HttpHeader::make_response(int status_code) {
 
     // ヘッダ行を生成
     set_header("Content-Type: text/html; charset=UTF-8\r\n");
-    if (status_code == 200 || status_code == 201 || status_code == 206) {
+    if (status_code == 200 || status_code == 201 || status_code == 206 || status_code == 401) {
         std::ostringstream oss_content_length;
         oss_content_length << "Content-Length: " << body_length_ << "\r\n";
 
