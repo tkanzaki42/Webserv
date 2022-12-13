@@ -6,6 +6,8 @@
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpAuthType.hpp"
 
+# define BASIC_USER_PASS    "tkanzaki:42tokyo"
+
 class HttpAuth {
  public:
     explicit HttpAuth();

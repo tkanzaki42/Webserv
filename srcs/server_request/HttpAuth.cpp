@@ -42,7 +42,7 @@ bool HttpAuth::do_basic() {
     ).c_str();
     // TODO(someone)
     // .htpasswdを読み込んで一致したらtrue
-    std::string htpasswd = "tkanzaki:42tokyo";
+    std::string htpasswd = BASIC_USER_PASS;
     if (StringConverter::base64_encode(htpasswd) == encoded_info) {
         return true;
     } else {

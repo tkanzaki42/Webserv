@@ -217,7 +217,7 @@ void HttpRequest::check_authorization_() {
     // TODO(someone)
     // コンフィグに認証設定がなかったらなにもしない
     // Nginx で Basic 認証(https://qiita.com/kotarella1110/items/be76b17cdbe61ff7b5ca)
-    if (false) {
+    if (BASIC_AUTH == false) {
         return ;
     }
     // リクエストにAuthorizationヘッダがあるかどうか

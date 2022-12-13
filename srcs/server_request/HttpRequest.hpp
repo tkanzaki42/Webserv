@@ -19,6 +19,8 @@
 # define TMP_POST_DATA_FILE "./file/upload_file"
 # define REQUEST_ENTITY_MAX 1000000
 
+# define BASIC_AUTH         false
+
 class HttpRequest {
  public:
     explicit HttpRequest(FDManager *fd_manager);
