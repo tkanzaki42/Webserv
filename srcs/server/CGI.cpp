@@ -204,7 +204,7 @@ char** CGI::generate_env_vars_() {
         env_vars_["REQUEST_METHOD"] = "GET";
     else if (request_->get_http_method() == METHOD_DELETE)
         env_vars_["REQUEST_METHOD"] = "DELETE";
-    env_vars_["SCRIPT_NAME"] = request_->get_path_to_file();
+    env_vars_["SCRIPT_NAME"] = request_->get_request_target();
     env_vars_["QUERY_STRING"] = request_->get_query_string();
 
     // リクエストパスのファイルパス以降の部分
