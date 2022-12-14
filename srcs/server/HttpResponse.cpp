@@ -83,7 +83,7 @@ void HttpResponse::make_header_() {
         body_length = message_body_.get_content_length();
     }
     header_.set_body_length(body_length);
-    header_.make_response(status_code_);
+    header_.make_response(status_code_, request_->get_path_to_file());
 
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;

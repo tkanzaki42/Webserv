@@ -82,6 +82,10 @@ int CGI::exec_cgi(FileType file_type) {
     // 改行ごとに切ってヘッダとボディのvectorに入れる
     separate_to_header_and_body_(read_buffer);
 
+    // 不足ヘッダを追加
+    store_header_("Last-Modified: "
+        + PathUtil::get_current_datetime() + "\r\n");
+
     return EXIT_SUCCESS;
 }
 

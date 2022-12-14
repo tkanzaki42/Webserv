@@ -21,7 +21,7 @@ HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
     return *this;
 }
 
-void HttpHeader::make_response(int status_code) {
+void HttpHeader::make_response(int status_code, std::string path_to_file) {
     // is_keep_alive_を設定
     if (status_code == 200 || status_code == 201)
         is_keep_alive_ = true;
@@ -35,6 +35,10 @@ void HttpHeader::make_response(int status_code) {
     status_line_ = oss_status_line.str();
 
     // ヘッダ行を生成
+    set_header("Server: " + kServerSoftwareName + "\r\n");
+    set_header("Date: " + PathUtil::get_current_datetime() + "\r\n");
+    set_header("Last-Modified: "
+        + PathUtil::get_last_modified_datetime_full(path_to_file) + "\r\n");
     set_header("Content-Type: text/html; charset=UTF-8\r\n");
     if (status_code == 200 || status_code == 201) {
         std::ostringstream oss_content_length;
