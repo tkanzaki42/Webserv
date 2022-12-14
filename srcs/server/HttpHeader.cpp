@@ -23,10 +23,7 @@ HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
 
 void HttpHeader::make_response(int status_code, std::string path_to_file) {
     // is_keep_alive_を設定
-    if (status_code == 200 || status_code == 201)
-        is_keep_alive_ = true;
-    else
-        is_keep_alive_ = false;
+    is_keep_alive_ = true;
 
     // ステータス行を生成 (例:HTTP/1.1 200 OK)
     std::ostringstream oss_status_line;
