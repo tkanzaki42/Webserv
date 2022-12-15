@@ -26,6 +26,7 @@ class HttpHeader {
                         &get_content();
     void                set_body_length(int body_length);
     void                set_header(std::string header_line);
+    void                set_is_keep_alive(bool is_keep_alive);
     void                clear_contents();
     bool                get_is_keep_alive();
 };

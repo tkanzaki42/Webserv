@@ -9,7 +9,20 @@ int StringConverter::stoi(const std::string &s) {
     return num;
 }
 
+unsigned int StringConverter::stoui(const std::string &s) {
+    unsigned int num;
+    std::istringstream ss(s);
+    ss >> num;
+    return num;
+}
+
 std::string StringConverter::itos(int i) {
+    std::ostringstream oss;
+    oss << i;
+    return (oss.str());
+}
+
+std::string StringConverter::uitos(unsigned int i) {
     std::ostringstream oss;
     oss << i;
     return (oss.str());

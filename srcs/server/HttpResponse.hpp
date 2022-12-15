@@ -26,6 +26,7 @@ class HttpResponse {
     void                make_message_body_();
     void                make_header_();
     void                merge_header_and_body_();
+    bool                check_resource_modified_();
 
  public:
     explicit HttpResponse(HttpRequest *request);

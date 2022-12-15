@@ -7,6 +7,7 @@ HttpBody::HttpBody(const HttpRequest& request)
           content_length_(0),
           content_head_(0),
           content_tail_(0),
+          hash_value_(0xffffffff),
           is_compressed_(false) {
 }
 
@@ -19,11 +20,12 @@ HttpBody::HttpBody(const HttpBody &obj)
 }
 
 HttpBody &HttpBody::operator=(const HttpBody &obj) {
-    this->is_compressed_        = obj.is_compressed_;
-    this->content_        = obj.content_;
+    this->is_compressed_   = obj.is_compressed_;
+    this->content_         = obj.content_;
     this->content_length_  = obj.content_length_;
-    this->content_head_  = obj.content_head_;
+    this->content_head_    = obj.content_head_;
     this->content_tail_    = obj.content_tail_;
+    this->hash_value_            = obj.hash_value_;
     return *this;
 }
 
@@ -57,9 +59,17 @@ int HttpBody::read_contents_from_file_() {
             content_.push_back(std::string(read_line) + "\n");
         }
     }
-
     ifs_readfile.close();
+
+    // Content-Lengthを数える
     count_content_length_();
+
+    // Etag用にcontent_を元にハッシュ値を生成。必ずAccept-Rangesで圧縮する前に処理する
+    if (ETAG_ENABLED) {
+        hash_value_ = Hash::generate_crc32(content_);
+    }
+
+    // Accept-Ranges
     is_compressed_ = false;
     return compress_to_range_();
 }
@@ -234,6 +244,14 @@ std::size_t HttpBody::get_content_head() const {
 
 std::size_t HttpBody::get_content_tail() const {
     return this->content_tail_;
+}
+
+unsigned int HttpBody::get_hash_value_() const {
+    return this->hash_value_;
+}
+
+unsigned int HttpBody::get_hash_len_() const {
+    return this->hash_len_;
 }
 
 bool HttpBody::is_compressed() const {

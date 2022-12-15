@@ -22,12 +22,6 @@ HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
 }
 
 void HttpHeader::make_response(int status_code) {
-    // is_keep_alive_を設定
-    if (status_code == 200 || status_code == 201 || status_code == 401)
-        is_keep_alive_ = true;
-    else
-        is_keep_alive_ = false;
-
     // ステータス行を生成 (例:HTTP/1.1 200 OK)
     std::ostringstream oss_status_line;
     oss_status_line << "HTTP/1.1 " << status_code << " "
@@ -43,11 +37,15 @@ void HttpHeader::make_response(int status_code) {
 
         set_header(oss_content_length.str());
     }
+
+    // 認証
     if (status_code == 401) {
         // TODO(someone)
         // 設定ファイルから読み取ったメッセージを返す
         set_header("WWW-Authenticate: Basic realm=\"hogehoge\"\r\n");
     }
+
+    // keep-alive
     if (is_keep_alive_) {
         set_header("Connection: keep-alive\r\n");
         if (status_code != 206){
@@ -56,6 +54,10 @@ void HttpHeader::make_response(int status_code) {
     } else {
         set_header("Connection: close\r\n");
     }
+}
+
+void HttpHeader::set_is_keep_alive(bool is_keep_alive) {
+    this->is_keep_alive_ = is_keep_alive;
 }
 
 std::string HttpHeader::get_status_line() {
