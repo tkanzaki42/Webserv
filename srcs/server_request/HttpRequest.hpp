@@ -26,9 +26,6 @@ class HttpRequest {
     int                 receive_header();
     void                analyze_request();
     void                print_debug();
-    std::string         replacePathToLocation(std::string &location,
-                                              std::string &path, 
-                                              std::string &root);
 
     // getter(HttpParser)
     HttpMethod          get_http_method() const;
@@ -68,6 +65,9 @@ class HttpRequest {
     void                check_redirect_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
+    std::string         replacePathToLocation_(std::string &location,
+                                              std::string &path, 
+                                              std::string &root);
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_

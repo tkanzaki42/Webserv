@@ -87,7 +87,7 @@ void HttpRequest::analyze_request() {
 
     // パスの補完(末尾にindex.htmlをつけるなど)
     parser_.setPathToFile
-        (HttpRequest::replacePathToLocation(location_, path, root));
+        (replacePathToLocation_(location_, path, root));
     parser_.autocomplete_path();
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
@@ -139,7 +139,7 @@ void HttpRequest::analyze_request() {
     }
 }
 
-std::string HttpRequest::replacePathToLocation(std::string &location,
+std::string HttpRequest::replacePathToLocation_(std::string &location,
                                               std::string &path,
                                               std::string &root) {
     std::string newUrl;
