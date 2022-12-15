@@ -70,8 +70,6 @@ void HttpRequest::analyze_request() {
     // リクエストのパース
     status_code_ = parser_.parse();
 
-    // HTTPバージョンの確認
-    // TODO(someone)
     // virtual_host_index_の設定
     this->virtual_host_index_ =
          Config::getVirtualServerIndex(parser_.get_host_name());
