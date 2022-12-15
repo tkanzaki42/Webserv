@@ -164,6 +164,7 @@ void HttpParser::separate_querystring_pathinfo() {
     std::string remaining_path = split_query_string_(request_target_);
 
     // path_to_file_を仮で設定
+    std::cout << "PATH_TO_FILE" << get_path_to_file() << std::endl;
     path_to_file_ += remaining_path;
 
     // パスからPATH_INFOを切り出す
@@ -179,7 +180,7 @@ std::string HttpParser::split_query_string_(
     std::string::size_type question_pos = request_target.find("?");
     if (question_pos == std::string::npos) {
         // "?"が見つからなければ、QUERY_STRINGはない
-        remaining_path = request_target;
+        // remaining_path = request_target;
         query_string_ = "";
     } else {
         // "?"が見つかれば、QUERY_STRINGがあるのでquery_string_に格納
