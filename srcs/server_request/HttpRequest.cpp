@@ -266,7 +266,7 @@ int HttpRequest::receive_and_store_to_file_() {
     }
     // ファイルのオープン
     std::ofstream ofs_outfile;
-    ofs_outfile.open(upload_dir + TMP_POST_DATA_FILE,
+    ofs_outfile.open((upload_dir + TMP_POST_DATA_FILE).c_str(),
             std::ios::out | std::ios::binary | std::ios::trunc);
     if (!ofs_outfile) {
         std::cerr << "Could not open file during receiving the file: "
