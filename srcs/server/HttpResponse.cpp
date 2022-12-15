@@ -170,9 +170,14 @@ bool HttpResponse::check_resource_modified_() {
 
     // Etagが同じなら304
     std::string if_none_match = map.at("If-None-Match");
+    if (if_none_match.substr(0, 2) == "W/") {
+        if_none_match = if_none_match.substr(3, 12);
+    } else {
+        if_none_match = if_none_match.substr(0, 12);
+    }
     std::string etag = Hash::convert_to_base16(message_body_.get_hash_value_())
         + "-" + Hash::convert_to_base16(message_body_.get_content_length());
-    if (if_none_match.substr(0, 12) == etag) {
+    if (if_none_match == etag) {
         return false;
     }
     return true;
