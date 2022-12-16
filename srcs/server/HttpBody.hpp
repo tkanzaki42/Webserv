@@ -51,6 +51,7 @@ class HttpBody {
     unsigned int                   get_hash_value_() const;
     unsigned int                   get_hash_len_() const;
     bool                           is_compressed() const;
+    bool                           has_hash() const;
     void                           clear_contents();
 };
 

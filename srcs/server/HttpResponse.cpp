@@ -156,7 +156,8 @@ bool HttpResponse::check_resource_modified_() {
     // リクエストヘッダにブラウザキャッシュ用のものがなかったら200
     std::map<std::string, std::string> map = request_->get_header_field_map();
     if (map.count("If-None-Match") == 0
-    || map.count("If-Modified-Since") == 0) {
+    || map.count("If-Modified-Since") == 0
+    || !message_body_.has_hash()) {
         return true;
     }
 

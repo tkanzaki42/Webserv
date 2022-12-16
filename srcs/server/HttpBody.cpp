@@ -159,6 +159,9 @@ void HttpBody::make_autoindex_response() {
 
     content_.clear();
     content_.push_back(oss_body.str());
+    
+    // Content-Lengthを数える
+    count_content_length_();
 }
 
 // Rangeの範囲にcontent_を圧縮。416エラーはfalse
@@ -256,6 +259,14 @@ unsigned int HttpBody::get_hash_len_() const {
 
 bool HttpBody::is_compressed() const {
     return is_compressed_;
+}
+
+bool HttpBody::has_hash() const {
+    if (this->hash_value_ != 0xffffffff) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 const std::vector<std::string> &HttpBody::get_content() const {
