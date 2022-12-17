@@ -161,11 +161,8 @@ bool HttpParser::parse_request_target_() {
 
 void HttpParser::separate_querystring_pathinfo() {
     // パスからQUERY_STRINGを切り出す
-    std::string remaining_path = split_query_string_(request_target_);
-
-    // path_to_file_を仮で設定
-    std::cout << "PATH_TO_FILE" << get_path_to_file() << std::endl;
-    path_to_file_ += remaining_path;
+    path_to_file_ = split_query_string_(path_to_file_);
+    // std::cout << "PATH_TO_FILE " << get_path_to_file() << std::endl;
 
     // パスからPATH_INFOを切り出す
     if (get_http_method() != METHOD_POST)
@@ -173,20 +170,20 @@ void HttpParser::separate_querystring_pathinfo() {
 }
 
 std::string HttpParser::split_query_string_(
-        std::string &request_target) {
+        std::string &path_to_file) {
     std::string remaining_path;
 
     // パスのうち"?"以降をQUERY_STRINGとして切り出す
-    std::string::size_type question_pos = request_target.find("?");
+    std::string::size_type question_pos = path_to_file.find("?");
     if (question_pos == std::string::npos) {
         // "?"が見つからなければ、QUERY_STRINGはない
-        // remaining_path = request_target;
+        remaining_path = path_to_file;
         query_string_ = "";
     } else {
         // "?"が見つかれば、QUERY_STRINGがあるのでquery_string_に格納
-        remaining_path = request_target.substr(0, question_pos);
-        query_string_ = request_target.substr(question_pos + 1,
-            request_target.size() - question_pos - 1);
+        remaining_path = path_to_file.substr(0, question_pos);
+        query_string_ = path_to_file.substr(question_pos + 1,
+            path_to_file.size() - question_pos - 1);
     }
     return remaining_path;
 }
