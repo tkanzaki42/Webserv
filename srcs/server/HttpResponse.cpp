@@ -143,15 +143,13 @@ void HttpResponse::make_header_() {
     }
 
     if (status_code_ == 200 && ETAG_ENABLED) {
-        // TODO(yonishi) get_last_modified_datetime_fullに置き換える
-        struct stat st;
-        if (stat(request_->get_path_to_file().c_str(), &st) == 0) {
-            header_.set_header("Last-Modified: " + std::string(ctime(&st.st_ctime)));
-            header_.set_header("Etag: "
-                + Hash::convert_to_base16(message_body_.get_hash_value_())
-                + "-" + Hash::convert_to_base16(message_body_.get_content_length())
-                + "\r\n");
-        }
+        header_.set_header("Last-Modified: "
+            + PathUtil::get_last_modified_datetime_full(request_->get_path_to_file())
+            + "\r\n");
+        header_.set_header("Etag: "
+            + Hash::convert_to_base16(message_body_.get_hash_value_())
+            + "-" + Hash::convert_to_base16(message_body_.get_content_length())
+            + "\r\n");
     }
 }
 
@@ -165,11 +163,8 @@ bool HttpResponse::check_resource_modified_() {
     }
 
     // 最終更新時刻が違ったら200
-    // TODO(yonishi) get_last_modified_datetime_fullに置き換える
-    struct stat st;
-    if (stat(request_->get_path_to_file().c_str(), &st) != 0
-    || std::string(ctime(&st.st_ctime)) != map.at("If-Modified-Since")  + "\n") {
-                std::cout << stat(request_->get_path_to_file().c_str(), &st) << std::endl;
+    if (PathUtil::get_last_modified_datetime_full(request_->get_path_to_file())
+        != map.at("If-Modified-Since")) {
         return true;
     }
 
