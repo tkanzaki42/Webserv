@@ -81,8 +81,9 @@ void HttpResponse::make_header_() {
             || request_->get_file_type() == FILETYPE_BINARY) {
         body_length = cgi_->get_content_length();
     } else if(message_body_.is_compressed()) {
-        body_length = message_body_.get_content_tail()
-            - message_body_.get_content_head() + 1;
+        body_length = message_body_.get_content_tail() > message_body_.get_content_length()
+            ? message_body_.get_content_length()
+            : message_body_.get_content_tail() - message_body_.get_content_head() + 1;
         header_.set_header("Content-Range: bytes "
             + StringConverter::itos(message_body_.get_content_head())
             + "-"
@@ -99,6 +100,7 @@ void HttpResponse::make_header_() {
     header_.set_is_keep_alive(
         status_code_ == 200
         || status_code_ == 201
+        || status_code_ == 206
         || status_code_ == 401
     );
 
@@ -140,7 +142,8 @@ void HttpResponse::make_header_() {
         }
     }
 
-    if (ETAG_ENABLED) {
+    if (status_code_ == 200 && ETAG_ENABLED) {
+        // TODO(yonishi) get_last_modified_datetime_fullに置き換える
         struct stat st;
         if (stat(request_->get_path_to_file().c_str(), &st) == 0) {
             header_.set_header("Last-Modified: " + std::string(ctime(&st.st_ctime)));
@@ -162,6 +165,7 @@ bool HttpResponse::check_resource_modified_() {
     }
 
     // 最終更新時刻が違ったら200
+    // TODO(yonishi) get_last_modified_datetime_fullに置き換える
     struct stat st;
     if (stat(request_->get_path_to_file().c_str(), &st) != 0
     || std::string(ctime(&st.st_ctime)) != map.at("If-Modified-Since")  + "\n") {

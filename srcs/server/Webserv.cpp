@@ -33,7 +33,6 @@ void Webserv::loop() {
             response_.make_response();
             std::cout << response_.get_response() << std::endl;
             std::cout << "---------------------------------------" << std::endl;
-
             // ソケットディスクリプタにレスポンス内容を書き込む
             if (!fd_manager_.send(response_.get_response())) {
                 std::cerr << "send() failed." << std::endl;

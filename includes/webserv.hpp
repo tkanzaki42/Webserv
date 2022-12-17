@@ -15,6 +15,9 @@ const int BUF_SIZE           = 9001;
 const int CGI_TIMEOUT_SEC    = 5;
 const int MAX_URL_LENGTH     = 8177;
 
+#define BASIC_AUTH   false
+#define ETAG_ENABLED true
+
 // const std::string kBaseHtmlPath = "./public_html";
 // const std::string kIndexHtmlFileName = "index.html";
 const std::string kServerSoftwareName = "Webserv/1.0";

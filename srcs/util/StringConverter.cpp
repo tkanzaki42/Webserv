@@ -3,14 +3,14 @@
 #include "srcs/util/StringConverter.hpp"
 
 int StringConverter::stoi(const std::string &s) {
-    int num;
+    int num = 0;
     std::istringstream ss(s);
     ss >> num;
     return num;
 }
 
 unsigned int StringConverter::stoui(const std::string &s) {
-    unsigned int num;
+    unsigned int num = 0;
     std::istringstream ss(s);
     ss >> num;
     return num;

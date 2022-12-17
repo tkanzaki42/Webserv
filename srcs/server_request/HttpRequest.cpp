@@ -123,6 +123,7 @@ void HttpRequest::analyze_request() {
     } else if (get_http_method() == METHOD_DELETE) {
         status_code_ = delete_file_();
     }
+
 }
 
 void HttpRequest::print_debug() {

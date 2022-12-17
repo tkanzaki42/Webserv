@@ -14,8 +14,6 @@
 #include "srcs/util/UTF8Util.hpp"
 #include "srcs/util/Hash.hpp"
 
-#define ETAG_ENABLED true
-
 class HttpBody {
  private :
     static const int         BUFFER_SIZE = 1024;
