@@ -113,6 +113,14 @@ int FDManager::receive(char *buf) {
         return -1;
     }
 
+    prepare_select_();
+
+    // 接続＆受信を待ち受ける
+    if (!select_()) {
+        // やり直し
+        return -1;
+    }
+
     memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = -1;
     // クライアントから受信する
