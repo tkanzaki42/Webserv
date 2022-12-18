@@ -82,10 +82,10 @@ void HttpResponse::make_header_() {
         body_length = cgi_->get_content_length();
     } else if(message_body_.is_compressed()) {
         body_length = message_body_.get_content_tail() >= message_body_.get_content_length()
-            ? message_body_.get_content_length()
+            ? message_body_.get_content_length() - message_body_.get_content_head()
             : message_body_.get_content_tail() - message_body_.get_content_head() + 1;
-        std::size_t tail = message_body_.get_content_tail() >= body_length
-            ? body_length - 1
+        std::size_t tail = message_body_.get_content_tail() >= body_length + message_body_.get_content_head()
+            ? body_length + message_body_.get_content_head() - 1
             : message_body_.get_content_tail();
         header_.set_header("Content-Range: bytes "
             + StringConverter::itos(message_body_.get_content_head())
