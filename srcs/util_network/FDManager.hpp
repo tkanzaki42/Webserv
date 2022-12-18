@@ -19,8 +19,10 @@ class FDManager {
     // 接続しているソケット
     int             active_socket_index_;
 
-    // 処理用のファイルディスクリプタ
-    int             accept_fd_;
+    // 通信用ファイルディスクリプタの配列
+    int             packet_fd_[10];
+    // 処理用のファイルディスクリプタのコピー
+    int             accept_fd_index_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
@@ -41,7 +43,7 @@ class FDManager {
     std::map<std::string, std::string> host1;
 
     // selectのタイムアウト時間
-    static const time_t SELECT_TIME_SECOND = 5;
+    static const time_t SELECT_TIME_SECOND = 1;
     static const time_t SELECT_TIME_U_SECOND = 0;
 
     FDManager();

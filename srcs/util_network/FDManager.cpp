@@ -14,8 +14,12 @@ FDManager::FDManager() : active_socket_index_(-1) {
         socketSet_.push_back(soc);
     }
 
-    // 処理用のファイルディスクリプタを初期化する
-    accept_fd_ = -1;
+    // 通信用ディスクリプタの配列を初期化する
+    for (size_t i = 0;
+        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
+        i++ ) {
+        packet_fd_[i] = -1;
+    }
 }
 
 FDManager::~FDManager() {
@@ -47,9 +51,26 @@ bool FDManager::accept() {
         }
     }
 
+    // for (size_t i = 0;
+    //     i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
+    //     i++) {
+    //     std::cout << i << ":" << packet_fd_[i] << std::endl;
+    // }
+    
+
     // 接続されたならクライアントからの接続を確立する
-    accept_fd_ = socketSet_[active_socket_index_].accept();
-    std::cout << "socket:" << accept_fd_;
+    for (size_t i = 0;
+        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
+        i++) {
+        if (packet_fd_[i] == -1) {
+            packet_fd_[i] = socketSet_[active_socket_index_].accept();
+            accept_fd_index_ = i;
+            std::cout << "socket:" << packet_fd_[accept_fd_index_];
+            std::cout << " connected." << std::endl;
+            break;
+        }
+    }
+
     std::cout << " connected." << std::endl;
     return true;
 }
@@ -66,10 +87,13 @@ void FDManager::prepare_select_() {
     }
 
     // 受信待ちのディスクリプタをディスクリプタ集合に設定する
-    if (accept_fd_ != -1) {
-        FD_SET(accept_fd_, &received_fd_collection_);
-        if (accept_fd_ > max_fd_) {
-            max_fd_ = accept_fd_;
+    for (size_t i = 0;
+        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
+        if (packet_fd_[i] != -1) {
+            FD_SET(packet_fd_[i], &received_fd_collection_);
+            if (packet_fd_[i] > max_fd_) {
+                max_fd_ = packet_fd_[i];
+            }
         }
     }
 
@@ -109,51 +133,51 @@ bool FDManager::select_() {
 
 int FDManager::receive(char *buf) {
     // 接続中かどうか
-    if (accept_fd_ == -1) {
+    if (packet_fd_[accept_fd_index_] == -1) {
         return -1;
     }
 
     memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = -1;
     // クライアントから受信する
-    read_size = ::recv(accept_fd_,
+    read_size = ::recv(packet_fd_[accept_fd_index_],
         buf,
         sizeof(char) * BUF_SIZE - 1,
         0);
     if (read_size <= 0) {
         // 切断された場合、クローズする
-        std::cout << "socket:" << accept_fd_;
+        std::cout << "socket:" << packet_fd_[accept_fd_index_];
         std::cout << " disconnected." << std::endl;
-        close(accept_fd_);
-        accept_fd_ = -1;
+        close(packet_fd_[accept_fd_index_]);
+        packet_fd_[accept_fd_index_] = -1;
         return -1;
     }
     // 受信成功の場合
-    std::cout << "socket:" << accept_fd_;
+    std::cout << "socket:" << packet_fd_[accept_fd_index_];
     std::cout << "received." << std::endl;
     return read_size;
 }
 
 bool FDManager::send(const std::string &str) {
     // 接続中かどうか
-    if (accept_fd_ == -1) {
+    if (packet_fd_[accept_fd_index_] == -1) {
         return false;
     }
 
-    if (::send(accept_fd_, str.c_str(),
+    if (::send(packet_fd_[accept_fd_index_], str.c_str(),
         str.length(), 0) == -1) {
         std::cout << "FDManager::send failed." << std::endl;
         return false;
     }
     std::cout << "FDManager::send success to fd: ";
-    std::cout << accept_fd_ << std::endl;
+    std::cout << packet_fd_[accept_fd_index_] << std::endl;
     return true;
 }
 
 void FDManager::disconnect() {
     // クライアントとの接続を切断する
-    close(accept_fd_);
-    accept_fd_ = -1;
+    // close(packet_fd_[accept_fd_index_]);
+    packet_fd_[accept_fd_index_] = -1;
     active_socket_index_ = -1;
 }
 
