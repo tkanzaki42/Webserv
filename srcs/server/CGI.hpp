@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include <iostream>
 #include <map>
