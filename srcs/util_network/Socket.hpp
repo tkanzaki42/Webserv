@@ -14,6 +14,7 @@
 
 // cpp includes
 #include <iostream>
+#include "ClientInfo.hpp"
 
 class Socket {
  public:
@@ -27,18 +28,13 @@ class Socket {
     int prepare();
     int cleanup();
     int get_listen_fd() const { return listen_fd_; }
-    int accept();
-
-    // getter
-    struct sockaddr_in  get_client_addr();
+    int accept(ClientInfo *client_info);
 
  private:
     int                 listen_fd_;
     int                 port_;
     struct sockaddr_in  serv_addr_;
     socklen_t           serv_addr_len_;
-    struct sockaddr_in  from_addr_;
-    socklen_t           from_addr_len_;
 
     int  open_socket_();
     int  bind_address_();

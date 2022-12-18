@@ -16,9 +16,10 @@ FDManager::FDManager() : active_socket_index_(-1) {
 
     // 通信用ディスクリプタの配列を初期化する
     for (size_t i = 0;
-        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
+        i < WORKER_NUMBER;
         i++ ) {
-        packet_fd_[i] = -1;
+        client_info_[i].addrlen = sizeof(client_info_[i].address);
+        client_info_[i].fd = -1;
     }
 }
 
@@ -49,23 +50,26 @@ bool FDManager::accept() {
             active_socket_index_ = i;
             break;
         }
-    }
+    }    
 
-    // for (size_t i = 0;
-    //     i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
-    //     i++) {
-    //     std::cout << i << ":" << packet_fd_[i] << std::endl;
-    // }
-    
-
-    // 接続されたならクライアントからの接続を確立する
+    // 新たに接続されたならクライアントからの接続を確立する
+    ClientInfo info;
     for (size_t i = 0;
-        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]);
+        i < WORKER_NUMBER;
         i++) {
-        if (packet_fd_[i] == -1) {
-            packet_fd_[i] = socketSet_[active_socket_index_].accept();
-            accept_fd_index_ = i;
-            std::cout << "socket:" << packet_fd_[accept_fd_index_];
+        if (client_info_[i].fd == -1) {
+            info.fd = socketSet_[active_socket_index_].accept(&info);
+            int used_fd_index = find_used_fd_(&info);
+            std::cout << "used_fd_index:" << used_fd_index << std::endl;
+            // すでに接続済みならfdを再利用
+            if (used_fd_index >= 0) {
+                accept_fd_index_ = used_fd_index;
+                close(info.fd);
+            } else {
+                accept_fd_index_ = i;
+                client_info_[i] = info;
+            }
+            std::cout << "socket:" << client_info_[accept_fd_index_].fd;
             std::cout << " connected." << std::endl;
             break;
         }
@@ -88,11 +92,11 @@ void FDManager::prepare_select_() {
 
     // 受信待ちのディスクリプタをディスクリプタ集合に設定する
     for (size_t i = 0;
-        i < sizeof(packet_fd_)/sizeof(packet_fd_[0]); i++) {
-        if (packet_fd_[i] != -1) {
-            FD_SET(packet_fd_[i], &received_fd_collection_);
-            if (packet_fd_[i] > max_fd_) {
-                max_fd_ = packet_fd_[i];
+        i < WORKER_NUMBER; i++) {
+        if (client_info_[i].fd != -1) {
+            FD_SET(client_info_[i].fd, &received_fd_collection_);
+            if (client_info_[i].fd > max_fd_) {
+                max_fd_ = client_info_[i].fd;
             }
         }
     }
@@ -133,51 +137,51 @@ bool FDManager::select_() {
 
 int FDManager::receive(char *buf) {
     // 接続中かどうか
-    if (packet_fd_[accept_fd_index_] == -1) {
+    if (client_info_[accept_fd_index_].fd == -1) {
         return -1;
     }
 
     memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = -1;
     // クライアントから受信する
-    read_size = ::recv(packet_fd_[accept_fd_index_],
+    read_size = ::recv(client_info_[accept_fd_index_].fd,
         buf,
         sizeof(char) * BUF_SIZE - 1,
         0);
     if (read_size <= 0) {
         // 切断された場合、クローズする
-        std::cout << "socket:" << packet_fd_[accept_fd_index_];
+        std::cout << "socket:" << client_info_[accept_fd_index_].fd;
         std::cout << " disconnected." << std::endl;
-        close(packet_fd_[accept_fd_index_]);
-        packet_fd_[accept_fd_index_] = -1;
+        close(client_info_[accept_fd_index_].fd);
+        client_info_[accept_fd_index_].fd = -1;
         return -1;
     }
     // 受信成功の場合
-    std::cout << "socket:" << packet_fd_[accept_fd_index_];
+    std::cout << "socket:" << client_info_[accept_fd_index_].fd;
     std::cout << "received." << std::endl;
     return read_size;
 }
 
 bool FDManager::send(const std::string &str) {
     // 接続中かどうか
-    if (packet_fd_[accept_fd_index_] == -1) {
+    if (client_info_[accept_fd_index_].fd == -1) {
         return false;
     }
 
-    if (::send(packet_fd_[accept_fd_index_], str.c_str(),
+    if (::send(client_info_[accept_fd_index_].fd, str.c_str(),
         str.length(), 0) == -1) {
         std::cout << "FDManager::send failed." << std::endl;
         return false;
     }
     std::cout << "FDManager::send success to fd: ";
-    std::cout << packet_fd_[accept_fd_index_] << std::endl;
+    std::cout << client_info_[accept_fd_index_].fd << std::endl;
     return true;
 }
 
 void FDManager::disconnect() {
     // クライアントとの接続を切断する
     // close(packet_fd_[accept_fd_index_]);
-    packet_fd_[accept_fd_index_] = -1;
+    client_info_[accept_fd_index_].fd = -1;
     active_socket_index_ = -1;
 }
 
@@ -194,5 +198,30 @@ void FDManager::destory_socket() {
 }
 
 struct sockaddr_in FDManager::get_client_addr() {
-    return socketSet_[active_socket_index_].get_client_addr();
+    return client_info_[accept_fd_index_].address;
+}
+
+// return: accept_fd_index_
+int FDManager::find_used_fd_(const ClientInfo *client_info) {
+    for (size_t i = 0;
+        i < WORKER_NUMBER;
+        i++) {
+        if (compare_client_info(client_info, &client_info_[i]) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int FDManager::compare_client_info(const ClientInfo *info1, const ClientInfo *info2) {
+    if (info1->address.sin_addr.s_addr != info2->address.sin_addr.s_addr) {
+        return 1;
+    }
+    if (info1->address.sin_family != info2->address.sin_family) {
+        return 1;
+    }
+    if (info1->address.sin_port != info2->address.sin_port) {
+        return 1;
+    }
+    return 0;
 }

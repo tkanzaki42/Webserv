@@ -10,6 +10,9 @@
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/config/Config.hpp"
 #include <vector>
+#include "ClientInfo.hpp"
+
+# define WORKER_NUMBER 10
 
 class FDManager {
  private:
@@ -20,7 +23,8 @@ class FDManager {
     int             active_socket_index_;
 
     // 通信用ファイルディスクリプタの配列
-    int             packet_fd_[10];
+    ClientInfo      client_info_[WORKER_NUMBER];
+
     // 処理用のファイルディスクリプタのコピー
     int             accept_fd_index_;
 
@@ -35,6 +39,8 @@ class FDManager {
 
     void            prepare_select_();
     bool            select_();
+    int             find_used_fd_(const ClientInfo *client_info);
+    int             compare_client_info(const ClientInfo *info1, const ClientInfo *info2);
 
  public:
     std::map<int, string_vector_map> config;
@@ -71,7 +77,6 @@ class FDManager {
 
     // getter
     struct sockaddr_in  get_client_addr();
-
 };
 
 #endif  // SRCS_UTIL_NETWORK_FDMANAGER_HPP_
