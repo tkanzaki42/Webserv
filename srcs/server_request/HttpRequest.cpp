@@ -132,8 +132,15 @@ void HttpRequest::print_debug() {
     std::cout << std::endl;
 
     std::cout << "[request data]" << std::endl;
-    std::cout << "  http_method_      : "
-        << parser_.get_http_method() << std::endl;
+    std::cout << "  http_method_      : " << parser_.get_http_method();
+    if (parser_.get_http_method() == METHOD_NOT_DEFINED)
+        std::cout << " [not defined]" << std::endl;
+    else if (parser_.get_http_method() == METHOD_POST)
+        std::cout << " [POST]" << std::endl;
+    else if (parser_.get_http_method() == METHOD_GET)
+        std::cout << " [GET]" << std::endl;
+    else if (parser_.get_http_method() == METHOD_DELETE)
+        std::cout << " [DELETE]" << std::endl;
     std::cout << "  request_target_   : "
         << parser_.get_request_target() << std::endl;
     std::cout << "  base_html_path    : "
