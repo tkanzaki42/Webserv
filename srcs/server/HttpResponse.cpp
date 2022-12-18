@@ -76,18 +76,21 @@ void HttpResponse::make_message_body_() {
 
 void HttpResponse::make_header_() {
     // HttpHeaderのContent-Lengthをセット
-    int body_length;
+    std::size_t body_length;
     if (request_->get_file_type() == FILETYPE_SCRIPT
             || request_->get_file_type() == FILETYPE_BINARY) {
         body_length = cgi_->get_content_length();
     } else if(message_body_.is_compressed()) {
-        body_length = message_body_.get_content_tail() > message_body_.get_content_length()
+        body_length = message_body_.get_content_tail() >= message_body_.get_content_length()
             ? message_body_.get_content_length()
             : message_body_.get_content_tail() - message_body_.get_content_head() + 1;
+        std::size_t tail = message_body_.get_content_tail() >= body_length
+            ? body_length - 1
+            : message_body_.get_content_tail();
         header_.set_header("Content-Range: bytes "
             + StringConverter::itos(message_body_.get_content_head())
             + "-"
-            + StringConverter::itos(message_body_.get_content_tail())
+            + StringConverter::itos(tail)
             + "/"
             + StringConverter::itos(message_body_.get_content_length())
             + "\r\n");
