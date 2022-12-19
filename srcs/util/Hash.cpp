@@ -75,7 +75,10 @@ unsigned int Hash::generate_crc32(const std::vector<std::string> &src){
 	{
 		for (size_t j = 0; j < src[i].length(); j++)
 		{
-			hash = crc32_table256_[(hash ^ src[i][j]) & 0xff] ^ (hash >> 8);
+			hash = crc32_table256_[
+                    (hash ^ static_cast<unsigned int>(src[i][j]))
+                        & static_cast<unsigned int>(0xff)
+                ] ^ (hash >> 8);
 		}
 	}
 	return hash;
