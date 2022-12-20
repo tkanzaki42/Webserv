@@ -97,6 +97,24 @@ const std::string PathUtil::get_last_modified_date(
     return std::string(last_modified_date);
 }
 
+const std::string PathUtil::get_last_modified_datetime_full(
+        const std::string& relative_path) {
+    // ファイルの情報を取得する
+    struct stat st;
+    if (stat(get_full_path(relative_path).c_str(), &st) != 0)
+        return "";
+
+    // 日付フォーマット変換(time_t -> struct tm)
+    struct tm tm_last_modified_date = {};
+    gmtime_r(&st.st_mtime, &tm_last_modified_date);
+
+    // 文字列に変換
+    char buf_datetime[256];
+    strftime(buf_datetime, sizeof(buf_datetime),
+        "%a, %d %b %Y %H:%M:%S %Z", &tm_last_modified_date);
+
+    return std::string(buf_datetime);
+}
 const std::string PathUtil::get_filesize(const std::string& relative_path) {
     // ファイルの情報を取得する
     struct stat st;
