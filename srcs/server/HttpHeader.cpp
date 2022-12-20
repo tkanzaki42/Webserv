@@ -42,11 +42,27 @@ void HttpHeader::make_response(int status_code, std::string path_to_file) {
         set_header("Last-Modified: "
             + PathUtil::get_last_modified_datetime_full(path_to_file) + "\r\n");
     }
+
+    // 認証
+    if (status_code == 401) {
+        // TODO(someone)
+        // 設定ファイルから読み取ったメッセージを返す
+        set_header("WWW-Authenticate: Basic realm=\"hogehoge\"\r\n");
+    }
+
+    // keep-alive
     if (is_keep_alive_) {
         set_header("Connection: keep-alive\r\n");
+        if (status_code != 206) {
+            set_header("Accept-Ranges: bytes\r\n");
+        }
     } else {
         set_header("Connection: close\r\n");
     }
+}
+
+void HttpHeader::set_is_keep_alive(bool is_keep_alive) {
+    this->is_keep_alive_ = is_keep_alive;
 }
 
 std::string HttpHeader::get_status_line() {

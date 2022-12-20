@@ -1,7 +1,9 @@
 #include "srcs/server_request/HttpRequest.hpp"
+#include "srcs/util/StringConverter.hpp"
 
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
+          auth_(HttpAuth()),
           parser_(HttpParser(received_line_)),
           file_type_(FILETYPE_NOT_DEFINED),
           status_code_(200),
@@ -19,6 +21,7 @@ HttpRequest::HttpRequest(const HttpRequest &obj)
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
+    auth_               = HttpAuth();
     parser_             = HttpParser(obj.parser_);
     file_type_          = obj.file_type_;
     status_code_        = obj.status_code_;
@@ -94,6 +97,9 @@ void HttpRequest::analyze_request() {
     if (status_code_ == 200 || status_code_ == 404)
         check_redirect_();
 
+    // 認証の確認
+    check_authorization_();
+
     // オートインデックスの実施
     bool autoindex = true;  // TODO(kfukuta) コンフィグで指定
     if (status_code_ == 404 && autoindex == true)
@@ -120,6 +126,7 @@ void HttpRequest::analyze_request() {
     } else if (get_http_method() == METHOD_DELETE) {
         status_code_ = delete_file_();
     }
+
 }
 
 void HttpRequest::print_debug() {
@@ -194,7 +201,7 @@ const std::map<std::string, std::string>&
     return parser_.get_header_field_map();
 }
 
-FileType HttpRequest::get_file_type() {
+FileType HttpRequest::get_file_type() const {
     return file_type_;
 }
 
@@ -218,13 +225,40 @@ void HttpRequest::set_file_type(FileType file_type) {
     file_type_ = file_type;
 }
 
+void HttpRequest::check_authorization_() {
+    // TODO(someone)
+    // コンフィグに認証設定がなかったらなにもしない
+    // Nginx で Basic 認証(https://qiita.com/kotarella1110/items/be76b17cdbe61ff7b5ca)
+    if (BASIC_AUTH == false) {
+        return ;
+    }
+    // リクエストにAuthorizationヘッダがあるかどうか
+    const std::map<std::string, std::string>& map = parser_.get_header_field_map();
+    if (map.count(std::string("Authorization")) == 0){
+        status_code_ = 401;
+        return ;
+    }
+
+    // Basic認証でなければ400
+    auth_.set_client_info(map.at(std::string("Authorization")));
+    if (auth_.check_auth_type() != AUTH_BASIC) {
+        status_code_ = 400;
+        return ;
+    }
+
+    // Authorizationヘッダをbase64デコードしたものと/configs/.htpasswdに書かれたユーザーパスを照合する
+    if (!auth_.do_basic()) {
+        status_code_ = 401;
+        return ;
+    }
+}
+
 void HttpRequest::check_redirect_() {
     // ディレクトリ指定で最後のスラッシュがない場合
     if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
             && PathUtil::is_folder_exists(get_path_to_file()) == true) {
         status_code_ = 301;  // Moved Permanently
     }
-
 
     // 仮のコンフィグ TODO(kfukuta)あとでコンフィグに置き換える
     std::map<std::string, std::string> temporary_redirect_url;
@@ -406,7 +440,7 @@ int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
 
 int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
     int content_length
-        = atoi(parser_.get_header_field("Content-Length").c_str());
+        = StringConverter::stoi(parser_.get_header_field("Content-Length"));
 
     // ヘッダ読み込み時にバッファに残っている分を書きだす
     std::string remain_buffer = parser_.get_remain_buffer();

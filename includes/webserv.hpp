@@ -15,13 +15,13 @@ const int BUF_SIZE           = 9001;
 const int CGI_TIMEOUT_SEC    = 5;
 const int MAX_URL_LENGTH     = 8177;
 
-# define TMP_POST_DATA_DIR  "./file/"
-# define TMP_POST_DATA_FILE "./file/upload_file"
+#define BASIC_AUTH   false
+#define ETAG_ENABLED true
 
-// const std::string kBaseHtmlPath = "./public_html";
-// const std::string kIndexHtmlFileName = "index.html";
+#define TMP_POST_DATA_DIR  "./file/"
+#define TMP_POST_DATA_FILE "./file/upload_file"
+
 const std::string kServerSoftwareName = "Webserv/1.0";
-
 
 enum HttpMethod {
     METHOD_NOT_DEFINED = 0,
