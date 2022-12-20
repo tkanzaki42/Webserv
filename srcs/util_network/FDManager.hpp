@@ -11,15 +11,23 @@
 #include "srcs/config/Config.hpp"
 #include <vector>
 
+# define TIMEOUT_CONNECTION 60
+
 class FDManager {
  private:
+    typedef struct S_Connection
+    {
+      int    accepted_fd;
+      time_t last_time;
+    } T_Connection;
+
     // ソケット
     std::vector<Socket>           sockets_;
     std::vector<Socket>::iterator sockets_it_;
 
     // 接続確立済みのファイルディスクリプタ
-    std::vector<int>              connected_fds_;
-    std::vector<int>::iterator    connected_fds_it_;
+    std::vector<T_Connection>              connections_;
+    std::vector<T_Connection>::iterator    connections_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
@@ -35,7 +43,7 @@ class FDManager {
     bool            select_fd_();
     void            search_connected_fds_it_();
 
- public:
+ public:    
     std::map<int, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
