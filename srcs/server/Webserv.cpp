@@ -53,8 +53,12 @@ void Webserv::loop() {
             std::cerr << "send() failed." << std::endl;
         }
 
-        // 送信した接続の時間を更新
-        fd_manager_.update_time();
+        if (request_.get_status_code() == 400) {
+            fd_manager_.disconnect();
+        } else {
+            // 送信した接続の時間を更新
+            fd_manager_.update_time();
+        }
     }
 }
 
