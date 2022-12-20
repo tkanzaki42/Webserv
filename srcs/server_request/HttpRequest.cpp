@@ -35,7 +35,6 @@ int HttpRequest::receive_header() {
     memset(buf, 0, sizeof(buf));
     while (true) {
         read_size = fd_manager_->receive(buf);
-        // std::cout << "read_size: " << read_size << std::endl;
         if (read_size < 0) {
             int recv_errno = errno;
             if (recv_errno == 0 || recv_errno == 9) {
@@ -359,7 +358,7 @@ int HttpRequest::recv_and_join_data_(char **readed_data) {
     int read_size = fd_manager_->receive(buf);
     if (read_size == -1) {
         std::cerr << "recv() failed in "
-            << "receive_chunked_data_()." << std::endl;
+            << "recv_and_join_data_()." << std::endl;
         return -1;
     }
     if (read_size > 0) {
@@ -440,13 +439,13 @@ int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
                 return 500;  // Internal Server Error
             }
         } else if (read_size == 0) {
-            // 読み込めるデータがなくなった
+            // 読み込めるデータがなくなった(EOF)
             break;
         } else if (read_size > 0) {
             buf[read_size] = '\0';
             ofs_outfile.write(buf, read_size);
             total_read_size += read_size;
-            std::cout << "read_size:" << read_size
+            std::cout << "  read_size:" << read_size
                 << ", total:" << total_read_size << std::endl;
         }
     }
