@@ -11,7 +11,7 @@
 #include "srcs/config/Config.hpp"
 #include <vector>
 
-# define TIMEOUT_CONNECTION 60
+# define TIMEOUT_CONNECTION 10
 
 class FDManager {
  private:
@@ -50,7 +50,7 @@ class FDManager {
     std::map<std::string, std::string> host1;
 
     // selectのタイムアウト時間
-    static const time_t SELECT_TIME_SECOND = 5;
+    static const time_t SELECT_TIME_SECOND = 1;
     static const time_t SELECT_TIME_U_SECOND = 0;
 
     FDManager();

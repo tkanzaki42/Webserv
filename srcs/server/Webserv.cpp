@@ -11,10 +11,12 @@ void Webserv::init() {
 
 void Webserv::loop() {
     while (true) {
+        // 一定時間接続がない接続済みコネクションを解放
+        fd_manager_.release();
+
         // ソケットの状態を確認。一定時間何も起こらなかったらコネクションを全て切断する
         if (!fd_manager_.select_active_socket()) {
             // 全ての接続済みコネクションをクローズする
-            fd_manager_.release();
             continue;
         }
 

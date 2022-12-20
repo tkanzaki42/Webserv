@@ -190,29 +190,35 @@ bool FDManager::send(const std::string &str) {
 
 void FDManager::disconnect() {
     // クライアントとの接続を切断する
-    if (connections_.size()) {
-        std::cout << "connected_fds_:" << (*connections_it_).accepted_fd;
-        std::cout << " disconnected." << std::endl;
-        close((*connections_it_).accepted_fd);
-        FD_CLR((*connections_it_).accepted_fd, &sendable_fd_collection_);
-        FD_CLR((*connections_it_).accepted_fd, &received_fd_collection_);
-        connections_.erase(connections_it_);
-        sockets_it_ = sockets_.end();
+    if (!connections_.size()) {
+        return ;
     }
+    std::cout << "connected_fds_:" << (*connections_it_).accepted_fd;
+    std::cout << " disconnected." << std::endl;
+    close((*connections_it_).accepted_fd);
+    FD_CLR((*connections_it_).accepted_fd, &sendable_fd_collection_);
+    FD_CLR((*connections_it_).accepted_fd, &received_fd_collection_);
+    connections_.erase(connections_it_);
+    sockets_it_ = sockets_.end();
 }
 
 void FDManager::release() {
-    for (
-        std::vector<T_Connection>::iterator it = connections_.begin();
-        it < connections_.end();
-        it++)
+    if (!connections_.size()) {
+        return ;
+    }
+    std::vector<T_Connection>::iterator it = connections_.begin();
+    while (it != connections_.end())
     {
-        std::cout << "connected_fds_:" << (*it).accepted_fd;
-        std::cout << " disconnected." << std::endl;
-        close((*it).accepted_fd);
-        FD_CLR((*it).accepted_fd, &sendable_fd_collection_);
-        FD_CLR((*it).accepted_fd, &received_fd_collection_);
-        connections_.erase(it);
+        if (time(NULL) - (*it).last_time > TIMEOUT_CONNECTION) {
+            std::cout << "connected_fds_:" << (*it).accepted_fd;
+            std::cout << " disconnected." << std::endl;
+            close((*it).accepted_fd);
+            FD_CLR((*it).accepted_fd, &sendable_fd_collection_);
+            FD_CLR((*it).accepted_fd, &received_fd_collection_);
+            it = connections_.erase(it);
+            continue;
+        }
+        it++;
     }
     sockets_it_ = sockets_.end();
 }
