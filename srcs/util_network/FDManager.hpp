@@ -27,12 +27,12 @@ class FDManager {
 
     // 接続待ち、受信待ちをするディスクリプタの集合(select用)
     fd_set          received_fd_collection_;
+    fd_set          sendable_fd_collection_;
 
     // タイムアウト時間(select用)
     struct timeval  select_time_;
 
-    void            prepare_select_();
-    bool            select_();
+    bool            select_wr_();
 
  public:
     std::map<int, string_vector_map> config;
@@ -40,8 +40,8 @@ class FDManager {
     std::map<std::string, std::string> host0;
     std::map<std::string, std::string> host1;
 
-    // selectのタイムアウト時間
-    static const time_t SELECT_TIME_SECOND = 5;
+    // selectのタイムアウト時間(nginxはデフォルトで60秒)
+    static const time_t SELECT_TIME_SECOND = 60;
     static const time_t SELECT_TIME_U_SECOND = 0;
 
     FDManager();
@@ -49,8 +49,14 @@ class FDManager {
     FDManager(const FDManager &obj);
     FDManager &operator=(const FDManager &obj);
 
+    // 接続可能なソケットを認識する
+    bool select_active_socket();
+
+    // 
+    bool check_established();
+
     // クライアントからの接続を承認する
-    bool accept();
+    void accept();
 
     // クライアントとの接続を切断する
     void disconnect();
@@ -69,7 +75,6 @@ class FDManager {
 
     // getter
     struct sockaddr_in  get_client_addr();
-
 };
 
 #endif  // SRCS_UTIL_NETWORK_FDMANAGER_HPP_
