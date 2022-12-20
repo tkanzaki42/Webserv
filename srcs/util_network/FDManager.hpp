@@ -41,8 +41,8 @@ class FDManager {
     std::map<std::string, std::string> host0;
     std::map<std::string, std::string> host1;
 
-    // selectのタイムアウト時間(nginxはデフォルトで60秒)
-    static const time_t SELECT_TIME_SECOND = 60;
+    // selectのタイムアウト時間
+    static const time_t SELECT_TIME_SECOND = 5;
     static const time_t SELECT_TIME_U_SECOND = 0;
 
     FDManager();
