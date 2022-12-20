@@ -61,7 +61,7 @@ class FDManager {
     // 接続可能なソケットを認識する
     bool select_active_socket();
 
-    // 
+    // 受信したコネクションが接続済みかどうか
     bool check_established();
 
     // クライアントからの接続を承認する
@@ -70,7 +70,11 @@ class FDManager {
     // クライアントとの接続を切断する
     void disconnect();
 
+    // 使われてないFDを解放
     void release();
+
+    // コネクションの時間を更新
+    void update_time();
 
     // クライアントに文字列を送る
     bool send(const std::string &str);

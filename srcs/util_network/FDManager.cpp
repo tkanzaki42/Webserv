@@ -129,7 +129,7 @@ void FDManager::accept() {
     // 受信待ちのディスクリプタをディスクリプタ集合に設定する
     T_Connection connection;
     connection.accepted_fd = (*sockets_it_).accept();
-    connection.last_time    = time(NULL);
+    connection.last_time   = time(NULL);
     connections_.push_back(connection);
     connections_it_ = connections_.end() - 1;
     FD_SET((*connections_it_).accepted_fd, &received_fd_collection_);
@@ -221,6 +221,10 @@ void FDManager::release() {
         it++;
     }
     sockets_it_ = sockets_.end();
+}
+
+void FDManager::update_time() {
+    (*connections_it_).last_time = time(NULL);
 }
 
 void FDManager::create_socket() {

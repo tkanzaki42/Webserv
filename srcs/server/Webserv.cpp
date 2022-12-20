@@ -52,6 +52,9 @@ void Webserv::loop() {
         if (!fd_manager_.send(response_.get_response())) {
             std::cerr << "send() failed." << std::endl;
         }
+
+        // 送信した接続の時間を更新
+        fd_manager_.update_time();
     }
 }
 
