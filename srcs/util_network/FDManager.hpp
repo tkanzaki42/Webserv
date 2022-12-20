@@ -14,28 +14,26 @@
 class FDManager {
  private:
     // ソケット
-    std::vector<Socket> socketSet_;
+    std::vector<Socket>           sockets_;
+    std::vector<Socket>::iterator sockets_it_;
 
-    // 接続しているソケット
-    int             active_socket_index_;
-
-    // 処理用のファイルディスクリプタ
-    std::vector<int>           accept_fd_;
-
-    std::vector<int>::iterator accept_fd_it_;
+    // 接続確立済みのファイルディスクリプタ
+    std::vector<int>              connected_fds_;
+    std::vector<int>::iterator    connected_fds_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
 
-    // 接続待ち、受信待ちをするディスクリプタの集合(select用)
+    // 読み書き用ディスクリプタの集合(select用)
     fd_set          received_fd_collection_;
     fd_set          sendable_fd_collection_;
 
     // タイムアウト時間(select用)
     struct timeval  select_time_;
-
-    bool            select_wr_();
-    void            search_accept_fd_index_();
+    
+    void            select_prepare_();
+    bool            select_fd_();
+    void            search_connected_fds_index_();
 
  public:
     std::map<int, string_vector_map> config;

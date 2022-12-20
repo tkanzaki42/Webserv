@@ -314,8 +314,8 @@ int HttpRequest::receive_and_store_to_file_() {
         if (read_size == -1) {
             std::cerr << "recv() failed in "
                 << "receive_and_store_to_file_()." << std::endl;
-            // close(accept_fd_);
-            // accept_fd_ = -1;
+            // close(connected_fds_);
+            // connected_fds_ = -1;
             fd_manager_->disconnect();
             return -1;
         }
