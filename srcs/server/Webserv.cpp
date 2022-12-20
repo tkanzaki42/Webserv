@@ -11,19 +11,26 @@ void Webserv::init() {
 
 void Webserv::loop() {
     while (true) {
-        // 接続受付
+        // ソケットの状態を確認。一定時間何も起こらなかったらコネクションを全て切断する
         if (!fd_manager_.select_active_socket()) {
+            // 全ての接続済みコネクションをクローズする
+            fd_manager_.release();
+            continue;
+        }
+
+        // アクセスがあったソケットが接続済みかチェック
+        if (!fd_manager_.check_established()) {
+            // 新たな接続なら接続を確立してからselectに戻る
+            fd_manager_.accept();
             continue;
         }
 
         // \r\n\r\nが来るまでメッセージ受信
         HttpRequest request_(&fd_manager_);
-        if (!fd_manager_.check_established()) {
-            fd_manager_.accept();
-            continue;
-        }
 
+        // 確立した接続から受信する
         if (request_.receive_header() == EXIT_FAILURE) {
+            // クライアントからEOFが来たらその接続を切断
             fd_manager_.disconnect();
             continue;
         }

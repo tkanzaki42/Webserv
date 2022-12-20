@@ -20,7 +20,9 @@ class FDManager {
     int             active_socket_index_;
 
     // 処理用のファイルディスクリプタ
-    int             accept_fd_;
+    std::vector<int>           accept_fd_;
+
+    std::vector<int>::iterator accept_fd_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
@@ -33,6 +35,7 @@ class FDManager {
     struct timeval  select_time_;
 
     bool            select_wr_();
+    void            search_accept_fd_index_();
 
  public:
     std::map<int, string_vector_map> config;
@@ -60,6 +63,8 @@ class FDManager {
 
     // クライアントとの接続を切断する
     void disconnect();
+
+    void release();
 
     // クライアントに文字列を送る
     bool send(const std::string &str);
