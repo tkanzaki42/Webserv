@@ -113,7 +113,7 @@ bool FDManager::check_established() {
     } else {
         std::cout << "socket:" << (*sockets_it_).get_listen_fd();
         std::cout << " has been established to recieve." << std::endl;
-        search_connected_fds_index_();
+        search_connected_fds_it_();
         return true;
     }
 }
@@ -154,7 +154,7 @@ int FDManager::receive(char *buf) {
     return read_size;
 }
 
-void FDManager::search_connected_fds_index_() {
+void FDManager::search_connected_fds_it_() {
     for (
         std::vector<int>::iterator it = connected_fds_.begin();
         it < connected_fds_.end();
