@@ -435,7 +435,7 @@ int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
                 break;
             } else {
                 std::cerr << "recv() failed in "
-                    << "receive_normal_data_()." << std::endl;
+                    << "receive_plain_data_()." << std::endl;
                 return 500;  // Internal Server Error
             }
         } else if (read_size == 0) {
