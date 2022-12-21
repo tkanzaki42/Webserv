@@ -111,16 +111,20 @@ bool FDManager::select_fd_() {
     }
 }
 
-bool FDManager::check_established() {
+enum E_Event FDManager::check_event() {
     if (FD_ISSET((*sockets_it_).get_listen_fd(), &received_fd_collection_)) {
         std::cout << "socket:" << (*sockets_it_).get_listen_fd();
         std::cout << " is connected to accept." << std::endl;
-        return false;
+        return Connect;
+    } else if (FD_ISSET((*sockets_it_).get_listen_fd(), &sendable_fd_collection_)){
+        std::cout << "socket:" << (*sockets_it_).get_listen_fd();
+        std::cout << " is connected to send." << std::endl;
+        return Write;
     } else {
         std::cout << "socket:" << (*sockets_it_).get_listen_fd();
         std::cout << " has been established to recieve." << std::endl;
         search_connected_fds_it_();
-        return true;
+        return Read;
     }
 }
 

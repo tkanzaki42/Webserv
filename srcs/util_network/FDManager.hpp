@@ -9,6 +9,7 @@
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/config/Config.hpp"
+#include "srcs/server/Event.hpp"
 #include <vector>
 
 # define TIMEOUT_CONNECTION 10
@@ -62,7 +63,7 @@ class FDManager {
     bool select_active_socket();
 
     // 受信したコネクションが接続済みかどうか
-    bool check_established();
+    enum E_Event check_event();
 
     // クライアントからの接続を承認する
     void accept();

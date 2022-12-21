@@ -1,4 +1,5 @@
 #include "srcs/server/Webserv.hpp"
+#include "srcs/server/Event.hpp"
 
 Webserv::Webserv() {
 }
@@ -21,10 +22,14 @@ void Webserv::loop() {
         }
 
         // アクセスがあったソケットが接続済みかチェック
-        if (!fd_manager_.check_established()) {
-            // 新たな接続なら接続を確立してからselectに戻る
-            fd_manager_.accept();
-            continue;
+        switch (fd_manager_.check_event())
+        {
+            case Connect:
+                // 新たな接続なら接続を確立してからselectに戻る
+                fd_manager_.accept();
+                continue;
+            default:
+                break;
         }
 
         // \r\n\r\nが来るまでメッセージ受信
