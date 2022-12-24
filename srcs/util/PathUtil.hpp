@@ -21,6 +21,8 @@ class PathUtil {
                                     const char *path);
      static const std::string   get_file_extension(const std::string& path);
      static const std::string   get_full_path(const std::string& relative_path);
+     static const std::string   get_last_modified_datetime_full(
+                                    const std::string& relative_path);
      static const std::string   get_last_modified_date(
                                     const std::string& relative_path);
      static const std::string   get_filesize(const std::string& relative_path);

@@ -11,6 +11,8 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
+#include "srcs/server_request/HttpAuth.hpp"
+#include "srcs/server_request/HttpAuthType.hpp"
 #include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
 
@@ -38,7 +40,7 @@ class HttpRequest {
     const std::map<std::string, std::string>&
                         get_header_field_map() const;
     // getter(HttpRequest)
-    FileType            get_file_type();
+    FileType            get_file_type() const;
     int                 get_status_code() const;
     int                 get_virtual_host_index() const;
     bool                get_is_autoindex() const;
@@ -51,6 +53,7 @@ class HttpRequest {
 
  private:
     FDManager           *fd_manager_;
+    HttpAuth            auth_;
     HttpParser          parser_;
     std::string         received_line_;
     std::string         location_;
@@ -63,6 +66,7 @@ class HttpRequest {
     std::string         upload_dir;
 
     void                check_redirect_();
+    void                check_authorization_();
     int                 receive_and_store_to_file_();
     int                 delete_file_();
     std::string         replacePathToLocation_(std::string &location,

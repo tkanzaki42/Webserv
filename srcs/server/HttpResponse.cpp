@@ -1,4 +1,5 @@
 #include "srcs/server/HttpResponse.hpp"
+#include "srcs/util/StringConverter.hpp"
 
 HttpResponse::HttpResponse(HttpRequest *request)
         : request_(request),
@@ -74,14 +75,45 @@ void HttpResponse::make_message_body_() {
 }
 
 void HttpResponse::make_header_() {
-    int body_length;
+    // HttpHeaderのContent-Lengthをセット
+    std::size_t body_length;
     if (request_->get_file_type() == FILETYPE_SCRIPT
             || request_->get_file_type() == FILETYPE_BINARY) {
         body_length = cgi_->get_content_length();
-    } else {
+    } else if(message_body_.is_compressed()) {
+        body_length = message_body_.get_content_tail() >= message_body_.get_content_length()
+            ? message_body_.get_content_length() - message_body_.get_content_head()
+            : message_body_.get_content_tail() - message_body_.get_content_head() + 1;
+        std::size_t tail = message_body_.get_content_tail() >= body_length + message_body_.get_content_head()
+            ? body_length + message_body_.get_content_head() - 1
+            : message_body_.get_content_tail();
+        header_.set_header("Content-Range: bytes "
+            + StringConverter::itos(message_body_.get_content_head())
+            + "-"
+            + StringConverter::itos(tail)
+            + "/"
+            + StringConverter::itos(message_body_.get_content_length())
+            + "\r\n");
+    }else {
         body_length = message_body_.get_content_length();
     }
     header_.set_body_length(body_length);
+
+    // HttpHeaderのis_keep_alive_をセット
+    header_.set_is_keep_alive(
+        status_code_ == 200
+        || status_code_ == 201
+        || status_code_ == 206
+        || status_code_ == 401
+    );
+
+    // リソースに変更がなければ304
+    if (status_code_ == 200 && ETAG_ENABLED) {
+        if (!check_resource_modified_()) {
+            status_code_ = 304;
+        }
+    }
+
     header_.make_response(status_code_);
 
     // 307 Temporary Redirect / 302 Found
@@ -93,6 +125,46 @@ void HttpResponse::make_header_() {
                 + this->request_->get_redirect_pair().second
                 + "\r\n");
     }
+
+    if (status_code_ == 200 && ETAG_ENABLED) {
+        header_.set_header("Last-Modified: "
+            + PathUtil::get_last_modified_datetime_full(request_->get_path_to_file())
+            + "\r\n");
+        header_.set_header("Etag: "
+            + Hash::convert_to_base16(message_body_.get_hash_value_())
+            + "-" + Hash::convert_to_base16(message_body_.get_content_length())
+            + "\r\n");
+    }
+}
+
+bool HttpResponse::check_resource_modified_() {
+    // リクエストヘッダにブラウザキャッシュ用のものがなかったら200
+    std::map<std::string, std::string> map = request_->get_header_field_map();
+    if (map.count("If-None-Match") == 0
+    || map.count("If-Modified-Since") == 0
+    || !message_body_.has_hash()) {
+        return true;
+    }
+
+    // 最終更新時刻が違ったら200
+    if (PathUtil::get_last_modified_datetime_full(request_->get_path_to_file())
+        != map.at("If-Modified-Since")) {
+        return true;
+    }
+
+    // Etagが同じなら304
+    std::string if_none_match = map.at("If-None-Match");
+    if (if_none_match.substr(0, 2) == "W/") {
+        if_none_match = if_none_match.substr(3, 12);
+    } else {
+        if_none_match = if_none_match.substr(0, 12);
+    }
+    std::string etag = Hash::convert_to_base16(message_body_.get_hash_value_())
+        + "-" + Hash::convert_to_base16(message_body_.get_content_length());
+    if (if_none_match == etag) {
+        return false;
+    }
+    return true;
 }
 
 void HttpResponse::merge_header_and_body_() {
@@ -122,6 +194,9 @@ void HttpResponse::merge_header_and_body_() {
     response_.append("\r\n");
 
     // ボディのマージ
+    // if ( 300 <= status_code_ && status_code_ <= 399) {
+    //     return ;
+    // }
     std::vector<std::string> body_content;
     if (request_->get_file_type() == FILETYPE_SCRIPT
             || request_->get_file_type() == FILETYPE_BINARY) {
@@ -140,4 +215,12 @@ const std::string& HttpResponse::get_response() {
 
 bool HttpResponse::get_is_keep_alive() {
     return header_.get_is_keep_alive();
+}
+
+bool HttpResponse::is_completed() {
+    if (header_.get_is_keep_alive()) {
+        return false;
+    } else {
+        return true;
+    }
 }

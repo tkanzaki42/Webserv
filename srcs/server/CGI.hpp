@@ -1,6 +1,7 @@
 #ifndef SRCS_SERVER_CGI_HPP_
 #define SRCS_SERVER_CGI_HPP_
 
+#include <signal.h>
 #include <unistd.h>
 #include <cstdlib>
 #include <cstring>
