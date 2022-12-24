@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 #include "srcs/server_request/HttpRequest.hpp"
 #include "srcs/server/HttpHeader.hpp"
@@ -51,6 +52,10 @@ class HttpBody {
     bool                           is_compressed() const;
     bool                           has_hash() const;
     void                           clear_contents();
+    std::string                    get_error_page(int status_code);
+    bool                           is_match_error_page(int status_code);
+    int                            read_contents_from_error_file_
+                                                (int status_code);
 };
 
 #endif  // SRCS_SERVER_HTTPBODY_HPP_
