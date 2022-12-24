@@ -28,30 +28,19 @@ std::map<int, string_vector_map>::iterator Config::getDefaultServer() {
     return (_config.find(0));
 }
 
-std::map<int, string_vector_map>::iterator
-     Config::getVirtualServer(const std::string &hostname) {
+int Config::getVirtualHostIndex(const std::string &hostname,
+                                 const std::string &port) {
     std::map<int, string_vector_map>::iterator begin = _config.begin();
     std::map<int, string_vector_map >::iterator end = _config.end();
-    string_vector_map::iterator defaultIter;
-    for (std::map<int, string_vector_map>
-            ::iterator itr = begin; itr != end; itr++) {
-        defaultIter = itr->second.find("server_name");
-        if (!defaultIter->second[0].compare(hostname)) {
-            return (itr);
-        }
-    }
-    return (getDefaultServer());
-}
-
-int Config::getVirtualServerIndex(const std::string &hostname) {
-    std::map<int, string_vector_map>::iterator begin = _config.begin();
-    std::map<int, string_vector_map >::iterator end = _config.end();
-    string_vector_map::iterator defaultIter;
+    string_vector_map::iterator serverName;
+    string_vector_map::iterator listenNum;
     int virtual_host_index = 0;
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
-        defaultIter = itr->second.find("server_name");
-        if (!defaultIter->second[0].compare(hostname)) {
+        serverName = itr->second.find("server_name");
+        listenNum = itr->second.find("listen");
+        if (!serverName->second[0].compare(hostname)
+            && !listenNum->second[0].compare(port)) {
             return (virtual_host_index);
         }
         virtual_host_index++;
@@ -60,8 +49,17 @@ int Config::getVirtualServerIndex(const std::string &hostname) {
     return (0);
 }
 
+// アクセスしたlocationにリダイレクトが設定されているかを返却する
+bool Config::isReturn(int virtualServerIndex, std::string &location) {
+    if (Config::getLocationString(virtualServerIndex,
+                                    location, "return").size()) {
+        return (true);
+    }
+    return (false);
+}
 
 std::map<int, string_vector_map> Config::_config;
+
 void    Config::parseConfig(const std::string &path) {
     bool isDefault = true;
     std::ifstream ifs(path.c_str());
@@ -140,6 +138,129 @@ void    Config::parseConfig(const std::string &path) {
         throw(Config::ConfigFormatException());
 }
 
+// 与えられたlocationとキーからLocationの中の設定を取得する。rootなど単数の場合その設定をStringで返却する。
+std::string Config::getLocationString(int hostkey, const std::string &location, const std::string &key) {
+    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, location);
+    std::map<std::string, std::string>::iterator iter = locationMap.find(key);
+    if (iter == locationMap.end()) {
+        return "";
+    }
+    return (iter->second);
+}
+
+// 与えられたlocationとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（スペースで分割されていた）で返却する。
+std::vector<std::string> Config::getLocationVector(int hostkey, const std::string &location, const std::string &key) {
+    std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, location);
+    std::map<std::string, std::string>::iterator iter = locationMap.find(key);
+    std::vector<std::string> v;
+    if (iter == locationMap.end())
+        return (v);
+    return (split(iter->second, '|'));
+}
+
+// 上二つの関数のためのヘルパー関数
+std::map<std::string, std::string> Config::getLocation(int hostkey, const std::string& location) {
+    std::map<std::string, std::string> locationMap;
+    std::vector<std::string> locationVector = Config::getVectorStr(hostkey, "location " + location);
+    std::vector<std::string>::iterator begin = locationVector.begin();
+    std::vector<std::string>::iterator end = locationVector.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        int sep_position = itr->find('|');
+        std::string key = itr->substr(0, sep_position);
+        std::string value = itr->substr(sep_position + 1, itr->length());
+        locationMap.insert(std::make_pair(key, value));
+    }
+    return locationMap;
+}
+
+std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::string& location) {
+    std::vector<std::string> redirectVector =
+         Config::getLocationVector(hostkey, location, "return");
+    std::pair<int, std::string> redirectPair =
+    std::make_pair(StringConverter::stoi(redirectVector[0]),
+                     redirectVector[1]);
+    return (redirectPair);
+}
+
+// デバッグ用
+void printVector(std::vector<std::string> v) {
+    std::vector<std::string>::iterator begin = v.begin();
+    std::vector<std::string>::iterator end = v.end();
+    std::cout << "### printVector() STRART ####" << std::endl;
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        std::cout << *itr << std::endl;
+    }
+    std::cout << "### printVector() END ####" << std::endl;
+}
+
+// あたえられたURLからlocationを決定して、そのLocationのパスを返す。
+std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector) {
+    int biggesttMathDepth = 0;
+    std::vector<std::string> urlVector = split(url, '/');
+    std::vector<std::string>::iterator begin = locationVector.begin();
+    std::vector<std::string>::iterator end = locationVector.end();
+    std::string longestMatchLocation;
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        // URLとlocationが完全一致したらそのまま返す
+        if (url.compare(*itr) == 0) {
+            return(url);
+        }
+        int matchDepth = 0;
+        std::vector<std::string> locationUrl = split(*itr, '/');
+        std::vector<std::string>::iterator url_begin = urlVector.begin();
+        std::vector<std::string>::iterator locationUrl_begin = locationUrl.begin();
+        std::vector<std::string>::iterator locationUrl_iter = locationUrl_begin;
+        // 要素数の少ない方をループ回数として指定する。
+        int loopMax = urlVector.size() > locationUrl.size() ? locationUrl.size() : urlVector.size();
+        int loopCount = 0;
+        for (std::vector<std::string>::iterator iter = url_begin; loopCount < loopMax; iter++) {
+            loopCount++;
+            if (locationUrl_iter == locationUrl.end()) {
+                // locationUrlの最深部以降は比較しない
+                break;
+            }
+            if (iter->compare(*locationUrl_iter) == 0) {
+                // パスの検索結果が一致した場合
+                matchDepth++;
+            } else {
+                if (!locationUrl_iter->size()) {
+                    locationUrl_iter++;
+                    continue;
+                }
+                // LocationのURLと一致しない階層があったらその時点で不採用
+                matchDepth = 0;
+                break;
+            }
+            locationUrl_iter++;
+        }
+        if (matchDepth > biggesttMathDepth) {
+            biggesttMathDepth = matchDepth;
+            longestMatchLocation = *itr;
+        }
+    }
+    if (!longestMatchLocation.size()
+     && std::find(locationVector.begin(),
+                     locationVector.end(),
+                      "/") != locationVector.end()) {
+        longestMatchLocation = "/";
+    }
+    return (longestMatchLocation);
+}
+
+// getLocation()の引数に渡すlocationベクタの作成
+std::vector<std::string> Config::getAllLocation(int hostkey) {
+    std::vector<std::string> allLocation;
+    string_vector_map host = _config[hostkey];
+    string_vector_map::iterator begin = host.begin();
+    string_vector_map::iterator end = host.end();
+    for (string_vector_map::iterator itr = begin; itr != end; itr++) {
+        if (itr->first.compare(0, 8, "location") == 0) {
+            allLocation.push_back(itr->first.substr(9, itr->first.size()));
+        }
+    }
+    return (allLocation);
+}
+
 std::set<int> Config::getAllListen() {
     std::set<int> allListen;
     std::map<int, string_vector_map>::iterator begin = _config.begin();
@@ -168,16 +289,15 @@ std::vector<std::string> Config::parseValue(const std::string &valueStr) {
     if (valueStr.size() < 3) {
         throw(Config::ConfigFormatException());
     }
-    if (valueStr[0] != '[') {
+    if (valueStr[0] != '{') {
         valueVector.push_back(valueStr);
-    } else if (valueStr.at(valueStr.size() - 1) != ']') {
+    } else if (valueStr.at(valueStr.size() - 1) != '}') {
         throw(Config::ConfigFormatException());
     } else {
         valueVector = split(valueStr.substr(1, valueStr.size() - 2), ',');
     }
     return (valueVector);
 }
-
 
 void    Config::printConfig() {
     std::map<int, string_vector_map>::iterator begin = _config.begin();
@@ -208,6 +328,9 @@ std::string Config::getSingleStr(int hostKey,
 }
 
 int Config::getSingleInt(int hostKey, const std::string& key) {
+    if (_config[hostKey].empty() || _config[hostKey][key].empty()) {
+        return (-1);
+    }
     return (StringConverter::stoi(_config[hostKey][key][0]));
 }
 
@@ -226,6 +349,15 @@ std::vector<int> Config::getVectorInt(int hostKey,
 std::vector<std::string> Config::getVectorStr(int hostKey,
                                               const std::string& key) {
     return (_config[hostKey][key]);
+}
+
+bool Config::getAutoIndex(int virtualHostIndex, const std::string& url) {
+    std::string autoIndexString =
+            getLocationString(virtualHostIndex, url, "autoindex");
+    if (!autoIndexString.compare("on"))
+        return (true);
+    else
+        return (false);
 }
 
 // test for getter

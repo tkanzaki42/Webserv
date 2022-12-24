@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
@@ -44,6 +45,9 @@ class HttpRequest {
     int                 get_virtual_host_index() const;
     bool                get_is_autoindex() const;
     struct sockaddr_in  get_client_addr();
+    //  getter(HttpResponse)
+    const std::pair<int, std::string>
+                        get_redirect_pair() const;
     // setter
     void                set_file_type(FileType file_type);
 
@@ -52,10 +56,14 @@ class HttpRequest {
     HttpAuth            auth_;
     HttpParser          parser_;
     std::string         received_line_;
+    std::string         location_;
     FileType            file_type_;
     int                 status_code_;
     int                 virtual_host_index_;
     bool                is_autoindex_;
+    std::pair<int, std::string>
+                        redirect_pair_;
+    std::string         upload_dir;
 
     void                check_redirect_();
     void                check_authorization_();
@@ -67,6 +75,9 @@ class HttpRequest {
                            char **readed_data, int total_read_size);
     int                 receive_plain_data_(std::ofstream &ofs_outfile);
     int                 delete_file_();
+    std::string         replacePathToLocation_(std::string &location,
+                                              std::string &path, 
+                                              std::string &root);
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
