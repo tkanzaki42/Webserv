@@ -31,39 +31,46 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
 }
 
 int HttpRequest::receive_header() {
-    ssize_t  read_size = 0;
     char     buf[BUF_SIZE];
+    ssize_t  read_size = 0;
+    int      total_read_size = 0;
 
     memset(buf, 0, sizeof(buf));
-    read_size = fd_manager_->receive(buf);
-    // std::cout << "read_size: " << read_size << std::endl;
-    if (read_size < 0) {
-        int recv_errno = errno;
-        if (recv_errno == 0 || recv_errno == 9) {
-            std::cerr << "connection closed by peer."
-                << " recv() errno: " << recv_errno << std::endl;
-        } else {
-            std::cerr << "recv() failed."
-                << " ERROR: " << recv_errno << std::endl;
+    while (true) {
+        read_size = fd_manager_->receive(buf);
+        if (read_size < 0) {
+            int recv_errno = errno;
+            if (recv_errno == 0 || recv_errno == 9) {
+                std::cerr << "connection closed by peer."
+                    << " recv() errno: " << recv_errno << std::endl;
+            } else {
+                std::cerr << "recv() failed."
+                    << " ERROR: " << recv_errno << std::endl;
+            }
+            return EXIT_FAILURE;  // 受信に失敗したので処理中断
         }
-        return EXIT_FAILURE;  // 受信に失敗したので処理中断
+        received_line_.append(buf);
+        total_read_size += read_size;
+
+        // BUF_SIZE以上読んだら抜ける
+        if (total_read_size > BUF_SIZE - 1)
+            break;
+        // 改行の連続が含まれていればヘッダ部分は読み込めたので抜ける
+        if (received_line_.find("\r\n\r\n") != std::string::npos)
+            break;
     }
-    const char *found_empty_line = strstr(buf, "\r\n\r\n");
-    if (!found_empty_line) {
+    // 読み込んだデータに改行の連続がなければヘッダを認識できない
+    if (received_line_.find("\r\n\r\n") == std::string::npos) {
         std::cerr << "Failed to recognize header." << std::endl;
         status_code_ = 400;  // Bad Request
         return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400を返す正常ルート
     }
-    received_line_.append(buf);
-
     return EXIT_SUCCESS;
 }
 
 void HttpRequest::analyze_request() {
     // リクエストのパース
     status_code_ = parser_.parse();
-
-    // TODO(someone) HTTPバージョンの確認
 
     // virtual_host_index_の設定
     this->virtual_host_index_ =
@@ -136,11 +143,7 @@ void HttpRequest::analyze_request() {
     }
     // POSTの場合データを読む、DELETEの場合ファイルを削除する
     if (get_http_method() == METHOD_POST) {
-        if (file_type_ == FILETYPE_STATIC_HTML) {
-            status_code_ = receive_and_store_to_file_();
-        } else {
-            // TODO(someone) QUERY_STRINGをPOSTデータから読む処理を追加
-        }
+        status_code_ = receive_and_store_to_file_();
     } else if (get_http_method() == METHOD_DELETE) {
         status_code_ = delete_file_();
     }
@@ -171,8 +174,15 @@ void HttpRequest::print_debug() {
     std::cout << std::endl;
 
     std::cout << "[request data]" << std::endl;
-    std::cout << "  http_method_      : "
-        << parser_.get_http_method() << std::endl;
+    std::cout << "  http_method_      : " << parser_.get_http_method();
+    if (parser_.get_http_method() == METHOD_NOT_DEFINED)
+        std::cout << " [not defined]" << std::endl;
+    else if (parser_.get_http_method() == METHOD_POST)
+        std::cout << " [POST]" << std::endl;
+    else if (parser_.get_http_method() == METHOD_GET)
+        std::cout << " [GET]" << std::endl;
+    else if (parser_.get_http_method() == METHOD_DELETE)
+        std::cout << " [DELETE]" << std::endl;
     std::cout << "  request_target_   : "
         << parser_.get_request_target() << std::endl;
     std::cout << "  base_html_path    : "
@@ -294,9 +304,10 @@ void HttpRequest::check_redirect_() {
 
 int HttpRequest::receive_and_store_to_file_() {
     // ディレクトリがなければ作成
-    if (PathUtil::is_folder_exists(upload_dir) == false) {
-        if (mkdir(upload_dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            std::cerr << "Could not create dirctory: " << upload_dir << std::endl;
+    if (PathUtil::is_folder_exists(TMP_POST_DATA_DIR) == false) {
+        if (mkdir(TMP_POST_DATA_DIR, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            std::cerr << "Could not create dirctory: "
+                << TMP_POST_DATA_DIR << std::endl;
             return 500;  // Internal Server Error
         }
     }
@@ -309,46 +320,191 @@ int HttpRequest::receive_and_store_to_file_() {
             << get_path_to_file() << std::endl;
         return 500;  // Internal Server Error
     }
+
+    int status_code_ret = 200;
+    if (parser_.get_header_field("Transfer-Encoding").compare("chunked") == 0) {
+        status_code_ret = receive_chunked_data_(ofs_outfile);
+    } else  {
+        // Content-Lengthがあってもなくても通常のデータ受信モード
+        status_code_ret = receive_plain_data_(ofs_outfile);
+    }
+
+    ofs_outfile.close();
+    return status_code_ret;
+}
+
+int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
+    char    buf[BUF_SIZE];
+    enum ReadMode {
+        READMODE_CHUNKSIZE = 0,
+        READMODE_DATA = 1
+    };
+    enum ReadMode read_mode = READMODE_CHUNKSIZE;
+
+    // ヘッダ読み込み時にバッファに残っている分をバッファへ
+    StringConverter::ft_strlcpy(
+            buf, parser_.get_remain_buffer().c_str(), BUF_SIZE);
+    char *readed_data = strdup(buf);
+    int total_read_size = StringConverter::ft_strlen(buf);
+
+    // 受信しながらファイルに書き出し
+    int chunk_size = 0;
+    while (true) {
+        if (read_mode == READMODE_CHUNKSIZE) {
+            // チャンクサイズ読み込み
+            while (!is_found_crlf_(readed_data)) {
+                if (recv_and_join_data_(&readed_data) == -1)
+                    return 400;  // Bad Request
+            }
+            chunk_size = split_chunk_size_(&readed_data, total_read_size);
+            if (chunk_size == -1) {
+                ofs_outfile.close();
+                std::remove(TMP_POST_DATA_FILE);
+                free(readed_data);
+                return 400;  // Bad Request
+            } else if (chunk_size == 0) {
+                // チャンクサイズが0の場合、データの終了を意味する
+                ofs_outfile.close();
+                free(readed_data);
+                break;
+            } else if (total_read_size + chunk_size > REQUEST_ENTITY_MAX) {
+                // デフォルト値1MB以上なら413
+                ofs_outfile.close();
+                std::remove(TMP_POST_DATA_FILE);
+                free(readed_data);
+                return 413;  // Payload Too Large
+            }
+            read_mode = READMODE_DATA;
+        } else if (read_mode == READMODE_DATA) {
+            // チャンクサイズ分のデータを読み込んでファイルに書き出し
+            while (chunk_size > static_cast<int>(strlen(readed_data))) {
+                if (recv_and_join_data_(&readed_data) == -1)
+                    return 400;  // Bad Request
+            }
+            std::cout << "  write data size:" << chunk_size << std::endl;
+            ofs_outfile.write(readed_data, chunk_size);
+            // 書き出した分をバッファから削除
+            // +2は"\r\n"分
+            char* tmp = strdup(readed_data + chunk_size + 2);
+            free(readed_data);
+            readed_data = tmp;
+            // モード変更など
+            read_mode = READMODE_CHUNKSIZE;
+            total_read_size += chunk_size;
+        }
+    }
+
+    return 201;  // Created
+}
+
+bool HttpRequest::is_found_crlf_(char *readed_data) {
+    for (int i = 0; readed_data[i] != '\0'; i++) {
+        if (readed_data[i] == '\r' && readed_data[i + 1] == '\n')
+            return true;
+    }
+    return false;
+}
+
+int HttpRequest::recv_and_join_data_(char **readed_data) {
+    char    buf[BUF_SIZE];
+
+    int read_size = fd_manager_->receive(buf);
+    if (read_size == -1) {
+        std::cerr << "recv() failed in "
+            << "recv_and_join_data_()." << std::endl;
+        return -1;
+    }
+    if (read_size > 0) {
+        buf[read_size] = '\0';
+        char* tmp = StringConverter::ft_strjoin(*readed_data, buf);
+        free(*readed_data);
+        *readed_data = tmp;
+    }
+    return read_size;
+}
+
+int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
+    int chunk_size = 0;
+
+    // チャンクサイズ部分を読み込み
+    int i = 0;
+    while ((*readed_data)[i] != '\r' && (*readed_data)[i] != '\0') {
+        if ('a' <= (*readed_data)[i] && (*readed_data)[i] <= 'f') {
+            chunk_size = chunk_size * 16 + (*readed_data)[i] - 'a' + 10;
+        } else if ('A' <= (*readed_data)[i] && (*readed_data)[i] <= 'F') {
+            chunk_size = chunk_size * 16 + (*readed_data)[i] - 'A' + 10;
+        } else if ('0' <= (*readed_data)[i] && (*readed_data)[i] <= '9') {
+            chunk_size = chunk_size * 16 + (*readed_data)[i] - '0';
+        } else {
+            std::cerr << "Failed to recognize chunk size." << std::endl;
+            return -1;
+        }
+        // チャンクサイズが極端に大きい数値の場合、無限ループにならないよう早めに判定
+        if (total_read_size + chunk_size > REQUEST_ENTITY_MAX) {
+            std::cerr << "Chunk size overflow." << std::endl;
+            return -1;
+        }
+        i++;
+    }
+    std::cout << "  chunk_size:" << chunk_size << std::endl;
+
+    // チャンクサイズ部分をバッファから削除
+    // +2は"\r\n"分
+    char* tmp = strdup(*readed_data + i + 2);
+    free(*readed_data);
+    *readed_data = tmp;
+
+    return chunk_size;
+}
+
+int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
+    int content_length
+        = StringConverter::stoi(parser_.get_header_field("Content-Length"));
+
     // ヘッダ読み込み時にバッファに残っている分を書きだす
     std::string remain_buffer = parser_.get_remain_buffer();
     ofs_outfile.write(remain_buffer.c_str(), remain_buffer.length());
     // 受信しながらファイルに書き出し
     ssize_t total_read_size = remain_buffer.length();
     ssize_t read_size = 0;
-    int     client_max_body_size =
-     Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");
+    // int     client_max_body_size =
+    //  Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");  // TODO:(kfukuta) 使われていない？
     char    buf[BUF_SIZE];
-    do {
-        if (total_read_size > client_max_body_size && client_max_body_size != -1) {
+    while (true) {
+        if (total_read_size > REQUEST_ENTITY_MAX) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
             std::string tmp_file_path = upload_dir + TMP_POST_DATA_FILE;
             std::remove(tmp_file_path.c_str());
             return 413;
-        } else if (total_read_size
-                >= StringConverter::stoi(parser_.get_header_field("Content-Length"))
-            ) {
+        } else if (content_length != 0
+                && total_read_size >= content_length) {
+            // Content-Length分の読み込みが終わった
             break;
         }
         read_size = fd_manager_->receive(buf);
-        if (read_size == -1) {
-            std::cerr << "recv() failed in "
-                << "receive_and_store_to_file_()." << std::endl;
-            // close(connected_fds_);
-            // connected_fds_ = -1;
-            fd_manager_->disconnect();
-            return -1;
-        }
-        if (read_size > 0) {
+        if (read_size < 0) {
+            if (content_length == 0) {
+                // Content-Lengthが指定されていない場合、EOFで通信終了となり
+                // その場合recv()は-1となる
+                break;
+            } else {
+                std::cerr << "recv() failed in "
+                    << "receive_plain_data_()." << std::endl;
+                return 500;  // Internal Server Error
+            }
+        } else if (read_size == 0) {
+            // 読み込めるデータがなくなった(EOF)
+            break;
+        } else if (read_size > 0) {
             buf[read_size] = '\0';
             ofs_outfile.write(buf, read_size);
             total_read_size += read_size;
-            std::cout << "read_size:" << read_size
+            std::cout << "  read_size:" << read_size
                 << ", total:" << total_read_size << std::endl;
         }
-    } while (read_size > 0);
+    }
 
-    ofs_outfile.close();
     return 201;  // Created
 }
 

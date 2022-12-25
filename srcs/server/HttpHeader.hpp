@@ -5,6 +5,8 @@
 #include <vector>
 #include <sstream>
 #include <map>
+#include "includes/webserv.hpp"
+#include "srcs/util/PathUtil.hpp"
 
 class HttpHeader {
  private:
@@ -13,14 +15,14 @@ class HttpHeader {
     int                                 body_length_;
     bool                                is_keep_alive_;
 
-
  public:
     HttpHeader();
     ~HttpHeader();
     HttpHeader(const HttpHeader &obj);
     HttpHeader &operator=(const HttpHeader &obj);
 
-    void                make_response(int status_code);
+    void                make_response(
+                           int status_code, std::string path_to_file);
     std::string         get_status_line();
     const std::map<std::string, std::string>
                         &get_content();

@@ -21,7 +21,10 @@ HttpHeader &HttpHeader::operator=(const HttpHeader &obj) {
     return *this;
 }
 
-void HttpHeader::make_response(int status_code) {
+void HttpHeader::make_response(int status_code, std::string path_to_file) {
+    // is_keep_alive_を設定
+    is_keep_alive_ = true;
+
     // ステータス行を生成 (例:HTTP/1.1 200 OK)
     std::ostringstream oss_status_line;
     oss_status_line << "HTTP/1.1 " << status_code << " "
@@ -29,13 +32,15 @@ void HttpHeader::make_response(int status_code) {
     status_line_ = oss_status_line.str();
 
     // ヘッダ行を生成
+    set_header("Server: " + kServerSoftwareName + "\r\n");
+    set_header("Date: " + PathUtil::get_current_datetime() + "\r\n");
     set_header("Content-Type: text/html; charset=UTF-8\r\n");
-    if ((200 <= status_code && status_code <= 299)
-    || (400 <= status_code && status_code <= 499)) {
-        std::ostringstream oss_content_length;
-        oss_content_length << "Content-Length: " << body_length_ << "\r\n";
-
-        set_header(oss_content_length.str());
+    std::ostringstream oss_content_length;
+    oss_content_length << "Content-Length: " << body_length_ << "\r\n";
+    set_header(oss_content_length.str());
+    if (status_code == 200 || status_code == 201) {
+        set_header("Last-Modified: "
+            + PathUtil::get_last_modified_datetime_full(path_to_file) + "\r\n");
     }
 
     // 認証
@@ -48,7 +53,7 @@ void HttpHeader::make_response(int status_code) {
     // keep-alive
     if (is_keep_alive_) {
         set_header("Connection: keep-alive\r\n");
-        if (status_code != 206){
+        if (status_code != 206) {
             set_header("Accept-Ranges: bytes\r\n");
         }
     } else {
