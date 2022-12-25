@@ -273,8 +273,12 @@ std::vector<std::string> Config::getAllLocation(int hostkey) {
         if (itr->first.compare(0,
              std::string("location").length(),
              "location") == 0) {
-            allLocation.push_back(itr->first.substr
-                    (std::string("location").length() + 1, itr->first.size()));
+            if (std::string("location").length() + 1 > itr->first.size()) {
+                allLocation.push_back("");
+            } else {
+                allLocation.push_back(itr->first.substr
+                (std::string("location").length() + 1, itr->first.size()));
+            }
         }
     }
     return (allLocation);
