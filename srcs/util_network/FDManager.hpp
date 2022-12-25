@@ -12,7 +12,7 @@
 #include "srcs/server/Event.hpp"
 #include <vector>
 
-# define TIMEOUT_CONNECTION 10
+# define TIMEOUT_CONNECTION 60
 
 class FDManager {
  private:

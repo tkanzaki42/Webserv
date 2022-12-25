@@ -46,8 +46,12 @@ bool FDManager::select_active_socket() {
         it != sockets_.end();
         it++)
     {
-        sockets_it_ = it;
-        break ;
+        if (FD_ISSET((*it).get_listen_fd(), &received_fd_collection_)) {
+            sockets_it_ = it;
+            std::cout << "socket: " << (*it).get_listen_fd();
+            std::cout << "[" << (*it).get_port() << "]" << std::endl;
+            break;
+        }
     }
     return true;
 }
