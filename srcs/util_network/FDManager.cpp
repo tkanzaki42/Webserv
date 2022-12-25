@@ -41,19 +41,6 @@ bool FDManager::select_active_socket() {
         // やり直し
         return false;
     }
-    sockets_it_ = sockets_.end();
-    // 接続されたソケットを確定
-    for (std::vector<Socket>::iterator it = sockets_.begin();
-        it != sockets_.end();
-        it++)
-    {
-        if (FD_ISSET((*it).get_listen_fd(), &received_fd_collection_)) {
-            sockets_it_ = it;
-            std::cout << "socket: " << (*it).get_listen_fd();
-            std::cout << "[" << (*it).get_port() << "]" << std::endl;
-            break;
-        }
-    }
     return true;
 }
 
@@ -118,17 +105,18 @@ bool FDManager::select_fd_() {
 
 enum E_Event FDManager::check_event() {
     // ソケット
-    if (sockets_it_ != sockets_.end()) {
-        for (
-            std::vector<Socket>::iterator it = sockets_.begin();
-            it < sockets_.end();
-            it++)
-        {
-            if (FD_ISSET((*sockets_it_).get_listen_fd(), &received_fd_collection_)) {
-                std::cout << "socket:" << (*sockets_it_).get_listen_fd();
-                std::cout << " is connected to accept." << std::endl;
-                return Connect;
-            }
+    sockets_it_ = sockets_.end();
+    for (
+        std::vector<Socket>::iterator it = sockets_.begin();
+        it < sockets_.end();
+        it++)
+    {
+        if (FD_ISSET((*it).get_listen_fd(), &received_fd_collection_)) {
+            // 接続されたソケットを確定
+            sockets_it_ = it;
+            std::cout << "socket:" << (*it).get_listen_fd() << "[" << (*it).get_port() << "]";
+            std::cout << " is connected to accept." << std::endl;
+            return Connect;
         }
     }
 
@@ -222,7 +210,6 @@ void FDManager::disconnect() {
     FD_CLR((*connections_it_).accepted_fd, &sendable_fd_collection_);
     FD_CLR((*connections_it_).accepted_fd, &received_fd_collection_);
     connections_.erase(connections_it_);
-    sockets_it_ = sockets_.end();
 }
 
 void FDManager::release() {
@@ -243,7 +230,6 @@ void FDManager::release() {
         }
         it++;
     }
-    sockets_it_ = sockets_.end();
 }
 
 void FDManager::update_time() {
