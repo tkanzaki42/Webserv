@@ -9,9 +9,74 @@
 <body>
     <h1>Hello world!!</h>
     <p>this is public_html/index.html</p>
+ 
+     <h1>ファイル(画像等)POSTフォーム</a></h1>
     <form method="post" enctype="multipart/form-data">
         <input type="file" name="gazou">
         <button type="submit">送信する</button>
-      </form>
+     </form>
+      
+     <h1>機能確認</a></h1>
+     <ul>
+       <li>
+         <a href="./autoindex/">Autoindexテスト</a>
+       </li>
+       <li>
+         <a href="./redirect_from.html">リダイレクト</a>
+       </li>
+     </ul>
+ 
+     <h1>CGIサンプル</a></h1>
+     正常系
+     <ul>
+       <li>
+         <a href="./cgi-bin/a.out">Cバイナリ実行例</a>
+       </li>
+       <li>
+         <a href="./cgi-bin/hello.py">Pythonスクリプト実行例</a>
+       </li>
+       <li>
+         <a href="./cgi-bin/hello_no_newline_at_end.py">Pythonスクリプト実行例(最終行に改行がない場合)</a>
+       </li>
+       <li>
+         <a href="./cgi-bin/print_postdata.py">環境変数一覧を表示(py)</a>
+       </li>
+       <li>
+         <a href="./cgi-bin/run_3sec.py">実行時間が3秒かかるスクリプト(py)</a>
+       </li>
+     </ul>
+     異常系
+     <ul>
+       <li>
+         <a href="./cgi-bin/run_7sec.py">実行時間が7秒かかるスクリプト(py) ※500 Internal Server Errorになる</a>
+       </li>
+       <li>
+         <a href="./cgi-bin/error_case/500.py">スクリプト記述ミス (500 Internal Server Error)</a>
+       </li>
+     </ul>
+     
+     <h1>CGI：GETメソッドによる送信</h1>
+     <form action="./cgi-bin/print_postdata.py" method="get">
+         <p>
+         name: <input type="text" name="name"><br>
+         <input type="radio" name="lang" value="c"> C言語 <br>
+         <input type="radio" name="lang" value="java"> Java言語 <br>
+         <input type="radio" name="lang" value="others"> その他 <br>
+         <input type="submit" value="送信する"> <input type="reset">
+         </p>
+     </form>
+
+     <h1>CGI：POSTメソッドによる送信</h1>
+
+     <form action="./cgi-bin/print_postdata.py" method="post">
+         <p>
+         name: <input type="text" name="name"><br>
+         <input type="radio" name="lang" value="c"> C言語 <br>
+         <input type="radio" name="lang" value="java"> Java言語 <br>
+         <input type="radio" name="lang" value="others"> その他 <br>
+         <input type="submit" value="送信する"> <input type="reset">
+         </p>
+     </form>
+
 </body>
 </html>

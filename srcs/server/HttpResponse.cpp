@@ -53,9 +53,10 @@ void HttpResponse::make_message_body_() {
     }
 
     // CGIの場合実行結果を取得する
-    if (status_code_ == 200 &&
+    if ((status_code_ == 200 || status_code_ == 201) &&
             (request_->get_file_type() == FILETYPE_SCRIPT
             || request_->get_file_type() == FILETYPE_BINARY)) {
+        status_code_ = 200;  // status_code_が201の場合、200に戻す
         cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(request_->get_file_type());
         if (cgi_ret == EXIT_FAILURE) {
@@ -94,7 +95,7 @@ void HttpResponse::make_header_() {
             + "/"
             + StringConverter::itos(message_body_.get_content_length())
             + "\r\n");
-    }else {
+    } else {
         body_length = message_body_.get_content_length();
     }
     header_.set_body_length(body_length);
@@ -114,7 +115,7 @@ void HttpResponse::make_header_() {
         }
     }
 
-    header_.make_response(status_code_);
+    header_.make_response(status_code_, request_->get_path_to_file());
 
     // 307 Temporary Redirect / 302 Found
     // 308 Permanent Redirect / 301 Moved Permanently
