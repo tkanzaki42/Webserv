@@ -270,8 +270,11 @@ std::vector<std::string> Config::getAllLocation(int hostkey) {
     string_vector_map::iterator begin = host.begin();
     string_vector_map::iterator end = host.end();
     for (string_vector_map::iterator itr = begin; itr != end; itr++) {
-        if (itr->first.compare(0, 8, "location") == 0) {
-            allLocation.push_back(itr->first.substr(9, itr->first.size()));
+        if (itr->first.compare(0,
+             std::string("location").length(),
+             "location") == 0) {
+            allLocation.push_back(itr->first.substr
+                    (std::string("location").length() + 1, itr->first.size()));
         }
     }
     return (allLocation);
