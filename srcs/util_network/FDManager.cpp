@@ -139,8 +139,8 @@ enum E_Event FDManager::check_event() {
         it++)
     {
         if (FD_ISSET((*it).accepted_fd, &received_fd_collection_)) {
-            std::cout << "socket:" << (*it).accepted_fd;
-            std::cout << " is connected to accept." << std::endl;
+            std::cout << "fd:" << (*it).accepted_fd;
+            std::cout << " has been established to recieve." << std::endl;
             return Read;
         }
     }
