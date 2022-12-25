@@ -36,6 +36,7 @@ class HttpRequest {
     const std::string&  get_path_info() const;
     const std::string&  get_path_to_file() const;
     const std::string&  get_http_ver() const;
+    const std::string&  get_location() const;
     const std::string&  get_header_field(const std::string& key);
     const std::map<std::string, std::string>&
                         get_header_field_map() const;

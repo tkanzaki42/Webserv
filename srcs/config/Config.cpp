@@ -1,5 +1,7 @@
 #include "Config.hpp"
 
+void printVector(std::vector<std::string> v);
+
 Config::Config() {
 }
 
@@ -148,7 +150,7 @@ std::string Config::getLocationString(int hostkey, const std::string &location, 
     return (iter->second);
 }
 
-// 与えられたlocationとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（スペースで分割されていた）で返却する。
+// 与えられたlocationとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（|で分割されていた）で返却する。
 std::vector<std::string> Config::getLocationVector(int hostkey, const std::string &location, const std::string &key) {
     std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, location);
     std::map<std::string, std::string>::iterator iter = locationMap.find(key);
@@ -182,17 +184,16 @@ std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::stri
     return (redirectPair);
 }
 
-std::map<int, std::string> Config::getErrorPage(int hostkey) {
+std::map<int, std::string> Config::getErrorPage(int hostkey, const std::string &location) {
     std::map<int, std::string> errorPageMap;
     std::vector<std::string> erroPageVector =
-        Config::getVectorStr(hostkey, "error_page");
+        Config::getLocationVector(hostkey, location, "error_page");
+    // printVector(erroPageVector);
     std::vector<std::string>::iterator begin = erroPageVector.begin();
     std::vector<std::string>::iterator end = erroPageVector.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
-        int sep_position = itr->find('|');
-        std::string key = itr->substr(0, sep_position);
-        std::string value = itr->substr(sep_position + 1, itr->length());
-        errorPageMap.insert(std::make_pair(StringConverter::stoi(key), value));
+        std::string value = *(itr++);
+        errorPageMap.insert(std::make_pair(StringConverter::stoi(value), (*itr)));
     }
     return (errorPageMap);
 }

@@ -222,6 +222,10 @@ const std::string& HttpRequest::get_header_field(const std::string& key) {
     return parser_.get_header_field(key);
 }
 
+const std::string& HttpRequest::get_location() const {
+    return (this->location_);
+}
+
 const std::map<std::string, std::string>&
         HttpRequest::get_header_field_map() const {
     return parser_.get_header_field_map();
