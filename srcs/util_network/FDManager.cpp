@@ -41,6 +41,7 @@ bool FDManager::select_active_socket() {
         // やり直し
         return false;
     }
+    sockets_it_ = sockets_.end();
     // 接続されたソケットを確定
     for (std::vector<Socket>::iterator it = sockets_.begin();
         it != sockets_.end();
@@ -116,20 +117,34 @@ bool FDManager::select_fd_() {
 }
 
 enum E_Event FDManager::check_event() {
-    if (FD_ISSET((*sockets_it_).get_listen_fd(), &received_fd_collection_)) {
-        std::cout << "socket:" << (*sockets_it_).get_listen_fd();
-        std::cout << " is connected to accept." << std::endl;
-        return Connect;
-    } else if (FD_ISSET((*sockets_it_).get_listen_fd(), &sendable_fd_collection_)){
-        std::cout << "socket:" << (*sockets_it_).get_listen_fd();
-        std::cout << " is connected to send." << std::endl;
-        return Write;
-    } else {
-        std::cout << "socket:" << (*sockets_it_).get_listen_fd();
-        std::cout << " has been established to recieve." << std::endl;
-        search_connected_fds_it_();
-        return Read;
+    // ソケット
+    if (sockets_it_ != sockets_.end()) {
+        for (
+            std::vector<Socket>::iterator it = sockets_.begin();
+            it < sockets_.end();
+            it++)
+        {
+            if (FD_ISSET((*sockets_it_).get_listen_fd(), &received_fd_collection_)) {
+                std::cout << "socket:" << (*sockets_it_).get_listen_fd();
+                std::cout << " is connected to accept." << std::endl;
+                return Connect;
+            }
+        }
     }
+
+    // 受け入れ済みのFD
+    for (
+        std::vector<T_Connection>::iterator it = connections_.begin();
+        it < connections_.end();
+        it++)
+    {
+        if (FD_ISSET((*it).accepted_fd, &received_fd_collection_)) {
+            std::cout << "socket:" << (*it).accepted_fd;
+            std::cout << " is connected to accept." << std::endl;
+            return Read;
+        }
+    }
+    return Write;
 }
 
 void FDManager::accept() {
