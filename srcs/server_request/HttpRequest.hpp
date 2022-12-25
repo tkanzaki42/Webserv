@@ -16,7 +16,7 @@
 #include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
 
-# define TMP_POST_DATA_FILE "upload_file"
+# define REQUEST_ENTITY_MAX 1000000
 
 class HttpRequest {
  public:
@@ -69,6 +69,12 @@ class HttpRequest {
     void                check_redirect_();
     void                check_authorization_();
     int                 receive_and_store_to_file_();
+    int                 receive_chunked_data_(std::ofstream &ofs_outfile);
+    bool                is_found_crlf_(char *readed_data);
+    int                 recv_and_join_data_(char **readed_data);
+    int                 split_chunk_size_(
+                           char **readed_data, int total_read_size);
+    int                 receive_plain_data_(std::ofstream &ofs_outfile);
     int                 delete_file_();
     std::string         replacePathToLocation_(std::string &location,
                                               std::string &path, 

@@ -1,7 +1,6 @@
 #ifndef SRCS_SERVER_CGI_HPP_
 #define SRCS_SERVER_CGI_HPP_
 
-#include <signal.h>
 #include <unistd.h>
 #include <cstdlib>
 #include <cstring>
@@ -9,6 +8,8 @@
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <signal.h>
 
 #include <iostream>
