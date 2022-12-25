@@ -34,11 +34,11 @@ std::string HttpBody::get_error_page(int status_code) {
         Config::getErrorPage(request_.get_virtual_host_index(), request_.get_location());
     std::map<int, std::string>::iterator it =
         errorPageMap.find(status_code);
-    std::map<int, std::string>::iterator begin = errorPageMap.begin();
-    std::map<int, std::string>::iterator end = errorPageMap.end();
-    for (std::map<int, std::string>::iterator iter = begin; iter != end; iter++) {
-        std::cout << iter->second << std::endl;
-    }
+    // std::map<int, std::string>::iterator begin = errorPageMap.begin();
+    // std::map<int, std::string>::iterator end = errorPageMap.end();
+    // for (std::map<int, std::string>::iterator iter = begin; iter != end; iter++) {
+    //     std::cout << iter->second << std::endl;
+    // }
     if (it != errorPageMap.end()) {
         return (it->second);
     }
@@ -49,7 +49,6 @@ int HttpBody::read_contents_from_error_file_(int status_code) {
     // ファイルのオープン
     std::ifstream ifs_readfile;
     std::string error_page_path = get_error_page(status_code);
-    std::cout << "ERROR_PAGE_PATH" << error_page_path << std::endl;
     ifs_readfile.open(error_page_path);
 
     // エラーチェック
