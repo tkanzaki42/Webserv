@@ -15,8 +15,8 @@ void Webserv::loop() {
         // 一定時間接続がない接続済みコネクションを解放
         fd_manager_.release();
 
-        // ソケットの状態を確認。一定時間何も起こらなかったらコネクションを全て切断する
-        if (!fd_manager_.select_active_socket()) {
+        // ファイルディスクリプタ(ソケットも含め)の状態を確認。一定時間何も起こらなかったらコネクションを全て切断する
+        if (!fd_manager_.select_fd_collection()) {
             // 全ての接続済みコネクションをクローズする
             continue;
         }

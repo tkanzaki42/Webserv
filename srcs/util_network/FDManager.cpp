@@ -34,7 +34,7 @@ FDManager &FDManager::operator=(const FDManager &obj) {
     return *this;
 }
 
-bool FDManager::select_active_socket() {
+bool FDManager::select_fd_collection() {
     select_prepare_();
     // 接続＆受信を待ち受ける
     if (!select_fd_()) {
@@ -145,10 +145,6 @@ void FDManager::accept() {
     connection.set_accepted_fd((*sockets_it_).accept());
     connection.set_last_time(time(NULL));
     connections_.push_back(connection);
-    FD_SET(connection.get_accepted_fd(), &received_fd_collection_);
-    if (connection.get_accepted_fd() > max_fd_) {
-        max_fd_ = connection.get_accepted_fd();
-    }
     std::cout << "connected_fds_:" << connection.get_accepted_fd();
     std::cout << " accept connection from socket:" << (*sockets_it_).get_listen_fd();
     std::cout << "." << std::endl;
@@ -167,10 +163,10 @@ int FDManager::receive(char *buf) {
         return -1;
     }
     // 受信成功の場合
-    FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
-    if ((*connections_it_).get_accepted_fd() > max_fd_) {
-        max_fd_ = (*connections_it_).get_accepted_fd();
-    }
+    // FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
+    // if ((*connections_it_).get_accepted_fd() > max_fd_) {
+    //     max_fd_ = (*connections_it_).get_accepted_fd();
+    // }
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " received." << std::endl;
     return read_size;

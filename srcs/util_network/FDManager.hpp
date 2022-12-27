@@ -54,7 +54,7 @@ class FDManager {
     FDManager &operator=(const FDManager &obj);
 
     // 接続可能なソケットを認識する
-    bool select_active_socket();
+    bool select_fd_collection();
 
     // 受信したコネクションが接続済みかどうか
     enum E_Event check_event();
