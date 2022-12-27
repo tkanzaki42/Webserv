@@ -62,6 +62,7 @@ class HttpRequest {
     int                 status_code_;
     int                 virtual_host_index_;
     bool                is_autoindex_;
+    int                 client_max_body_size;
     std::pair<int, std::string>
                         redirect_pair_;
     std::string         upload_dir;

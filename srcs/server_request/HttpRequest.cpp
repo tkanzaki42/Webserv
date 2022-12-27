@@ -8,7 +8,8 @@ HttpRequest::HttpRequest(FDManager *fd_manager)
           file_type_(FILETYPE_NOT_DEFINED),
           status_code_(200),
           virtual_host_index_(-1),
-          is_autoindex_(false) {
+          is_autoindex_(false),
+          client_max_body_size(-1) {
 }
 
 HttpRequest::~HttpRequest() {
@@ -76,6 +77,9 @@ void HttpRequest::analyze_request() {
     this->virtual_host_index_ =
          Config::getVirtualHostIndex(parser_.get_host_name(),
                  StringConverter::itos(5050));
+    // client_max_body_sizeの決定
+    this->client_max_body_size =
+     Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");
     // Locationの決定
     std::string path = get_request_target();
     std::vector<std::string> v =
@@ -147,7 +151,6 @@ void HttpRequest::analyze_request() {
     } else if (get_http_method() == METHOD_DELETE) {
         status_code_ = delete_file_();
     }
-
 }
 
 std::string HttpRequest::replacePathToLocation_(std::string &location,
@@ -371,7 +374,7 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
                 ofs_outfile.close();
                 free(readed_data);
                 break;
-            } else if (total_read_size + chunk_size > REQUEST_ENTITY_MAX) {
+            } else if (total_read_size + chunk_size > client_max_body_size) {
                 // デフォルト値1MB以上なら413
                 ofs_outfile.close();
                 std::remove(TMP_POST_DATA_FILE);
@@ -444,7 +447,7 @@ int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
             return -1;
         }
         // チャンクサイズが極端に大きい数値の場合、無限ループにならないよう早めに判定
-        if (total_read_size + chunk_size > REQUEST_ENTITY_MAX) {
+        if (total_read_size + chunk_size > this->client_max_body_size) {
             std::cerr << "Chunk size overflow." << std::endl;
             return -1;
         }
@@ -471,11 +474,12 @@ int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
     // 受信しながらファイルに書き出し
     ssize_t total_read_size = remain_buffer.length();
     ssize_t read_size = 0;
-    // int     client_max_body_size =
-    //  Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");  // TODO:(kfukuta) 使われていない？
+    this->client_max_body_size =
+     Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");
     char    buf[BUF_SIZE];
+    // this->client_max_body_size = Config::getSingleInt(get_virtual_host_index(), "client_max_body_size");
     while (true) {
-        if (total_read_size > REQUEST_ENTITY_MAX) {
+        if (total_read_size > this->client_max_body_size) {
             // デフォルト値1MB以上なら413
             ofs_outfile.close();
             std::string tmp_file_path = upload_dir + TMP_POST_DATA_FILE;
