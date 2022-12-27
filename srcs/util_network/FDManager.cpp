@@ -1,7 +1,6 @@
 // Copyright 2022 tkanzaki
 #include "srcs/util_network/FDManager.hpp"
-#include "srcs/server/Webserv.hpp"
-#include "srcs/util/StringConverter.hpp"
+
 FDManager::FDManager() {
     std::set<int> set = Config::getAllListen();
     std::set<int>::iterator begin= set.begin();

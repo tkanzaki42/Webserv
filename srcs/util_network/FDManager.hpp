@@ -5,13 +5,13 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/util_network/Connection.hpp"
 #include "srcs/config/Config.hpp"
 #include "srcs/server/Event.hpp"
-#include <vector>
 
 # define TIMEOUT_CONNECTION 60
 

@@ -15,6 +15,7 @@
 #include "srcs/server_request/HttpAuthType.hpp"
 #include "srcs/util/PathUtil.hpp"
 #include "srcs/util_network/FDManager.hpp"
+#include "srcs/util/StringConverter.hpp"
 
 # define REQUEST_ENTITY_MAX 1000000
 

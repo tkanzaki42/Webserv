@@ -3,12 +3,11 @@
 
 #include <iostream>
 
-class Connection
-{
-private:
+class Connection {
+ private:
     int    accepted_fd_;
     time_t last_time_;
-public:
+ public:
     Connection();
     Connection(const Connection &obj);
     Connection &operator=(const Connection &obj);

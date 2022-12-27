@@ -1,5 +1,4 @@
 #include "srcs/server/Webserv.hpp"
-#include "srcs/server/Event.hpp"
 
 Webserv::Webserv() {
 }

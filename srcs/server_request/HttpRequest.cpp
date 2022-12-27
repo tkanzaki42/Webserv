@@ -1,5 +1,4 @@
 #include "srcs/server_request/HttpRequest.hpp"
-#include "srcs/util/StringConverter.hpp"
 
 HttpRequest::HttpRequest(FDManager *fd_manager)
         : fd_manager_(fd_manager),
