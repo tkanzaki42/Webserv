@@ -20,9 +20,6 @@ class Webserv {
 
  private:
     FDManager fd_manager_;
-
-    void read_();
-    void write_();
 };
 
 #endif  // SRCS_SERVER_WEBSERV_HPP_
