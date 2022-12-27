@@ -8,6 +8,7 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
+#include "srcs/util_network/Connection.hpp"
 #include "srcs/config/Config.hpp"
 #include "srcs/server/Event.hpp"
 #include <vector>
@@ -16,19 +17,13 @@
 
 class FDManager {
  private:
-    typedef struct S_Connection
-    {
-      int    accepted_fd;
-      time_t last_time;
-    } T_Connection;
-
     // ソケット
     std::vector<Socket>           sockets_;
     std::vector<Socket>::iterator sockets_it_;
 
     // 接続確立済みのファイルディスクリプタ
-    std::vector<T_Connection>              connections_;
-    std::vector<T_Connection>::iterator    connections_it_;
+    std::vector<Connection>              connections_;
+    std::vector<Connection>::iterator    connections_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
