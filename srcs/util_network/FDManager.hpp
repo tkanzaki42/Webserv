@@ -8,27 +8,22 @@
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
+#include "srcs/util_network/Connection.hpp"
 #include "srcs/config/Config.hpp"
 #include "srcs/server/Event.hpp"
 #include <vector>
 
-# define TIMEOUT_CONNECTION 10
+# define TIMEOUT_CONNECTION 60
 
 class FDManager {
  private:
-    typedef struct S_Connection
-    {
-      int    accepted_fd;
-      time_t last_time;
-    } T_Connection;
-
     // ソケット
     std::vector<Socket>           sockets_;
     std::vector<Socket>::iterator sockets_it_;
 
     // 接続確立済みのファイルディスクリプタ
-    std::vector<T_Connection>              connections_;
-    std::vector<T_Connection>::iterator    connections_it_;
+    std::vector<Connection>              connections_;
+    std::vector<Connection>::iterator    connections_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
@@ -42,7 +37,6 @@ class FDManager {
     
     void            select_prepare_();
     bool            select_fd_();
-    void            search_connected_fds_it_();
 
  public:    
     std::map<int, string_vector_map> config;
@@ -60,7 +54,7 @@ class FDManager {
     FDManager &operator=(const FDManager &obj);
 
     // 接続可能なソケットを認識する
-    bool select_active_socket();
+    bool select_fd_collection();
 
     // 受信したコネクションが接続済みかどうか
     enum E_Event check_event();
