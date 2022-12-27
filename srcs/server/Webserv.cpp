@@ -70,3 +70,11 @@ void Webserv::loop() {
 void Webserv::finalize() {
     fd_manager_.destory_socket();
 }
+
+void Webserv::read_() {
+    fd_manager_.destory_socket();
+}
+
+void Webserv::write_() {
+    fd_manager_.destory_socket();
+}

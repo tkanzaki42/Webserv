@@ -145,12 +145,11 @@ void FDManager::accept() {
     connection.set_accepted_fd((*sockets_it_).accept());
     connection.set_last_time(time(NULL));
     connections_.push_back(connection);
-    connections_it_ = connections_.end() - 1;
-    FD_SET((*connections_it_).get_accepted_fd(), &received_fd_collection_);
-    if ((*connections_it_).get_accepted_fd() > max_fd_) {
-        max_fd_ = (*connections_it_).get_accepted_fd();
+    FD_SET(connection.get_accepted_fd(), &received_fd_collection_);
+    if (connection.get_accepted_fd() > max_fd_) {
+        max_fd_ = connection.get_accepted_fd();
     }
-    std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
+    std::cout << "connected_fds_:" << connection.get_accepted_fd();
     std::cout << " accept connection from socket:" << (*sockets_it_).get_listen_fd();
     std::cout << "." << std::endl;
 }
@@ -177,20 +176,6 @@ int FDManager::receive(char *buf) {
     return read_size;
 }
 
-void FDManager::search_connected_fds_it_() {
-    for (
-        std::vector<Connection>::iterator it = connections_.begin();
-        it < connections_.end();
-        it++)
-    {
-        if (FD_ISSET((*it).get_accepted_fd(), &received_fd_collection_)) {
-            connections_it_ = it;
-            return ;
-        }
-    }
-    connections_it_ = connections_.end();
-}
-
 bool FDManager::send(const std::string &str) {
     if (::send((*connections_it_).get_accepted_fd(), str.c_str(),
         str.length(), 0) == -1) {
@@ -207,16 +192,6 @@ void FDManager::disconnect() {
     if (!connections_.size()) {
         std::cout << "Empty Connections." << std::endl;
     }
-    // std::cout << "fd:";
-    // for (
-    //     std::vector<Connection>::iterator it = connections_.begin();
-    //     it < connections_.end();
-    //     it++)
-    // {
-    //     std::cout << (*it).get_accepted_fd();
-    //     std::cout << " ";
-    // }
-    // std::cout << std::endl;
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " disconnected." << std::endl;
     close((*connections_it_).get_accepted_fd());

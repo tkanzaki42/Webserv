@@ -37,7 +37,6 @@ class FDManager {
     
     void            select_prepare_();
     bool            select_fd_();
-    void            search_connected_fds_it_();
 
  public:    
     std::map<int, string_vector_map> config;
