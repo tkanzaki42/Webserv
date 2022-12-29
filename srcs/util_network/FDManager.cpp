@@ -172,13 +172,16 @@ int FDManager::receive() {
     int write_ret
         = write((*connections_it_).get_write_pipe(), buf, sizeof(buf));
     if (write_ret <= 0) {
-        std::cerr << "Failed to write to pipe in FDManager::receive()."
+        std::cerr << "Failed to write to pipe in FDManager::receive(), "
+            << "write_ret = " << write_ret << ", errno = " << errno
             << std::endl;
         return EXIT_FAILURE;
     }
 
     // パイプから読み込んで解析
-    (*connections_it_).receive_from_pipe();
+    if (!(*connections_it_).receive_from_pipe()) {
+        disconnect();
+    }
 
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " received." << std::endl;

@@ -64,12 +64,13 @@ int Connection::get_status_code() {
     return request_.get_status_code();
 }
 
-void   Connection::receive_from_pipe() {
+// 戻り値 true : 問題なく読み込み完了、継続読み込み可
+//       false : エラー発生、読み込み終了などで継続読み込み不可
+bool Connection::receive_from_pipe() {
     request_.set_readpipe(pp_recv_[0]);
     if (request_.receive_header() == EXIT_FAILURE) {
         // クライアントからEOFが来たらその接続を切断
-        // fd_manager_.disconnect();
-        // continue;
+        return false;
     }
 
     // リクエストデータを解析
@@ -81,6 +82,7 @@ void   Connection::receive_from_pipe() {
     response_.make_response();
     std::cout << response_.get_response() << std::endl;
     std::cout << "---------------------------------------" << std::endl;
+    return true;
 }
 
 void   Connection::send_to_pipe() {

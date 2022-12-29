@@ -30,7 +30,7 @@ class Connection {
     int    get_read_pipe();
     int    get_status_code();
 
-    void   receive_from_pipe();
+    bool   receive_from_pipe();
     void   send_to_pipe();
 };
 
