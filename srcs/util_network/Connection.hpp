@@ -13,7 +13,7 @@ class Connection {
     int    pp_recv_[2];
     int    pp_send_[2];
     HttpRequest  request_;
-    HttpResponse *response_;
+    HttpResponse response_;
 
  public:
     Connection();

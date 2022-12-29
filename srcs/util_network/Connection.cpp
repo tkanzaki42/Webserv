@@ -1,7 +1,7 @@
 #include "Connection.hpp"
 
 Connection::Connection():
-accepted_fd_(-1), last_time_(0), response_(NULL) {
+accepted_fd_(-1), last_time_(0), response_(&request_) {
     if (pipe(pp_recv_) == -1) {
         std::cerr << "Failed to pipe() in Connection()" << std::endl;
     }
@@ -15,7 +15,7 @@ accepted_fd_(-1), last_time_(0), response_(NULL) {
     std::cout << "  pp_send_[1] = " << pp_send_[1] << std::endl;
 }
 
-Connection::Connection(const Connection &obj) {
+Connection::Connection(const Connection &obj) : response_(&request_) {
     *this = obj;
 }
 
@@ -29,11 +29,7 @@ Connection &Connection::operator=(const Connection &obj) {
     return *this;
 }
 
-Connection::~Connection(){
-    if (response_) {
-        delete response_;
-        response_ = NULL;
-    }
+Connection::~Connection() {
 }
 
 int    Connection::get_accepted_fd() const {
@@ -78,15 +74,14 @@ void   Connection::receive_from_pipe() {
 
     request_.print_debug();
 
-    response_ = new HttpResponse(&request_);
-    response_->make_response();
-    std::cout << response_->get_response() << std::endl;
+    response_.make_response();
+    std::cout << response_.get_response() << std::endl;
     std::cout << "---------------------------------------" << std::endl;
 }
 
 void   Connection::send_to_pipe() {
     // パイプに書き込み
-    const std::string& send_data = response_->get_response();
+    const std::string& send_data = response_.get_response();
     int write_ret
         = write(pp_send_[1], send_data.c_str(), sizeof(send_data.c_str()));
     if (write_ret <= 0) {
