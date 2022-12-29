@@ -85,18 +85,6 @@ bool Connection::receive_from_pipe() {
     return true;
 }
 
-void   Connection::send_to_pipe() {
-    // パイプに書き込み
-    const std::string& send_data = response_.get_response();
-    int write_ret
-        = write(pp_send_[1], send_data.c_str(), sizeof(send_data.c_str()));
-    if (write_ret <= 0) {
-        std::cerr << "Failed to write to pipe in Connection::send_to_pipe()."
-            << std::endl;
-        return;
-    }
-}
-
 const std::string& Connection::get_response() {
     return response_.get_response();
 }

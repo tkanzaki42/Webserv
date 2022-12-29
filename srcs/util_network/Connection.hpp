@@ -29,9 +29,9 @@ class Connection {
     int    get_write_pipe();
     int    get_read_pipe();
     int    get_status_code();
-    const std::string&  get_response();
     bool   receive_from_pipe();
-    void   send_to_pipe();
+    const std::string&
+           get_response();
 };
 
 #endif  // SRCS_UTIL_NETWORK_CONNECTION_HPP_

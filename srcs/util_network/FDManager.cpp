@@ -3,8 +3,8 @@
 
 FDManager::FDManager() {
     std::set<int> set = Config::getAllListen();
-    std::set<int>::iterator begin= set.begin();
-    std::set<int>::iterator end= set.end();
+    std::set<int>::iterator begin = set.begin();
+    std::set<int>::iterator end = set.end();
     for (std::set<int>::iterator iter = begin; iter != end; ++iter) {
         std::cout << *iter << std::endl;
         int port = *iter;
@@ -209,20 +209,9 @@ int FDManager::receive() {
 }
 
 bool FDManager::send() {
-    // 書き込みデータをパイプに書き込み
-    // (*connections_it_).send_to_pipe();
-
-    // // パイプから読み込み
-    // char     buf[BUF_SIZE];
-    // int read_ret = read((*connections_it_).get_read_pipe(), buf, sizeof(buf));
-    // if (read_ret <= 0) {
-    //     std::cerr << "Failed to read from pipe in FDManager::send()."
-    //         << std::endl;
-    //     return false;
-    // }
-
     // データをクライアントに送信
-    if (::send((*connections_it_).get_accepted_fd(), (*connections_it_).get_response().c_str(),
+    if (::send((*connections_it_).get_accepted_fd(),
+        (*connections_it_).get_response().c_str(),
         (*connections_it_).get_response().length(), 0) == -1) {
         std::cout << "FDManager::send failed." << std::endl;
         return false;

@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
