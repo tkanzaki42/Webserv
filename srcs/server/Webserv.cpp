@@ -29,10 +29,12 @@ void Webserv::loop() {
                 continue;
             case Read:
                 std::cout << "  <Readable>" << std::endl;
-                fd_manager_.receive();
+                if (fd_manager_.receive() == -1) {
+                    fd_manager_.disconnect();
+                }
                 continue;
             case Write:
-                std::cout << "  <Writtable>" << std::endl;
+                std::cout << "  <Writable>" << std::endl;
                 fd_manager_.send();
                 if (fd_manager_.is_disconnect()) {
                     fd_manager_.disconnect();

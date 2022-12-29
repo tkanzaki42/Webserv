@@ -173,14 +173,15 @@ int FDManager::receive() {
         sizeof(char) * BUF_SIZE - 1,
         0);
     if (read_size < 0) {
-        // 切断された場合、クローズする
-        return -1;
+        // 切断された場合
+        return -2;
     } else if (read_size == 0 && errno == 0) {
-        // 正常終了
-        disconnect();
+        // 正常終了の場合
         return -1;
     }
-    
+    std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
+    std::cout << " received." << std::endl;
+
     // 受信したデータをパイプに書き込み
     int write_ret
         = write((*connections_it_).get_write_pipe(), buf, sizeof(buf));
@@ -188,17 +189,15 @@ int FDManager::receive() {
         std::cerr << "Failed to write to pipe in FDManager::receive(), "
             << "write_ret = " << write_ret << ", errno = " << errno
             << std::endl;
-        return EXIT_FAILURE;
+        return -1;
     }
 
     // パイプから読み込んで解析
     if (!(*connections_it_).receive_from_pipe()) {
-        disconnect();
+        return -1;
     }
 
-    std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
-    std::cout << " received." << std::endl;
-
+    // 書き込みイベントフラグをセット
     FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " set sendable_fds." << std::endl;
