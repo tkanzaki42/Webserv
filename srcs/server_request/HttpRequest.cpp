@@ -251,10 +251,7 @@ bool HttpRequest::get_is_autoindex() const {
 }
 
 struct sockaddr_in HttpRequest::get_client_addr() {
-    // return fd_manager_->get_client_addr();
-
-    struct sockaddr_in  server_addr;
-    return server_addr;  // TODO()
+    return client_addr_;
 }
 
 const std::pair<int , std::string> HttpRequest::get_redirect_pair() const {
@@ -267,6 +264,10 @@ void HttpRequest::set_file_type(FileType file_type) {
 
 void HttpRequest::set_readpipe(int pp) {
     readpipe_ = pp;
+}
+
+void HttpRequest::set_client_addr(struct sockaddr_in  client_addr) {
+    client_addr_ = client_addr;
 }
 
 void HttpRequest::check_authorization_() {

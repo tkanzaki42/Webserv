@@ -48,6 +48,10 @@ void   Connection::set_last_time(time_t last_time) {
     last_time_ = last_time;
 }
 
+void   Connection::set_client_addr(struct sockaddr_in client_addr) {
+    request_.set_client_addr(client_addr);
+}
+
 int Connection::get_write_pipe() {
     return pp_recv_[1];
 }

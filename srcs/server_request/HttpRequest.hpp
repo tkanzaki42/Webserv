@@ -53,6 +53,7 @@ class HttpRequest {
     // setter
     void                set_file_type(FileType file_type);
     void                set_readpipe(int pp);
+    void                set_client_addr(struct sockaddr_in  client_addr);
 
  private:
     HttpAuth            auth_;
@@ -67,6 +68,7 @@ class HttpRequest {
                         redirect_pair_;
     std::string         upload_dir;
     int                 readpipe_;
+    struct sockaddr_in  client_addr_;
 
     void                check_redirect_();
     void                check_authorization_();

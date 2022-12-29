@@ -24,6 +24,7 @@ class Connection {
     int    get_accepted_fd() const;
     void   set_accepted_fd(int accepted_fd);
     time_t get_last_time() const;
+    void   set_client_addr(struct sockaddr_in client_addr);
     void   set_last_time(time_t last_time);
     int    get_write_pipe();
     int    get_read_pipe();

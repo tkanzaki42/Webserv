@@ -143,6 +143,7 @@ void FDManager::accept() {
     Connection connection;
     connection.set_accepted_fd((*sockets_it_).accept());
     connection.set_last_time(time(NULL));
+    connection.set_client_addr(get_client_addr());
     connections_.push_back(connection);
     std::cout << "connected_fds_:" << connection.get_accepted_fd();
     std::cout << " accept connection from socket:" << (*sockets_it_).get_listen_fd();
@@ -150,11 +151,10 @@ void FDManager::accept() {
 }
 
 int FDManager::receive() {
+    // クライアントから受信する
     char     buf[BUF_SIZE];
     memset(buf, 0, sizeof(char) * BUF_SIZE);
-    int read_size = -1;
-    // クライアントから受信する
-    read_size = ::recv((*connections_it_).get_accepted_fd(),
+    int read_size = ::recv((*connections_it_).get_accepted_fd(),
         buf,
         sizeof(char) * BUF_SIZE - 1,
         0);
