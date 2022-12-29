@@ -29,7 +29,7 @@ class Connection {
     int    get_write_pipe();
     int    get_read_pipe();
     int    get_status_code();
-
+    const std::string&  get_response();
     bool   receive_from_pipe();
     void   send_to_pipe();
 };

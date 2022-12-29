@@ -96,3 +96,7 @@ void   Connection::send_to_pipe() {
         return;
     }
 }
+
+const std::string& Connection::get_response() {
+    return response_.get_response();
+}
