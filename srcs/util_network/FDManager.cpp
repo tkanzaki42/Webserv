@@ -209,6 +209,12 @@ bool FDManager::send() {
     return true;
 }
 
+bool FDManager::is_disconnect() {
+    if ((*connections_it_).get_status_code() == 400)
+        return true;
+    return false;
+}
+
 void FDManager::disconnect() {
     // クライアントとの接続を切断する
     if (!connections_.size()) {

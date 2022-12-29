@@ -34,7 +34,7 @@ void Webserv::loop() {
             case Write:
                 std::cout << "  <Writtable>" << std::endl;
                 fd_manager_.send();
-                if ((*(fd_manager_.connections_it_)).get_status_code() == 400) {
+                if (fd_manager_.is_disconnect()) {
                     fd_manager_.disconnect();
                 } else {
                     // 送信した接続の時間を更新

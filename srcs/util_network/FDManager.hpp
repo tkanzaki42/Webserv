@@ -23,7 +23,7 @@ class FDManager {
 
     // 接続確立済みのファイルディスクリプタ
     std::vector<Connection>              connections_;
-   //  std::vector<Connection>::iterator    connections_it_;
+    std::vector<Connection>::iterator    connections_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
@@ -39,7 +39,6 @@ class FDManager {
     bool            select_fd_();
 
  public:
-    std::vector<Connection>::iterator    connections_it_;
     std::map<int, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
@@ -59,6 +58,9 @@ class FDManager {
 
     // 受信したコネクションが接続済みかどうか
     enum E_Event check_event();
+
+    // クライアントから切断すべきかを判定する
+    bool is_disconnect();
 
     // クライアントからの接続を承認する
     void accept();
