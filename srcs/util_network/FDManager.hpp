@@ -23,7 +23,7 @@ class FDManager {
 
     // 接続確立済みのファイルディスクリプタ
     std::vector<Connection>              connections_;
-    std::vector<Connection>::iterator    connections_it_;
+   //  std::vector<Connection>::iterator    connections_it_;
 
     // ディスクリプタ(ソケット+処理用)の最大値
     int             max_fd_;
@@ -34,11 +34,12 @@ class FDManager {
 
     // タイムアウト時間(select用)
     struct timeval  select_time_;
-    
+
     void            select_prepare_();
     bool            select_fd_();
 
- public:    
+ public:
+    std::vector<Connection>::iterator    connections_it_;
     std::map<int, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
@@ -72,10 +73,10 @@ class FDManager {
     void update_time();
 
     // クライアントに文字列を送る
-    bool send(const std::string &str);
+    bool send();
 
     // クライアントからの文字列をバッファに読み込ませる(戻り値は読み込んだ文字列の長さ)
-    int receive(char *buf);
+    int receive();
 
     // ソケットを作成
     void create_socket();

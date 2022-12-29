@@ -149,7 +149,8 @@ void FDManager::accept() {
     std::cout << "." << std::endl;
 }
 
-int FDManager::receive(char *buf) {
+int FDManager::receive() {
+    char     buf[BUF_SIZE];
     memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = -1;
     // クライアントから受信する
@@ -166,14 +167,40 @@ int FDManager::receive(char *buf) {
     // if ((*connections_it_).get_accepted_fd() > max_fd_) {
     //     max_fd_ = (*connections_it_).get_accepted_fd();
     // }
+
+    // 受信したデータをパイプに書き込み
+    int write_ret
+        = write((*connections_it_).get_write_pipe(), buf, sizeof(buf));
+    if (write_ret <= 0) {
+        std::cerr << "Failed to write to pipe in FDManager::receive()."
+            << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    // パイプから読み込んで解析
+    (*connections_it_).receive_from_pipe();
+
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " received." << std::endl;
     return read_size;
 }
 
-bool FDManager::send(const std::string &str) {
-    if (::send((*connections_it_).get_accepted_fd(), str.c_str(),
-        str.length(), 0) == -1) {
+bool FDManager::send() {
+    // 書き込みデータをパイプに書き込み
+    (*connections_it_).send_to_pipe();
+
+    // パイプから読み込み
+    char     buf[BUF_SIZE];
+    int read_ret = read((*connections_it_).get_read_pipe(), buf, sizeof(buf));
+    if (read_ret <= 0) {
+        std::cerr << "Failed to read from pipe in FDManager::send()."
+            << std::endl;
+        return false;
+    }
+
+    // データをクライアントに送信
+    if (::send((*connections_it_).get_accepted_fd(), buf,
+        sizeof(buf), 0) == -1) {
         std::cout << "FDManager::send failed." << std::endl;
         return false;
     }

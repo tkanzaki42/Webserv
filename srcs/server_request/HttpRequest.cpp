@@ -1,8 +1,7 @@
 #include "srcs/server_request/HttpRequest.hpp"
 
-HttpRequest::HttpRequest(FDManager *fd_manager)
-        : fd_manager_(fd_manager),
-          auth_(HttpAuth()),
+HttpRequest::HttpRequest()
+        : auth_(HttpAuth()),
           parser_(HttpParser(received_line_)),
           file_type_(FILETYPE_NOT_DEFINED),
           status_code_(200),
@@ -14,8 +13,7 @@ HttpRequest::~HttpRequest() {
 }
 
 HttpRequest::HttpRequest(const HttpRequest &obj)
-        : fd_manager_(obj.fd_manager_),
-          parser_(HttpParser(obj.parser_)) {
+        : parser_(HttpParser(obj.parser_)) {
     *this = obj;
 }
 
@@ -36,7 +34,7 @@ int HttpRequest::receive_header() {
 
     memset(buf, 0, sizeof(buf));
     while (true) {
-        read_size = fd_manager_->receive(buf);
+        read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
         if (read_size < 0) {
             int recv_errno = errno;
             if (recv_errno == 0 || recv_errno == 9) {
@@ -253,7 +251,10 @@ bool HttpRequest::get_is_autoindex() const {
 }
 
 struct sockaddr_in HttpRequest::get_client_addr() {
-    return fd_manager_->get_client_addr();
+    // return fd_manager_->get_client_addr();
+
+    struct sockaddr_in  server_addr;
+    return server_addr;  // TODO()
 }
 
 const std::pair<int , std::string> HttpRequest::get_redirect_pair() const {
@@ -262,6 +263,10 @@ const std::pair<int , std::string> HttpRequest::get_redirect_pair() const {
 
 void HttpRequest::set_file_type(FileType file_type) {
     file_type_ = file_type;
+}
+
+void HttpRequest::set_readpipe(int pp) {
+    readpipe_ = pp;
 }
 
 void HttpRequest::check_authorization_() {
@@ -407,7 +412,7 @@ bool HttpRequest::is_found_crlf_(char *readed_data) {
 int HttpRequest::recv_and_join_data_(char **readed_data) {
     char    buf[BUF_SIZE];
 
-    int read_size = fd_manager_->receive(buf);
+    int read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
     if (read_size == -1) {
         std::cerr << "recv() failed in "
             << "recv_and_join_data_()." << std::endl;
@@ -481,7 +486,7 @@ int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
             // Content-Length分の読み込みが終わった
             break;
         }
-        read_size = fd_manager_->receive(buf);
+        read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
         if (read_size < 0) {
             if (content_length == 0) {
                 // Content-Lengthが指定されていない場合、EOFで通信終了となり
