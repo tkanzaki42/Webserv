@@ -71,6 +71,8 @@ int HttpBody::read_contents_from_error_file_(int status_code) {
     }
 
     ifs_readfile.close();
+    // Content-Lengthを数える
+    count_content_length_();
     return status_code;
 }
 
