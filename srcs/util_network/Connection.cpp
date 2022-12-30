@@ -13,6 +13,7 @@ Connection::Connection(const Connection &obj) : response_(&request_) {
 Connection &Connection::operator=(const Connection &obj) {
     this->accepted_fd_ = obj.accepted_fd_;
     this->last_time_   = obj.last_time_;
+    this->port_        = obj.port_;
     this->pp_recv_[0] = -1;
     this->pp_recv_[1] = -1;
     return *this;
@@ -54,8 +55,10 @@ int Connection::get_write_pipe() {
         if (pipe(pp_recv_) == -1) {
             std::cerr << "Failed to pipe() in Connection()" << std::endl;
         }
+#ifdef DEBUG
         std::cout << "  pp_recv_[0] = " << pp_recv_[0] << std::endl;
         std::cout << "  pp_recv_[1] = " << pp_recv_[1] << std::endl;
+#endif
     }
 
     return pp_recv_[1];
@@ -77,16 +80,22 @@ bool Connection::receive_from_pipe() {
 
     // リクエストデータを解析
     if (request_.get_status_code() == 200)
-        request_.analyze_request();
+        request_.analyze_request(port_);
 
     request_.print_debug();
 
     response_.make_response();
+#ifdef DEBUG
     std::cout << response_.get_response() << std::endl;
     std::cout << "---------------------------------------" << std::endl;
+#endif
     return true;
 }
 
 const std::string& Connection::get_response() {
     return response_.get_response();
+}
+
+void   Connection::set_port(int port) {
+    this->port_ = port;
 }
