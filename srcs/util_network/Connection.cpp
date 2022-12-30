@@ -69,7 +69,7 @@ int Connection::get_status_code() {
 bool Connection::receive_from_pipe() {
     request_.set_readpipe(pp_recv_[0]);
     if (request_.receive_header() == EXIT_FAILURE) {
-        // クライアントからEOFが来たらその接続を切断
+        // ヘッダが不十分なら読み込みを継続
         return false;
     }
 

@@ -27,40 +27,38 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     return *this;
 }
 
+// 戻り値 EXIT_SUCCESS : 読み込み完了
+//       EXIT_FAILURE  : 継続読み込み
 int HttpRequest::receive_header() {
     char     buf[BUF_SIZE];
-    ssize_t  read_size = 0;
-    int      total_read_size = 0;
 
+    // パイプから読み込み
     memset(buf, 0, sizeof(buf));
-    while (true) {
-        read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
-        if (read_size < 0) {
-            int recv_errno = errno;
-            if (recv_errno == 0 || recv_errno == 9) {
-                std::cerr << "connection closed by peer."
-                    << " recv() errno: " << recv_errno << std::endl;
-            } else {
-                std::cerr << "recv() failed."
-                    << " ERROR: " << recv_errno << std::endl;
-            }
-            return EXIT_FAILURE;  // 受信に失敗したので処理中断
+    ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
+    if (read_size < 0) {
+        int recv_errno = errno;
+        if (recv_errno == 0 || recv_errno == 9) {
+            std::cerr << "connection closed by peer."
+                << " recv() errno: " << recv_errno << std::endl;
+        } else {
+            std::cerr << "recv() failed."
+                << " ERROR: " << recv_errno << std::endl;
         }
-        received_line_.append(buf);
-        total_read_size += read_size;
-
-        // BUF_SIZE以上読んだら抜ける
-        if (total_read_size > BUF_SIZE - 1)
-            break;
-        // 改行の連続が含まれていればヘッダ部分は読み込めたので抜ける
-        if (received_line_.find("\r\n\r\n") != std::string::npos)
-            break;
+        return EXIT_FAILURE;  // 受信に失敗したので処理中断
     }
-    // 読み込んだデータに改行の連続がなければヘッダを認識できない
+    received_line_.append(buf);
+
+    // 読み込んだデータに改行の連続がない場合
     if (received_line_.find("\r\n\r\n") == std::string::npos) {
-        std::cerr << "Failed to recognize header." << std::endl;
-        status_code_ = 400;  // Bad Request
-        return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400を返す正常ルート
+        if (received_line_.length() > BUF_SIZE) {
+            // 十分なサイズ分すでに読み込んでいる場合
+            std::cerr << "Failed to recognize header." << std::endl;
+            status_code_ = 400;  // Bad Request
+            return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400正常ルート
+        } else {
+            // 読み込みが不十分、ヘッダ継続読み込み
+            return EXIT_FAILURE;
+        }
     }
     return EXIT_SUCCESS;
 }
