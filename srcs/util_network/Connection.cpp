@@ -99,3 +99,7 @@ const std::string& Connection::get_response() {
 void   Connection::set_port(int port) {
     this->port_ = port;
 }
+
+void Connection::reset() {
+    request_.reset();
+}

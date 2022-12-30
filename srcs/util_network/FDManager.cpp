@@ -234,6 +234,7 @@ bool FDManager::send() {
 #endif
         return false;
     }
+    (*connections_it_).reset();
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
 #ifdef DEBUG
     std::cout << "FDManager::send success to fd: ";

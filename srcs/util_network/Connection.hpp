@@ -32,6 +32,7 @@ class Connection {
     bool   receive_from_pipe();
     const std::string&
            get_response();
+    void   reset();
 };
 
 #endif  // SRCS_UTIL_NETWORK_CONNECTION_HPP_

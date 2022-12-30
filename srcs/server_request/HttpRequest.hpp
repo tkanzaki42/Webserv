@@ -27,6 +27,7 @@ class HttpRequest {
     HttpRequest(const HttpRequest &obj);
     HttpRequest& operator=(const HttpRequest &obj);
 
+    void                reset();
     int                 receive_header();
     void                analyze_request(int port);
     void                print_debug();

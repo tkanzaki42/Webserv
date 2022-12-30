@@ -27,6 +27,21 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     return *this;
 }
 
+void HttpRequest::reset() {
+    auth_               = HttpAuth();
+    received_line_      = "";
+    parser_             = HttpParser(received_line_);
+    location_           = "";
+    file_type_          = FILETYPE_NOT_DEFINED;
+    status_code_        = 200;
+    virtual_host_index_ = -1;
+    is_autoindex_       = false;
+    redirect_pair_      = std::make_pair(0, "");
+    upload_dir          = "";
+    readpipe_           = -1;
+    client_addr_        = sockaddr_in();
+}
+
 // 戻り値 EXIT_SUCCESS : 読み込み完了
 //       EXIT_FAILURE  : 継続読み込み
 int HttpRequest::receive_header() {
