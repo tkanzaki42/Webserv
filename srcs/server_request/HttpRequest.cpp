@@ -128,12 +128,16 @@ void HttpRequest::analyze_request(int port) {
         redirect_pair_.second = "http://"
                  + get_header_field("Host") + get_request_target();
     }
-    bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
 
     // 認証の確認
     check_authorization_();
 
-    if (status_code_ == 404 && autoindex == true)
+    // autoindex
+    bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
+    if (autoindex == true
+            && status_code_ == 404
+            && parser_.get_path_to_file().at(
+                parser_.get_path_to_file().size() - 1) == '/')
         is_autoindex_ = true;
 
     // ファイルタイプの判定
