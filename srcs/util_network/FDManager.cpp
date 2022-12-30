@@ -91,9 +91,7 @@ bool FDManager::select_fd_() {
             return false;
         }
         // それ以外はexit
-#ifdef DEBUG
         std::cerr << "select() failed." << std::endl;
-#endif
         _exit(1);
     } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る

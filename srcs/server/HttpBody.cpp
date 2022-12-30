@@ -153,9 +153,7 @@ void HttpBody::make_autoindex_response() {
         }
         closedir(dir);
     } else {
-#ifdef DEBUG
         std::cerr << "Failed to opendir(), errno = " << errno << std::endl;
-#endif
     }
 
     oss_body << "</pre><hr></body>\n"
