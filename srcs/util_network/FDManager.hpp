@@ -34,15 +34,12 @@ class FDManager {
 
     // タイムアウト時間(select用)
     struct timeval  select_time_;
-    
+
     void            select_prepare_();
     bool            select_fd_();
 
- public:    
+ public:
     std::map<int, string_vector_map> config;
-
-    std::map<std::string, std::string> host0;
-    std::map<std::string, std::string> host1;
 
     // selectのタイムアウト時間
     static const time_t SELECT_TIME_SECOND = 1;

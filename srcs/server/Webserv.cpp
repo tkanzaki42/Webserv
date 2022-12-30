@@ -22,8 +22,7 @@ void Webserv::loop() {
         }
 
         // アクセスがあったソケットが接続済みかチェック
-        switch (fd_manager_.check_event())
-        {
+        switch (fd_manager_.check_event()) {
             case Connect:
                 // 新たな接続なら接続を確立してからselectに戻る
                 fd_manager_.accept();
