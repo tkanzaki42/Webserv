@@ -192,7 +192,7 @@ int FDManager::receive() {
     if (read_size < 0) {
         // 切断された場合、クローズする
         return -1;
-    } else if (read_size == 0 && errno == 0) {
+    } else if (read_size == 0) {
         // 正常終了
         disconnect();
         return -1;
