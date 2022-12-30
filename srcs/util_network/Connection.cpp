@@ -102,4 +102,5 @@ void   Connection::set_port(int port) {
 
 void Connection::reset() {
     request_.reset();
+    response_.reset();
 }
