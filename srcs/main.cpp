@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]) {
         Config::init(argv[1]);
         break;
     default:
-        std::cout << "Invalid arguments" << std::endl;
+        std::cerr << "Invalid arguments" << std::endl;
         exit(EXIT_FAILURE);
         break;
     }

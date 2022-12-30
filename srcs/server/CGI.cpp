@@ -110,14 +110,12 @@ const std::vector<std::string> &CGI::get_body_content() {
 void CGI::run_child_process_() {
     char **execpath  = generate_exec_paths_();
     char **exec_envs = generate_env_vars_();
-
     if (file_type_ == FILETYPE_SCRIPT)
         std::cerr << "Executing cgi script: "
             << execpath[0] << " " << execpath[1] << std::endl << std::endl;
     else
         std::cerr << "Eecuting cgi binary: "
             << execpath[0] << std::endl << std::endl;
-
     int ret = execve(execpath[0], execpath, exec_envs);
     int execve_errno = errno;
     std::cerr << "Failed to execve(), ret = " << ret

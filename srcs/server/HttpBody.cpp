@@ -84,8 +84,10 @@ int HttpBody::read_contents_from_file_() {
     // エラーチェック
     if (ifs_readfile.fail()) {
         // ファイルが存在しない
-        std::cerr << "File not found: "
+#ifdef DEBUG
+        std::cout << "File not found: "
             << request_.get_path_to_file() << std::endl;
+#endif
         return 404;  // Not Found
     } else if (!ifs_readfile) {
         // その他のファイルオープンエラー
@@ -256,10 +258,14 @@ int  HttpBody::compress_to_range_() {
             offset = content_head_ - (total - content_[i].length());
             once = true;
         }
+#ifdef DEBUG
         std::cout << "Line:" << content_[i].length() - offset<< std::endl;
+#endif
         if (total - content_head_ > len) {
             // Rangeの長さ分に達したらbreak
+#ifdef DEBUG
             std::cout << "Last Line:" << content_[i].length() - (total - len - content_head_) << std::endl;
+#endif
             range_of_content.append(
                 content_[i].substr(
                     offset, content_[i].length() - (total - content_head_ - len) - offset
@@ -274,7 +280,9 @@ int  HttpBody::compress_to_range_() {
                 ).c_str()
             );
         }
+#ifdef DEBUG
         std::cout << "range_of_content:" << range_of_content << std::endl;
+#endif
     }
     // content_が1文字もRangeの範囲に含まれなかったら416
     if (total < content_head_){
