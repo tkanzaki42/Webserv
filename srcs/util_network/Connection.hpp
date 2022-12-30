@@ -11,7 +11,6 @@ class Connection {
     int    accepted_fd_;
     time_t last_time_;
     int    pp_recv_[2];
-    int    pp_send_[2];
     HttpRequest  request_;
     HttpResponse response_;
 
@@ -27,7 +26,6 @@ class Connection {
     void   set_client_addr(struct sockaddr_in client_addr);
     void   set_last_time(time_t last_time);
     int    get_write_pipe();
-    int    get_read_pipe();
     int    get_status_code();
     bool   receive_from_pipe();
     const std::string&

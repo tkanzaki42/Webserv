@@ -7,12 +7,6 @@ accepted_fd_(-1), last_time_(0), response_(&request_) {
     }
     std::cout << "  pp_recv_[0] = " << pp_recv_[0] << std::endl;
     std::cout << "  pp_recv_[1] = " << pp_recv_[1] << std::endl;
-
-    if (pipe(pp_send_) == -1) {
-        std::cerr << "Failed to pipe() in Connection()" << std::endl;
-    }
-    std::cout << "  pp_send_[0] = " << pp_send_[0] << std::endl;
-    std::cout << "  pp_send_[1] = " << pp_send_[1] << std::endl;
 }
 
 Connection::Connection(const Connection &obj) : response_(&request_) {
@@ -24,8 +18,6 @@ Connection &Connection::operator=(const Connection &obj) {
     this->last_time_   = obj.last_time_;
     this->pp_recv_[0] = obj.pp_recv_[0];
     this->pp_recv_[1] = obj.pp_recv_[1];
-    this->pp_send_[0] = obj.pp_send_[0];
-    this->pp_send_[1] = obj.pp_send_[1];
     return *this;
 }
 
@@ -54,10 +46,6 @@ void   Connection::set_client_addr(struct sockaddr_in client_addr) {
 
 int Connection::get_write_pipe() {
     return pp_recv_[1];
-}
-
-int Connection::get_read_pipe() {
-    return pp_send_[0];
 }
 
 int Connection::get_status_code() {
