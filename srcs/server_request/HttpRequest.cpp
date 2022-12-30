@@ -163,8 +163,8 @@ std::string HttpRequest::replacePathToLocation_(std::string &location,
 }
 
 void HttpRequest::print_debug() {
+#ifdef DEBUG
     typedef std::map<std::string, std::string>::const_iterator map_iter;
-
     std::cout << "//-----received_line_ start-----" << std::endl;
     std::cout << received_line_ << std::endl;
     std::cout << "\\\\-----received_line_ end-----" << std::endl;
@@ -199,6 +199,7 @@ void HttpRequest::print_debug() {
         std::cout << "    " << it->first << ": " << it->second << std::endl;
     }
     std::cout << std::endl;
+#endif
 }
 
 HttpMethod HttpRequest::get_http_method() const {
@@ -386,7 +387,9 @@ int HttpRequest::receive_chunked_data_(std::ofstream &ofs_outfile) {
                 if (recv_and_join_data_(&readed_data) == -1)
                     return 400;  // Bad Request
             }
+#ifdef DEBUG
             std::cout << "  write data size:" << chunk_size << std::endl;
+#endif
             ofs_outfile.write(readed_data, chunk_size);
             // 書き出した分をバッファから削除
             // +2は"\r\n"分
@@ -451,8 +454,9 @@ int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
         }
         i++;
     }
+#ifdef DEBUG
     std::cout << "  chunk_size:" << chunk_size << std::endl;
-
+#endif
     // チャンクサイズ部分をバッファから削除
     // +2は"\r\n"分
     char* tmp = strdup(*readed_data + i + 2);
@@ -505,8 +509,10 @@ int HttpRequest::receive_plain_data_(std::ofstream &ofs_outfile) {
             buf[read_size] = '\0';
             ofs_outfile.write(buf, read_size);
             total_read_size += read_size;
+#ifdef DEBUG
             std::cout << "  read_size:" << read_size
                 << ", total:" << total_read_size << std::endl;
+#endif
         }
     }
 

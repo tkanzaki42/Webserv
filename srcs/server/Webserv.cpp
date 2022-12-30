@@ -28,11 +28,15 @@ void Webserv::loop() {
                 fd_manager_.accept();
                 continue;
             case Read:
+#ifdef DEBUG
                 std::cout << "  <Readable>" << std::endl;
+#endif
                 fd_manager_.receive();
                 continue;
             case Write:
+#ifdef DEBUG
                 std::cout << "  <Writtable>" << std::endl;
+#endif
                 fd_manager_.send();
                 if (fd_manager_.is_disconnect()) {
                     fd_manager_.disconnect();

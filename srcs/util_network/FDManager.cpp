@@ -6,7 +6,9 @@ FDManager::FDManager() {
     std::set<int>::iterator begin= set.begin();
     std::set<int>::iterator end= set.end();
     for (std::set<int>::iterator iter = begin; iter != end; ++iter) {
+#ifdef DEBUG
         std::cout << *iter << std::endl;
+#endif
         int port = *iter;
         Socket soc;
         soc.set_port(port);
@@ -83,23 +85,31 @@ bool FDManager::select_fd_() {
     if (count < 0) {
         if (errno == EINTR) {
             // シグナル受信によるselect終了の場合、再度待ち受けに戻る
+#ifdef DEBUG
             std::cout << "Interrupted system call." << std::endl;
+#endif
             return false;
         }
         // それ以外はexit
+#ifdef DEBUG
         std::cerr << "select() failed." << std::endl;
+#endif
         _exit(1);
     } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る
+#ifdef DEBUG
         std::cout << "resources released." << std::endl;
+#endif
         return false;
     } else {
+#ifdef DEBUG
         std::cout << "FDManager::select ";
         std::cout << count;
         std::cout << " events gotten ready, ";
         std::cout << connections_.size();
         std::cout << " connections keep alive.";
         std::cout << std::endl;
+#endif
         return true;
     }
 }
@@ -115,8 +125,10 @@ enum E_Event FDManager::check_event() {
         if (FD_ISSET((*it).get_listen_fd(), &received_fd_collection_)) {
             // 接続されたソケットを確定
             sockets_it_ = it;
+#ifdef DEBUG
             std::cout << "socket:" << (*it).get_listen_fd() << "[" << (*it).get_port() << "]";
             std::cout << " is connected to accept." << std::endl;
+#endif
             return Connect;
         }
     }
@@ -129,8 +141,10 @@ enum E_Event FDManager::check_event() {
     {
         if (FD_ISSET((*it).get_accepted_fd(), &received_fd_collection_)) {
             connections_it_ = it;
+#ifdef DEBUG
             std::cout << "fd:" << (*it).get_accepted_fd();
             std::cout << " has been established to recieve." << std::endl;
+#endif
             return Read;
         }
     }
@@ -143,8 +157,10 @@ enum E_Event FDManager::check_event() {
     {
         if (FD_ISSET((*it).get_accepted_fd(), &sendable_fd_collection_)) {
             connections_it_ = it;
+#ifdef DEBUG
             std::cout << "fd:" << (*it).get_accepted_fd();
             std::cout << " has been established to recieve." << std::endl;
+#endif
             return Write;
         }
     }
@@ -159,9 +175,11 @@ void FDManager::accept() {
     connection.set_last_time(time(NULL));
     connection.set_client_addr(get_client_addr());
     connections_.push_back(connection);
+#ifdef DEBUG
     std::cout << "connected_fds_:" << connection.get_accepted_fd();
     std::cout << " accept connection from socket:" << (*sockets_it_).get_listen_fd();
     std::cout << "." << std::endl;
+#endif
 }
 
 int FDManager::receive() {
@@ -180,31 +198,30 @@ int FDManager::receive() {
         disconnect();
         return -1;
     }
-    
     // 受信したデータをパイプに書き込み
     int write_ret
         = write((*connections_it_).get_write_pipe(), buf, sizeof(buf));
     if (write_ret <= 0) {
+#ifdef DEBUG
         std::cerr << "Failed to write to pipe in FDManager::receive(), "
             << "write_ret = " << write_ret << ", errno = " << errno
             << std::endl;
+#endif
         return EXIT_FAILURE;
     }
-
     // パイプから読み込んで解析
     if (!(*connections_it_).receive_from_pipe()) {
         disconnect();
     }
-
+#ifdef DEBUG
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " received." << std::endl;
-
+#endif
     FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
+#ifdef DEBUG
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " set sendable_fds." << std::endl;
-    if ((*connections_it_).get_accepted_fd() > max_fd_) {
-        max_fd_ = (*connections_it_).get_accepted_fd();
-    }
+#endif
     return read_size;
 }
 
@@ -224,12 +241,16 @@ bool FDManager::send() {
     // データをクライアントに送信
     if (::send((*connections_it_).get_accepted_fd(), (*connections_it_).get_response().c_str(),
         (*connections_it_).get_response().length(), 0) == -1) {
+#ifdef DEBUG
         std::cout << "FDManager::send failed." << std::endl;
+#endif
         return false;
     }
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
+#ifdef DEBUG
     std::cout << "FDManager::send success to fd: ";
     std::cout << (*connections_it_).get_accepted_fd() << std::endl;
+#endif
     return true;
 }
 
@@ -242,10 +263,15 @@ bool FDManager::is_disconnect() {
 void FDManager::disconnect() {
     // クライアントとの接続を切断する
     if (!connections_.size()) {
+#ifdef DEBUG
         std::cout << "Empty Connections." << std::endl;
+#endif
+        return ;
     }
+#ifdef DEBUG
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " disconnected." << std::endl;
+#endif
     close((*connections_it_).get_accepted_fd());
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
     FD_CLR((*connections_it_).get_accepted_fd(), &received_fd_collection_);
@@ -260,8 +286,10 @@ void FDManager::release() {
     while (it != connections_.end())
     {
         if (time(NULL) - (*it).get_last_time() > TIMEOUT_CONNECTION) {
+#ifdef DEBUG
             std::cout << "connected_fds_:" << (*it).get_accepted_fd();
             std::cout << " disconnected." << std::endl;
+#endif
             close((*it).get_accepted_fd());
             FD_CLR((*it).get_accepted_fd(), &sendable_fd_collection_);
             FD_CLR((*it).get_accepted_fd(), &received_fd_collection_);

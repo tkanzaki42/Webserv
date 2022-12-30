@@ -186,11 +186,17 @@ std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::stri
 void printVector(std::vector<std::string> v) {
     std::vector<std::string>::iterator begin = v.begin();
     std::vector<std::string>::iterator end = v.end();
+#ifdef DEBUG
     std::cout << "### printVector() STRART ####" << std::endl;
+#endif
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+#ifdef DEBUG
         std::cout << *itr << std::endl;
+#endif
     }
+#ifdef DEBUG
     std::cout << "### printVector() END ####" << std::endl;
+#endif
 }
 
 // あたえられたURLからlocationを決定して、そのLocationのパスを返す。
@@ -300,6 +306,7 @@ std::vector<std::string> Config::parseValue(const std::string &valueStr) {
 }
 
 void    Config::printConfig() {
+#ifdef DEBUG
     std::map<int, string_vector_map>::iterator begin = _config.begin();
     std::map<int, string_vector_map >::iterator end = _config.end();
     for (std::map<int, string_vector_map>
@@ -320,6 +327,7 @@ void    Config::printConfig() {
             std::cout << std::endl;
         }
     }
+#endif
 }
 
 std::string Config::getSingleStr(int hostKey,

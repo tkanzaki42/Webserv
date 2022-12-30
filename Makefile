@@ -33,7 +33,7 @@ fclean: clean
 re: fclean all
 
 .PHONY: debug
-debug: CXXFLAGS += -g -fsanitize=integer -fsanitize=address -fsanitize=leak -fsanitize=undefined
+debug: CXXFLAGS += -g -fsanitize=integer -fsanitize=address -fsanitize=leak -fsanitize=undefined -DDEBUG
 debug: CXX = clang++
 debug: re
 

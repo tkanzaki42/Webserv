@@ -5,14 +5,18 @@ accepted_fd_(-1), last_time_(0), response_(&request_) {
     if (pipe(pp_recv_) == -1) {
         std::cerr << "Failed to pipe() in Connection()" << std::endl;
     }
+#ifdef DEBUG
     std::cout << "  pp_recv_[0] = " << pp_recv_[0] << std::endl;
     std::cout << "  pp_recv_[1] = " << pp_recv_[1] << std::endl;
+#endif
 
     if (pipe(pp_send_) == -1) {
         std::cerr << "Failed to pipe() in Connection()" << std::endl;
     }
+#ifdef DEBUG
     std::cout << "  pp_send_[0] = " << pp_send_[0] << std::endl;
     std::cout << "  pp_send_[1] = " << pp_send_[1] << std::endl;
+#endif
 }
 
 Connection::Connection(const Connection &obj) : response_(&request_) {
@@ -80,8 +84,10 @@ bool Connection::receive_from_pipe() {
     request_.print_debug();
 
     response_.make_response();
+#ifdef DEBUG
     std::cout << response_.get_response() << std::endl;
     std::cout << "---------------------------------------" << std::endl;
+#endif
     return true;
 }
 
