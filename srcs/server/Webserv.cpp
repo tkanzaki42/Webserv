@@ -24,17 +24,20 @@ void Webserv::loop() {
         switch (fd_manager_.check_event())
         {
             case Connect:
+                std::cout << std::endl;
                 std::cout << "Event triggered: Connect" << std::endl;
                 // 新たな接続なら接続を確立してからselectに戻る
                 fd_manager_.accept();
                 continue;
             case Read:
+                std::cout << std::endl;
                 std::cout << "Event triggered: Read" << std::endl;
                 if (fd_manager_.receive() == -1) {
                     fd_manager_.disconnect();
                 }
                 continue;
             case Write:
+                std::cout << std::endl;
                 std::cout << "Event triggered: Write" << std::endl;
                 fd_manager_.send();
                 if (fd_manager_.is_disconnect()) {
