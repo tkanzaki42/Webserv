@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 
-#include "srcs/server/HttpResponse.hpp"
 #include "srcs/util_network/FDManager.hpp"
 #include "srcs/server_request/HttpRequest.hpp"
+#include "srcs/server/HttpResponse.hpp"
 
 class Webserv {
  public:

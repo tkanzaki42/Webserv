@@ -1,6 +1,7 @@
 #ifndef SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
 #define SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
@@ -8,25 +9,26 @@
 #include <map>
 #include <utility>
 #include <vector>
+#include <netinet/in.h>
 
 #include "includes/webserv.hpp"
 #include "srcs/server_request/HttpParser.hpp"
 #include "srcs/server_request/HttpAuth.hpp"
 #include "srcs/server_request/HttpAuthType.hpp"
 #include "srcs/util/PathUtil.hpp"
-#include "srcs/util_network/FDManager.hpp"
+#include "srcs/util/StringConverter.hpp"
 
 # define REQUEST_ENTITY_MAX 1000000
 
 class HttpRequest {
  public:
-    explicit HttpRequest(FDManager *fd_manager);
+    HttpRequest();
     ~HttpRequest();
     HttpRequest(const HttpRequest &obj);
     HttpRequest& operator=(const HttpRequest &obj);
 
     int                 receive_header();
-    void                analyze_request();
+    void                analyze_request(int port);
     void                print_debug();
 
     // getter(HttpParser)
@@ -50,9 +52,10 @@ class HttpRequest {
                         get_redirect_pair() const;
     // setter
     void                set_file_type(FileType file_type);
+    void                set_readpipe(int pp);
+    void                set_client_addr(struct sockaddr_in  client_addr);
 
  private:
-    FDManager           *fd_manager_;
     HttpAuth            auth_;
     HttpParser          parser_;
     std::string         received_line_;
@@ -64,6 +67,8 @@ class HttpRequest {
     std::pair<int, std::string>
                         redirect_pair_;
     std::string         upload_dir;
+    int                 readpipe_;
+    struct sockaddr_in  client_addr_;
 
     void                check_redirect_();
     void                check_authorization_();

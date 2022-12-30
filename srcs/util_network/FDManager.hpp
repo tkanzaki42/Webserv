@@ -5,13 +5,13 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
 #include "srcs/util_network/Connection.hpp"
 #include "srcs/config/Config.hpp"
 #include "srcs/server/Event.hpp"
-#include <vector>
 
 # define TIMEOUT_CONNECTION 60
 
@@ -34,11 +34,11 @@ class FDManager {
 
     // タイムアウト時間(select用)
     struct timeval  select_time_;
-    
+
     void            select_prepare_();
     bool            select_fd_();
 
- public:    
+ public:
     std::map<int, string_vector_map> config;
 
     std::map<std::string, std::string> host0;
@@ -59,6 +59,9 @@ class FDManager {
     // 受信したコネクションが接続済みかどうか
     enum E_Event check_event();
 
+    // クライアントから切断すべきかを判定する
+    bool is_disconnect();
+
     // クライアントからの接続を承認する
     void accept();
 
@@ -72,10 +75,10 @@ class FDManager {
     void update_time();
 
     // クライアントに文字列を送る
-    bool send(const std::string &str);
+    bool send();
 
     // クライアントからの文字列をバッファに読み込ませる(戻り値は読み込んだ文字列の長さ)
-    int receive(char *buf);
+    int receive();
 
     // ソケットを作成
     void create_socket();
