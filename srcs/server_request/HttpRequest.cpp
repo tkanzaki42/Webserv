@@ -65,14 +65,13 @@ int HttpRequest::receive_header() {
     return EXIT_SUCCESS;
 }
 
-void HttpRequest::analyze_request() {
+void HttpRequest::analyze_request(int port) {
     // リクエストのパース
     status_code_ = parser_.parse();
-
     // virtual_host_index_の設定
     this->virtual_host_index_ =
          Config::getVirtualHostIndex(parser_.get_host_name(),
-                 StringConverter::itos(5050));
+                 StringConverter::itos(port));
     // Locationの決定
     std::string path = get_request_target();
     std::vector<std::string> v =

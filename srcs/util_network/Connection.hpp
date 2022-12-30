@@ -9,6 +9,7 @@
 class Connection {
  private:
     int    accepted_fd_;
+    int    port_;
     time_t last_time_;
     int    pp_recv_[2];
     int    pp_send_[2];
@@ -21,6 +22,7 @@ class Connection {
     Connection &operator=(const Connection &obj);
     ~Connection();
 
+    void   set_port(int port);
     int    get_accepted_fd() const;
     void   set_accepted_fd(int accepted_fd);
     time_t get_last_time() const;

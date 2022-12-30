@@ -172,6 +172,7 @@ void FDManager::accept() {
     // 受信待ちのディスクリプタをディスクリプタ集合に設定する
     Connection connection;
     connection.set_accepted_fd((*sockets_it_).accept());
+    connection.set_port((*sockets_it_).get_port());
     connection.set_last_time(time(NULL));
     connection.set_client_addr(get_client_addr());
     connections_.push_back(connection);

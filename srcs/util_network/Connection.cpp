@@ -26,6 +26,7 @@ Connection::Connection(const Connection &obj) : response_(&request_) {
 Connection &Connection::operator=(const Connection &obj) {
     this->accepted_fd_ = obj.accepted_fd_;
     this->last_time_   = obj.last_time_;
+    this->port_        = obj.port_;
     this->pp_recv_[0] = obj.pp_recv_[0];
     this->pp_recv_[1] = obj.pp_recv_[1];
     this->pp_send_[0] = obj.pp_send_[0];
@@ -79,7 +80,7 @@ bool Connection::receive_from_pipe() {
 
     // リクエストデータを解析
     if (request_.get_status_code() == 200)
-        request_.analyze_request();
+        request_.analyze_request(port_);
 
     request_.print_debug();
 
@@ -105,4 +106,8 @@ void   Connection::send_to_pipe() {
 
 const std::string& Connection::get_response() {
     return response_.get_response();
+}
+
+void   Connection::set_port(int port) {
+    this->port_ = port;
 }
