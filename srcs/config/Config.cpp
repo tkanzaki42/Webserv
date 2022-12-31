@@ -37,6 +37,7 @@ int Config::getVirtualHostIndex(const std::string &hostname,
     string_vector_map::iterator serverName;
     string_vector_map::iterator listenNum;
     int virtual_host_index = 0;
+    // まずはポートとサーバー名が一致するものを検索する
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         serverName = itr->second.find("server_name");
@@ -47,7 +48,17 @@ int Config::getVirtualHostIndex(const std::string &hostname,
         }
         virtual_host_index++;
     }
-    // もし見つからなかったら一番最初のIndex（0）を返す
+    // 見つからない時はポートが一致するものの一番最初のものを返却する
+    virtual_host_index = 0;
+    for (std::map<int, string_vector_map>
+            ::iterator itr = begin; itr != end; itr++) {
+        serverName = itr->second.find("server_name");
+        listenNum = itr->second.find("listen");
+        if (!listenNum->second[0].compare(port)) {
+            return (virtual_host_index);
+        }
+        virtual_host_index++;
+    }
     return (0);
 }
 
