@@ -225,3 +225,7 @@ bool HttpResponse::is_completed() {
         return true;
     }
 }
+
+void  HttpResponse::set_status_code(int status_code) {
+    this->status_code_ = status_code;
+}
