@@ -62,8 +62,6 @@ bool HttpRequest::receive_header() {
         return true;  // 受信に失敗したので処理中断
     }
 
-    std::cout << "buf:" << buf << std::endl;
-
     if (buf[0] == '\r' && buf[1] == '\n' && read_size == 2
             && received_line_.length() == 0) {
         // skip
