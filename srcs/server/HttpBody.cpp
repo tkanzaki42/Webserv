@@ -49,7 +49,7 @@ int HttpBody::read_contents_from_error_file_(int status_code) {
     // ファイルのオープン
     std::ifstream ifs_readfile;
     std::string error_page_path = get_error_page(status_code);
-    ifs_readfile.open(error_page_path);
+    ifs_readfile.open(error_page_path.c_str());
 
     // エラーチェック
     if (ifs_readfile.fail()) {
