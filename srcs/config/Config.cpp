@@ -353,11 +353,6 @@ void    Config::printConfig() {
 #endif
 }
 
-std::string Config::getSingleStr(int hostKey,
-                                 const std::string& key) {
-    return (_config[hostKey][key][0]);
-}
-
 int Config::getSingleInt(int hostKey, const std::string& key) {
     if (_config[hostKey].empty() || _config[hostKey][key].empty()) {
         return (-1);
@@ -393,12 +388,6 @@ bool Config::getAutoIndex(int virtualHostIndex, const std::string& url) {
 
 // test for getter
 void Config::testConfig() {
-    std::cout << "host_1 server_name : "
-     << getSingleStr(1, "server_name") << std::endl;
-    std::cout << "host_1 root : "
-     << getSingleStr(1, "root") << std::endl;
-    std::cout <<  "host_1 index : "
-     <<getSingleStr(1, "index") << std::endl;
     std::vector<int> intVector = getVectorInt(1, "listen");
     std::vector<int>::iterator begin = intVector.begin();
     std::vector<int>::iterator end = intVector.end();
