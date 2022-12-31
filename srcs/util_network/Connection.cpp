@@ -22,9 +22,14 @@ Connection &Connection::operator=(const Connection &obj) {
 Connection::~Connection() {
     if (pp_recv_[0] != -1) {
         close(pp_recv_[0]);
+#ifdef DEBUG
         std::cout << "pipe closed: " << pp_recv_[0] << std::endl;
+#endif
+
         close(pp_recv_[1]);
+#ifdef DEBUG
         std::cout << "pipe closed: " << pp_recv_[1] << std::endl;
+#endif
     }
 }
 
