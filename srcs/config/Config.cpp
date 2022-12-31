@@ -36,30 +36,27 @@ int Config::getVirtualHostIndex(const std::string &hostname,
     std::map<int, string_vector_map >::iterator end = _config.end();
     string_vector_map::iterator serverName;
     string_vector_map::iterator listenNum;
-    int virtual_host_index = 0;
-    // まずはポートとサーバー名が一致するものを検索する
-    for (std::map<int, string_vector_map>
-            ::iterator itr = begin; itr != end; itr++) {
-        serverName = itr->second.find("server_name");
-        listenNum = itr->second.find("listen");
-        if (!serverName->second[0].compare(hostname)
-            && !listenNum->second[0].compare(port)) {
-            return (virtual_host_index);
-        }
-        virtual_host_index++;
-    }
-    // 見つからない時はポートが一致するものの一番最初のものを返却する
-    virtual_host_index = 0;
+    int index = 0;
+    int open_port_default_host = 0;
+    // ポートとサーバー名が一致するものを検索する。ポートが合致していたらそれを保持しておく
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         serverName = itr->second.find("server_name");
         listenNum = itr->second.find("listen");
         if (!listenNum->second[0].compare(port)) {
-            return (virtual_host_index);
+            if (open_port_default_host == 0) {
+                // 最初に見つかったIndexを保持しておく
+                open_port_default_host = index;
+            }
+            if (!serverName->second[0].compare(hostname)) {
+                // 両方合致していたらそのindexを返す。
+                return (index);
+            }
         }
-        virtual_host_index++;
+        index++;
     }
-    return (0);
+    // 最初の設定のポートがマッチしていたらここで返す。
+    return (open_port_default_host);
 }
 
 // アクセスしたlocationにリダイレクトが設定されているかを返却する
