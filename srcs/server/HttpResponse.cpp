@@ -32,6 +32,17 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj) {
     return *this;
 }
 
+void HttpResponse::reset() {
+    header_       = HttpHeader();
+    message_body_ = HttpBody(*request_);
+    if (cgi_ != NULL) {
+        delete cgi_;
+        cgi_ = NULL;
+    }
+    response_     = "";
+    status_code_  = 200;
+}
+
 void HttpResponse::make_response() {
     // レスポンス、リクエストヘッダ、リクエストボディの初期化
     response_.clear();

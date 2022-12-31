@@ -28,42 +28,75 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     return *this;
 }
 
-int HttpRequest::receive_header() {
+void HttpRequest::reset() {
+    auth_               = HttpAuth();
+    received_line_      = "";
+    parser_             = HttpParser(received_line_);
+    location_           = "";
+    file_type_          = FILETYPE_NOT_DEFINED;
+    status_code_        = 200;
+    virtual_host_index_ = -1;
+    is_autoindex_       = false;
+    redirect_pair_      = std::make_pair(0, "");
+    upload_dir          = "";
+    readpipe_           = -1;
+    client_addr_        = sockaddr_in();
+}
+
+// 戻り値 true : 読み込み終了
+//       false  : 継続読み込み
+bool HttpRequest::receive_header() {
     char     buf[BUF_SIZE];
-    ssize_t  read_size = 0;
-    int      total_read_size = 0;
 
+    // パイプから読み込み
     memset(buf, 0, sizeof(buf));
-    while (true) {
-        read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
-        if (read_size < 0) {
-            int recv_errno = errno;
-            if (recv_errno == 0 || recv_errno == 9) {
-                std::cerr << "connection closed by peer."
-                    << " recv() errno: " << recv_errno << std::endl;
-            } else {
-                std::cerr << "recv() failed."
-                    << " ERROR: " << recv_errno << std::endl;
-            }
-            return EXIT_FAILURE;  // 受信に失敗したので処理中断
+    ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
+    if (read_size < 0) {
+        int recv_errno = errno;
+        if (recv_errno == 0 || recv_errno == 9) {
+            std::cerr << "connection closed by peer."
+                << " recv() errno: " << recv_errno << std::endl;
+        } else {
+            std::cerr << "recv() failed."
+                << " ERROR: " << recv_errno << std::endl;
         }
-        received_line_.append(buf);
-        total_read_size += read_size;
+        return true;  // 受信に失敗したので処理中断
+    }
 
-        // BUF_SIZE以上読んだら抜ける
-        if (total_read_size > BUF_SIZE - 1)
-            break;
-        // 改行の連続が含まれていればヘッダ部分は読み込めたので抜ける
-        if (received_line_.find("\r\n\r\n") != std::string::npos)
-            break;
+    if (buf[0] == '\r' && buf[1] == '\n' && read_size == 2
+            && received_line_.length() == 0) {
+        // skip
+        return false;
     }
-    // 読み込んだデータに改行の連続がなければヘッダを認識できない
-    if (received_line_.find("\r\n\r\n") == std::string::npos) {
-        std::cerr << "Failed to recognize header." << std::endl;
-        status_code_ = 400;  // Bad Request
-        return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400を返す正常ルート
+    received_line_.append(buf);
+
+    std::string crlfstr = "\r\n\r\n";
+    if (received_line_.length() < crlfstr.length()) {
+        // ヘッダ読み込み途中の場合
+        return false;
     }
-    return EXIT_SUCCESS;
+    if (received_line_.substr(
+            received_line_.length() - crlfstr.length(),
+            crlfstr.length()) == crlfstr) {
+        // 最後が改行2個連続の場合
+        if (received_line_.length() == 0) {
+            // 通信開始直後の空Enter
+            return false;
+        } else {
+            // ヘッダ正常読み込み終了
+            return true;
+        }
+    } else {
+        if (received_line_.length() > BUF_SIZE) {
+            // 十分なサイズ分すでに読み込んでいる場合
+            std::cerr << "Failed to recognize header." << std::endl;
+            status_code_ = 400;  // Bad Request
+            return true;  // ヘッダ解析に失敗しただけ、400正常ルート
+        } else {
+            // ヘッダ読み込み途中の場合
+            return false;
+        }
+    }
 }
 
 void HttpRequest::analyze_request(int port) {
@@ -119,12 +152,16 @@ void HttpRequest::analyze_request(int port) {
         redirect_pair_.second = "http://"
                  + get_header_field("Host") + get_request_target();
     }
-    bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
 
     // 認証の確認
     check_authorization_();
 
-    if (status_code_ == 404 && autoindex == true)
+    // autoindex
+    bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
+    if (autoindex == true
+            && status_code_ == 404
+            && parser_.get_path_to_file().at(
+                parser_.get_path_to_file().size() - 1) == '/')
         is_autoindex_ = true;
 
     // ファイルタイプの判定
