@@ -51,6 +51,7 @@ void Webserv::loop() {
                     // 送信した接続の時間を更新
                     fd_manager_.update_time();
                 }
+                fd_manager_.reset();
                 break;
             default:
                 break;

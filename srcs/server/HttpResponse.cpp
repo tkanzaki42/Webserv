@@ -240,3 +240,7 @@ bool HttpResponse::is_completed() {
 void  HttpResponse::set_status_code(int status_code) {
     this->status_code_ = status_code;
 }
+
+int HttpResponse::get_status_code() {
+    return this->status_code_;
+}

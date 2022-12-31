@@ -225,6 +225,7 @@ int FDManager::receive() {
 }
 
 bool FDManager::send() {
+
     // データをクライアントに送信
     if (::send((*connections_it_).get_accepted_fd(),
         (*connections_it_).get_response().c_str(),
@@ -234,7 +235,8 @@ bool FDManager::send() {
 #endif
         return false;
     }
-    (*connections_it_).reset();
+    // (*connections_it_).reset();
+
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
 #ifdef DEBUG
     std::cout << "FDManager::send success to fd: ";
@@ -244,7 +246,8 @@ bool FDManager::send() {
 }
 
 bool FDManager::is_disconnect() {
-    if ((*connections_it_).get_status_code() == 400)
+    std::cout << (*connections_it_).get_response_status_code() << std::endl;
+    if ((*connections_it_).get_response_status_code() == 400)
         return true;
     return false;
 }
@@ -315,4 +318,8 @@ void FDManager::destory_socket() {
 
 struct sockaddr_in FDManager::get_client_addr() {
     return (*sockets_it_).get_client_addr();
+}
+
+void FDManager::reset() {
+    (*connections_it_).reset();
 }
