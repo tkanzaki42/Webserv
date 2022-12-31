@@ -157,7 +157,7 @@ enum E_Event FDManager::check_event() {
             connections_it_ = it;
 #ifdef DEBUG
             std::cout << "fd:" << (*it).get_accepted_fd();
-            std::cout << " has been established to recieve." << std::endl;
+            std::cout << " has been established to send." << std::endl;
 #endif
             return Write;
         }
@@ -189,12 +189,14 @@ int FDManager::receive() {
         buf,
         sizeof(char) * BUF_SIZE - 1,
         0);
+std::cout << "     read_size:" << read_size << std::endl;
+std::cout << "     buf:" << std::string(buf) << std::endl;
     if (read_size < 0) {
         // 切断された場合
-        return -2;
+        return EXIT_FAILURE;
     } else if (read_size == 0) {
         // 正常終了の場合
-        return -1;
+        return EXIT_FAILURE;
     }
 #ifdef DEBUG
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
@@ -203,16 +205,16 @@ int FDManager::receive() {
 
     // 受信したデータをパイプに書き込み
     int write_ret
-        = write((*connections_it_).get_write_pipe(), buf, sizeof(buf));
+        = write((*connections_it_).get_write_pipe(), buf, read_size);
     if (write_ret <= 0) {
         std::cerr << "Failed to write to pipe in FDManager::receive(), "
             << "write_ret = " << write_ret << ", errno = " << errno
             << std::endl;
-        return -1;
     }
     // パイプから読み込んで解析
-    if (!(*connections_it_).receive_from_pipe()) {
-        return -1;
+    if ((*connections_it_).receive_from_pipe() == false) {
+        // ヘッダ読み込みが最後まで終わっていない場合、そのまま抜けて再度Readイベントを待つ
+        return EXIT_SUCCESS;
     }
 
     // 書き込みイベントフラグをセット
@@ -221,7 +223,7 @@ int FDManager::receive() {
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " set sendable_fds." << std::endl;
 #endif
-    return read_size;
+    return EXIT_SUCCESS;
 }
 
 bool FDManager::send() {

@@ -49,7 +49,6 @@ void   Connection::set_client_addr(struct sockaddr_in client_addr) {
 }
 
 int Connection::get_write_pipe() {
-    std::cout << "pipe status pp_recv_[0]:" << pp_recv_[0] << std::endl;
     // パイプを開く
     if (pp_recv_[0] == -1) {
         if (pipe(pp_recv_) == -1) {
@@ -73,7 +72,7 @@ int Connection::get_status_code() {
 bool Connection::receive_from_pipe() {
     // ヘッダ読み込み
     request_.set_readpipe(pp_recv_[0]);
-    if (request_.receive_header() == EXIT_FAILURE) {
+    if (request_.receive_header() == false) {
         // ヘッダが不十分なら読み込みを継続
         return false;
     }

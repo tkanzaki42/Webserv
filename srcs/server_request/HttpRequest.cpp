@@ -42,9 +42,9 @@ void HttpRequest::reset() {
     client_addr_        = sockaddr_in();
 }
 
-// 戻り値 EXIT_SUCCESS : 読み込み完了
-//       EXIT_FAILURE  : 継続読み込み
-int HttpRequest::receive_header() {
+// 戻り値 true : 読み込み終了
+//       false  : 継続読み込み
+bool HttpRequest::receive_header() {
     char     buf[BUF_SIZE];
 
     // パイプから読み込み
@@ -59,23 +59,51 @@ int HttpRequest::receive_header() {
             std::cerr << "recv() failed."
                 << " ERROR: " << recv_errno << std::endl;
         }
-        return EXIT_FAILURE;  // 受信に失敗したので処理中断
+        return true;  // 受信に失敗したので処理中断
     }
+
+    std::cout << "buf:" << buf << std::endl;
+
+    if (buf[0] == '\r' && buf[1] == '\n' && read_size == 2
+            && received_line_.length() == 0) {
+        // skip
+        return false;
+    }
+    
     received_line_.append(buf);
 
-    // 読み込んだデータに改行の連続がない場合
-    if (received_line_.find("\r\n\r\n") == std::string::npos) {
+    std::cout << "received_line_:" << received_line_ << std::endl;
+
+    std::string crlfstr = "\r\n\r\n";
+    if (received_line_.length() < crlfstr.length()) {
+        // ヘッダ読み込み途中の場合
+        return false;
+    }
+    if (received_line_.substr(
+            received_line_.length() - crlfstr.length(),
+            crlfstr.length()) == crlfstr) {
+        // 最後が改行2個連続の場合
+        if (received_line_.length() == 0) {
+            std::cout << "empty enterrrrrr" << std::endl;
+            // 通信開始直後の空Enter
+            return false;
+        } else {
+            std::cout << "okkkkkk" << std::endl;
+            // ヘッダ正常読み込み終了
+            return true;
+        }
+    } else {
         if (received_line_.length() > BUF_SIZE) {
             // 十分なサイズ分すでに読み込んでいる場合
             std::cerr << "Failed to recognize header." << std::endl;
             status_code_ = 400;  // Bad Request
-            return EXIT_SUCCESS;  // ヘッダ解析に失敗しただけ、400正常ルート
+            return true;  // ヘッダ解析に失敗しただけ、400正常ルート
         } else {
-            // 読み込みが不十分、ヘッダ継続読み込み
-            return EXIT_FAILURE;
+            std::cout << "continueeeee" << std::endl;
+            // ヘッダ読み込み途中の場合
+            return false;
         }
     }
-    return EXIT_SUCCESS;
 }
 
 void HttpRequest::analyze_request(int port) {
