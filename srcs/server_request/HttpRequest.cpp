@@ -69,10 +69,7 @@ bool HttpRequest::receive_header() {
         // skip
         return false;
     }
-    
     received_line_.append(buf);
-
-    std::cout << "received_line_:" << received_line_ << std::endl;
 
     std::string crlfstr = "\r\n\r\n";
     if (received_line_.length() < crlfstr.length()) {
@@ -84,11 +81,9 @@ bool HttpRequest::receive_header() {
             crlfstr.length()) == crlfstr) {
         // 最後が改行2個連続の場合
         if (received_line_.length() == 0) {
-            std::cout << "empty enterrrrrr" << std::endl;
             // 通信開始直後の空Enter
             return false;
         } else {
-            std::cout << "okkkkkk" << std::endl;
             // ヘッダ正常読み込み終了
             return true;
         }
@@ -99,7 +94,6 @@ bool HttpRequest::receive_header() {
             status_code_ = 400;  // Bad Request
             return true;  // ヘッダ解析に失敗しただけ、400正常ルート
         } else {
-            std::cout << "continueeeee" << std::endl;
             // ヘッダ読み込み途中の場合
             return false;
         }
