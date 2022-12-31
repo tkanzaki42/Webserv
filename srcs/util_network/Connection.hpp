@@ -12,7 +12,6 @@ class Connection {
     int    port_;
     time_t last_time_;
     int    pp_recv_[2];
-    int    pp_send_[2];
     HttpRequest  request_;
     HttpResponse response_;
 
@@ -29,11 +28,11 @@ class Connection {
     void   set_client_addr(struct sockaddr_in client_addr);
     void   set_last_time(time_t last_time);
     int    get_write_pipe();
-    int    get_read_pipe();
     int    get_status_code();
-    const std::string&  get_response();
     bool   receive_from_pipe();
-    void   send_to_pipe();
+    const std::string&
+           get_response();
+    void   reset();
 };
 
 #endif  // SRCS_UTIL_NETWORK_CONNECTION_HPP_

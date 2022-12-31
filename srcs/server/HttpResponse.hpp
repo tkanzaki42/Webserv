@@ -34,6 +34,7 @@ class HttpResponse {
     HttpResponse(const HttpResponse &obj);
     HttpResponse &operator=(const HttpResponse &obj);
 
+    void                reset();
     void                make_response();
     const std::string&  get_response();
     bool                get_is_keep_alive();

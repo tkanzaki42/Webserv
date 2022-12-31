@@ -45,14 +45,14 @@ const std::pair<std::string, int>
         std::string s;
         s.push_back(str[pos]);
         return std::pair<std::string, int>(s, 1);
-    } else if ((str[pos] & bin_to_UInt_("11100000"))
+    } else if ((static_cast<unsigned int>(str[pos]) & bin_to_UInt_("11100000"))
                     == bin_to_UInt_("11000000")) {
         // 1文字2バイト：ビットパターン"110"で始まる
         std::string s;
         s.push_back(str[pos]);
         s.push_back(str[pos + 1]);
         return std::pair<std::string, int>(s, 2);
-    } else if ((str[pos] & bin_to_UInt_("11110000"))
+    } else if ((static_cast<unsigned int>(str[pos]) & bin_to_UInt_("11110000"))
                     == bin_to_UInt_("11100000")) {
         // 1文字3バイトビットパターン"1110"で始まる
         std::string s;
@@ -60,7 +60,7 @@ const std::pair<std::string, int>
         s.push_back(str[pos + 1]);
         s.push_back(str[pos + 2]);
         return std::pair<std::string, int>(s, 3);
-    } else if ((str[pos] & bin_to_UInt_("11111000"))
+    } else if ((static_cast<unsigned int>(str[pos]) & bin_to_UInt_("11111000"))
                     == bin_to_UInt_("11110000")) {
         // 1文字4バイトビットパターン"11110"で始まる
         std::string s;

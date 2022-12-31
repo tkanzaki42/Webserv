@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 
 #include "includes/webserv.hpp"
 #include "srcs/util_network/Socket.hpp"
@@ -40,9 +41,6 @@ class FDManager {
 
  public:
     std::map<int, string_vector_map> config;
-
-    std::map<std::string, std::string> host0;
-    std::map<std::string, std::string> host1;
 
     // selectのタイムアウト時間
     static const time_t SELECT_TIME_SECOND = 1;
