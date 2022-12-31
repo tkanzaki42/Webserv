@@ -37,6 +37,12 @@ bool ConfigChecker::isValidListen(const std::vector<std::string> &v) {
         if (!isValidPort(*iter) && !isValidIP(*iter)) {
             return (false);
         }
+        for (std::vector<std::string>::const_iterator itr = iter + 1;
+         itr != end; itr++) {
+            if (*itr == *iter) {
+                return (false);
+            }
+        }
     }
     return (true);
 }

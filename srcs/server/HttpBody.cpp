@@ -29,6 +29,53 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
     return *this;
 }
 
+std::string HttpBody::get_error_page(int status_code) {
+    std::map<int, std::string> errorPageMap =
+        Config::getErrorPage(request_.get_virtual_host_index(), request_.get_location());
+    std::map<int, std::string>::iterator it =
+        errorPageMap.find(status_code);
+    // std::map<int, std::string>::iterator begin = errorPageMap.begin();
+    // std::map<int, std::string>::iterator end = errorPageMap.end();
+    // for (std::map<int, std::string>::iterator iter = begin; iter != end; iter++) {
+    //     std::cout << iter->second << std::endl;
+    // }
+    if (it != errorPageMap.end()) {
+        return (it->second);
+    }
+    return ("");
+}
+
+int HttpBody::read_contents_from_error_file_(int status_code) {
+    // ファイルのオープン
+    std::ifstream ifs_readfile;
+    std::string error_page_path = get_error_page(status_code);
+    ifs_readfile.open(error_page_path.c_str());
+
+    // エラーチェック
+    if (ifs_readfile.fail()) {
+        // ファイルが存在しない
+        std::cerr << "File not found: "
+            << error_page_path << std::endl;
+        return 404;  // Not Found
+    } else if (!ifs_readfile) {
+        // その他のファイルオープンエラー
+        std::cerr << "Could not open file: "
+            << error_page_path << std::endl;
+        return 500;  // Internal Server Error
+    }
+
+    // ファイル読み込み
+    char          read_line[256];
+    while (ifs_readfile.getline(read_line, 256 - 1)) {
+        content_.push_back(std::string(read_line));
+    }
+
+    ifs_readfile.close();
+    // Content-Lengthを数える
+    count_content_length_();
+    return status_code;
+}
+
 int HttpBody::read_contents_from_file_() {
     // ファイルのオープン
     std::ifstream ifs_readfile;
@@ -76,6 +123,17 @@ int HttpBody::read_contents_from_file_() {
     return compress_to_range_();
 }
 
+bool HttpBody::is_match_error_page(int status_code) {
+    std::map<int, std::string> errorPageMap =
+        Config::getErrorPage(request_.get_virtual_host_index(), request_.get_location());
+    std::map<int, std::string>::iterator it =
+        errorPageMap.find(status_code);
+    if (it != errorPageMap.end()) {
+        return (true);
+    }
+    return (false);
+}
+
 void HttpBody::make_status_response_(int status_code) {
     std::ostringstream oss_body;
     oss_body << "<html><body><h1>" << status_code << " "
@@ -98,9 +156,11 @@ int HttpBody::make_response(int status_code) {
     if ((status_code == 200 && request_.get_http_method() == METHOD_GET)
         || status_code == 206) {
         status_code = read_contents_from_file_();
-    }
-    if (status_code != 200 && status_code != 206 )
+    } else if (is_match_error_page(status_code)) {
+        status_code = read_contents_from_error_file_(status_code);
+    } else {
         make_status_response_(status_code);
+    }
     return status_code;
 }
 

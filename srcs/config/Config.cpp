@@ -1,5 +1,7 @@
 #include "Config.hpp"
 
+void printVector(std::vector<std::string> v);
+
 Config::Config() {
 }
 
@@ -34,19 +36,27 @@ int Config::getVirtualHostIndex(const std::string &hostname,
     std::map<int, string_vector_map >::iterator end = _config.end();
     string_vector_map::iterator serverName;
     string_vector_map::iterator listenNum;
-    int virtual_host_index = 0;
+    int index = 0;
+    int open_port_default_host = 0;
+    // ポートとサーバー名が一致するものを検索する。ポートが合致していたらそれを保持しておく
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         serverName = itr->second.find("server_name");
         listenNum = itr->second.find("listen");
-        if (!serverName->second[0].compare(hostname)
-            && !listenNum->second[0].compare(port)) {
-            return (virtual_host_index);
+        if (!listenNum->second[0].compare(port)) {
+            if (open_port_default_host == 0) {
+                // 最初に見つかったIndexを保持しておく
+                open_port_default_host = index;
+            }
+            if (!serverName->second[0].compare(hostname)) {
+                // 両方合致していたらそのindexを返す。
+                return (index);
+            }
         }
-        virtual_host_index++;
+        index++;
     }
-    // もし見つからなかったら一番最初のIndex（0）を返す
-    return (0);
+    // 最初の設定のポートがマッチしていたらここで返す。
+    return (open_port_default_host);
 }
 
 // アクセスしたlocationにリダイレクトが設定されているかを返却する
@@ -148,7 +158,7 @@ std::string Config::getLocationString(int hostkey, const std::string &location, 
     return (iter->second);
 }
 
-// 与えられたlocationとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（スペースで分割されていた）で返却する。
+// 与えられたlocationとキーからLocationの中の設定を取得する。indexなど複数ある場合にVector（|で分割されていた）で返却する。
 std::vector<std::string> Config::getLocationVector(int hostkey, const std::string &location, const std::string &key) {
     std::map<std::string, std::string> locationMap = Config::getLocation(hostkey, location);
     std::map<std::string, std::string>::iterator iter = locationMap.find(key);
@@ -180,6 +190,20 @@ std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::stri
     std::make_pair(StringConverter::stoi(redirectVector[0]),
                      redirectVector[1]);
     return (redirectPair);
+}
+
+std::map<int, std::string> Config::getErrorPage(int hostkey, const std::string &location) {
+    std::map<int, std::string> errorPageMap;
+    std::vector<std::string> erroPageVector =
+        Config::getLocationVector(hostkey, location, "error_page");
+    // printVector(erroPageVector);
+    std::vector<std::string>::iterator begin = erroPageVector.begin();
+    std::vector<std::string>::iterator end = erroPageVector.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        std::string value = *(itr++);
+        errorPageMap.insert(std::make_pair(StringConverter::stoi(value), (*itr)));
+    }
+    return (errorPageMap);
 }
 
 // デバッグ用
@@ -260,8 +284,15 @@ std::vector<std::string> Config::getAllLocation(int hostkey) {
     string_vector_map::iterator begin = host.begin();
     string_vector_map::iterator end = host.end();
     for (string_vector_map::iterator itr = begin; itr != end; itr++) {
-        if (itr->first.compare(0, 8, "location") == 0) {
-            allLocation.push_back(itr->first.substr(9, itr->first.size()));
+        if (itr->first.compare(0,
+             std::string("location").length(),
+             "location") == 0) {
+            if (std::string("location").length() + 1 > itr->first.size()) {
+                allLocation.push_back("");
+            } else {
+                allLocation.push_back(itr->first.substr
+                (std::string("location").length() + 1, itr->first.size()));
+            }
         }
     }
     return (allLocation);
@@ -330,11 +361,6 @@ void    Config::printConfig() {
 #endif
 }
 
-std::string Config::getSingleStr(int hostKey,
-                                 const std::string& key) {
-    return (_config[hostKey][key][0]);
-}
-
 int Config::getSingleInt(int hostKey, const std::string& key) {
     if (_config[hostKey].empty() || _config[hostKey][key].empty()) {
         return (-1);
@@ -370,12 +396,6 @@ bool Config::getAutoIndex(int virtualHostIndex, const std::string& url) {
 
 // test for getter
 void Config::testConfig() {
-    std::cout << "host_1 server_name : "
-     << getSingleStr(1, "server_name") << std::endl;
-    std::cout << "host_1 root : "
-     << getSingleStr(1, "root") << std::endl;
-    std::cout <<  "host_1 index : "
-     <<getSingleStr(1, "index") << std::endl;
     std::vector<int> intVector = getVectorInt(1, "listen");
     std::vector<int>::iterator begin = intVector.begin();
     std::vector<int>::iterator end = intVector.end();

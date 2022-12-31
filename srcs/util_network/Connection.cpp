@@ -88,6 +88,7 @@ bool Connection::receive_from_pipe() {
 
     request_.print_debug();
 
+    set_response_status_code_(get_status_code());
     response_.make_response();
 #ifdef DEBUG
     std::cout << response_.get_response() << std::endl;
@@ -102,6 +103,10 @@ const std::string& Connection::get_response() {
 
 void   Connection::set_port(int port) {
     this->port_ = port;
+}
+
+void   Connection::set_response_status_code_(int status_code) {
+    response_.set_status_code(status_code);
 }
 
 void Connection::reset() {

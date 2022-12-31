@@ -33,6 +33,7 @@ class Connection {
     const std::string&
            get_response();
     void   reset();
+    void   set_response_status_code_(int status_code);
 };
 
 #endif  // SRCS_UTIL_NETWORK_CONNECTION_HPP_

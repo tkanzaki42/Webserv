@@ -21,8 +21,7 @@ void Webserv::loop() {
         }
 
         // アクセスがあったソケットが接続済みかチェック
-        switch (fd_manager_.check_event())
-        {
+        switch (fd_manager_.check_event()) {
             case Connect:
 #ifdef DEBUG
                 std::cout << std::endl;

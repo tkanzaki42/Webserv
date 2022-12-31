@@ -39,6 +39,7 @@ class HttpRequest {
     const std::string&  get_path_info() const;
     const std::string&  get_path_to_file() const;
     const std::string&  get_http_ver() const;
+    const std::string&  get_location() const;
     const std::string&  get_header_field(const std::string& key);
     const std::map<std::string, std::string>&
                         get_header_field_map() const;
@@ -65,6 +66,7 @@ class HttpRequest {
     int                 status_code_;
     int                 virtual_host_index_;
     bool                is_autoindex_;
+    int                 client_max_body_size;
     std::pair<int, std::string>
                         redirect_pair_;
     std::string         upload_dir;

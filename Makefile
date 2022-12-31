@@ -33,7 +33,14 @@ fclean: clean
 re: fclean all
 
 .PHONY: debug
+debug: 
+ifeq ($(shell uname), Darwin)
+	# mac
+debug: CXXFLAGS += -g -fsanitize=integer -fsanitize=undefined -DDEBUG
+else
+	#Linux and others...
 debug: CXXFLAGS += -g -fsanitize=integer -fsanitize=address -fsanitize=leak -fsanitize=undefined -DDEBUG
+endif
 debug: CXX = clang++
 debug: re
 
