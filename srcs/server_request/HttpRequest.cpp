@@ -99,6 +99,31 @@ bool HttpRequest::receive_header() {
     }
 }
 
+bool HttpRequest::is_allowed_method(std::vector<std::string> v) {
+    std::string method_string;
+    switch (get_http_method()) {
+        case 1:
+            method_string = "POST";
+            break;
+        case 2:
+            method_string = "GET";
+            break;
+        case 3:
+            method_string = "DELETE";
+            break;
+        default:
+            method_string = "NOT_DEFINED";
+    }
+    std::vector<std::string>::iterator begin = v.begin();
+    std::vector<std::string>::iterator end = v.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        if (*itr == method_string) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 void HttpRequest::analyze_request(int port) {
     // リクエストのパース
     status_code_ = parser_.parse();
@@ -117,6 +142,13 @@ void HttpRequest::analyze_request(int port) {
         (path, Config::getAllLocation(virtual_host_index_));
     std::string root =
         Config::getLocationString(virtual_host_index_, location_, "root");
+    std::vector<std::string> method =
+     Config::getLocationVector(virtual_host_index_, location_, "limit_except");
+    std::cout << get_http_method() << std::endl;
+    if (!is_allowed_method(method)) {
+        status_code_ = 405;
+        return;
+    }
     // もしrootが見つからなかった場合
     if (!root.size()) {
         root = "/";
