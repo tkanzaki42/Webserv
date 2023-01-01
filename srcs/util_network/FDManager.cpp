@@ -319,7 +319,3 @@ void FDManager::destory_socket() {
 struct sockaddr_in FDManager::get_client_addr() {
     return (*sockets_it_).get_client_addr();
 }
-
-void FDManager::reset() {
-    (*connections_it_).reset();
-}

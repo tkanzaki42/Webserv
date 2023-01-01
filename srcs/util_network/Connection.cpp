@@ -31,6 +31,8 @@ Connection::~Connection() {
         std::cout << "pipe closed: " << pp_recv_[1] << std::endl;
 #endif
     }
+    request_.reset();
+    response_.reset();
 }
 
 int    Connection::get_accepted_fd() const {
@@ -111,9 +113,4 @@ void   Connection::set_port(int port) {
 
 void   Connection::set_response_status_code_(int status_code) {
     response_.set_status_code(status_code);
-}
-
-void Connection::reset() {
-    request_.reset();
-    response_.reset();
 }

@@ -33,7 +33,6 @@ class Connection {
     bool   receive_from_pipe();
     const std::string&
            get_response();
-    void   reset();
     void   set_response_status_code_(int status_code);
 };
 
