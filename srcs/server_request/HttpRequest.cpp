@@ -68,6 +68,16 @@ bool HttpRequest::receive_header() {
         // skip
         return false;
     }
+    if (received_line_.length() == 0) {
+        std::string            buf_str = std::string(buf);
+        std::string::size_type pos = buf_str.find("\r\n");
+        int status_code = validate_received_header_line_(buf_str.substr(0, pos));
+        if (status_code != 200) {
+            status_code_ = status_code;
+            return true;
+        }
+    }
+    
     received_line_.append(buf);
 
     std::string crlfstr = "\r\n\r\n";
@@ -127,6 +137,30 @@ bool HttpRequest::is_allowed_method(std::vector<std::string> v,
     }
     return (false);
 }
+
+int HttpRequest::validate_received_header_line_(const std::string &buf) {
+    std::vector<std::string> split_str;
+    std::stringstream        ss(buf);
+
+    std::string              str;
+    while (getline(ss, str, ' ')){
+        split_str.push_back(str);
+    }
+    if (split_str.size() != 3) {
+        // 空白の数が間違ってる
+        return 400;
+    }
+    if (split_str[1][0] != '/') {
+        // 対応しているメソッド "/で始まらないパス" 対応しているプロトコル(不正なフォーマット)
+        return 400;
+    }
+    if (split_str[2] != std::string("HTTP/1.1")) {
+        // 対応しているメソッド "/で始まるパス" 対応してないプロトコル
+        return 505;
+    }
+    return 200;
+}
+
 
 void HttpRequest::analyze_request(int port) {
     // リクエストのパース

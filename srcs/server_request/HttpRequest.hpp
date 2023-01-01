@@ -88,6 +88,7 @@ class HttpRequest {
     std::string         replacePathToLocation_(std::string &location,
                                               std::string &path, 
                                               std::string &root);
+    int                 validate_received_header_line_(const std::string &buf);
 };
 
 #endif  // SRCS_SERVER_REQUEST_HTTPREQUEST_HPP_

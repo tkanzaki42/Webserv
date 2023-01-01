@@ -86,6 +86,9 @@ class FDManager {
 
     // getter
     struct sockaddr_in  get_client_addr();
+
+    // connections_it_をリセット
+    void                reset();
 };
 
 #endif  // SRCS_UTIL_NETWORK_FDMANAGER_HPP_

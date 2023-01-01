@@ -38,6 +38,7 @@ class HttpResponse {
     void                make_response();
     const std::string&  get_response();
     bool                get_is_keep_alive();
+    int                 get_status_code();
     bool                is_completed();
     void                set_status_code(int status_code);
 };

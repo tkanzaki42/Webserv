@@ -21,6 +21,7 @@ class Connection {
     Connection &operator=(const Connection &obj);
     ~Connection();
 
+    int    get_response_status_code();
     void   set_port(int port);
     int    get_accepted_fd() const;
     void   set_accepted_fd(int accepted_fd);
