@@ -246,7 +246,8 @@ bool FDManager::send() {
 }
 
 bool FDManager::is_disconnect() {
-    if ((*connections_it_).get_response_status_code() == 400)
+    if ((*connections_it_).get_response_status_code() == 400
+    || (*connections_it_).get_response_status_code() == 505)
         return true;
     return false;
 }
