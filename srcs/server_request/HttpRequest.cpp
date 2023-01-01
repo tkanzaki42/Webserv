@@ -109,6 +109,39 @@ bool HttpRequest::receive_header() {
     }
 }
 
+bool HttpRequest::is_allowed_method(std::vector<std::string> v,
+                                     std::string upload_dir) {
+    // メソッドの制限なし
+    if (v.empty()) {
+        return (true);
+    }
+    std::string method_string;
+    switch (get_http_method()) {
+        case 1:
+            method_string = "POST";
+            break;
+        case 2:
+            method_string = "GET";
+            break;
+        case 3:
+            method_string = "DELETE";
+            break;
+        default:
+            method_string = "NOT_DEFINED";
+    }
+    std::vector<std::string>::iterator begin = v.begin();
+    std::vector<std::string>::iterator end = v.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        if (*itr == method_string) {
+            if (method_string == "POST" && !upload_dir.size()) {
+                return (false);
+            }
+            return (true);
+        }
+    }
+    return (false);
+}
+
 int HttpRequest::validate_received_header_line_(const std::string &buf) {
     std::vector<std::string> split_str;
     std::stringstream        ss(buf);
@@ -151,12 +184,19 @@ void HttpRequest::analyze_request(int port) {
         (path, Config::getAllLocation(virtual_host_index_));
     std::string root =
         Config::getLocationString(virtual_host_index_, location_, "root");
+    std::vector<std::string> method =
+     Config::getLocationVector(virtual_host_index_, location_, "limit_except");
+    upload_dir =
+     Config::getLocationString(virtual_host_index_, location_, "upload_store");
+    if (!is_allowed_method(method, upload_dir)) {
+        status_code_ = 405;
+        return;
+    }
+
     // もしrootが見つからなかった場合
     if (!root.size()) {
         root = "/";
     }
-    upload_dir =
-     Config::getLocationString(virtual_host_index_, location_, "upload_store");
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(virtual_host_index_, location_, "index"));

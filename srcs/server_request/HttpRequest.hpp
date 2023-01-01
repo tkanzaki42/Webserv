@@ -83,6 +83,8 @@ class HttpRequest {
                            char **readed_data, int total_read_size);
     int                 receive_plain_data_(std::ofstream &ofs_outfile);
     int                 delete_file_();
+    bool                is_allowed_method(std::vector<std::string> method,
+                                           std::string upload_dir);
     std::string         replacePathToLocation_(std::string &location,
                                               std::string &path, 
                                               std::string &root);

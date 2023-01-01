@@ -382,6 +382,12 @@ std::vector<int> Config::getVectorInt(int hostKey,
 
 std::vector<std::string> Config::getVectorStr(int hostKey,
                                               const std::string& key) {
+    std::vector<std::string> v;
+    if (_config.find(hostKey) == _config.end()) {
+        return(v);
+    } else if (_config[hostKey].find(key) == _config[hostKey].end()) {
+        return(v);
+    }
     return (_config[hostKey][key]);
 }
 
