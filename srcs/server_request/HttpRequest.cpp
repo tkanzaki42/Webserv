@@ -109,8 +109,27 @@ bool HttpRequest::receive_header() {
     }
 }
 
+bool HttpRequest::is_set_cgi_extension(std::vector<std::string> v,
+                         const std::string &extension) {
+    // CGIの設定がない
+    if (v.empty()) {
+        std::cout << "EXTENSION NOT FOUND :" << extension << std::endl;
+        return (false);
+    }
+    std::cout << "EXTENSION FOUND :" << extension << std::endl;
+    std::vector<std::string>::iterator begin = v.begin();
+    std::vector<std::string>::iterator end = v.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        if (*itr == extension) {
+            return (true);
+        }
+    }
+    // 見つからなかった
+    return (false);
+}
+
 bool HttpRequest::is_allowed_method(std::vector<std::string> v,
-                                     std::string upload_dir) {
+                                    const std::string &upload_dir) {
     // メソッドの制限なし
     if (v.empty()) {
         return (true);
@@ -238,12 +257,17 @@ void HttpRequest::analyze_request(int port) {
                 parser_.get_path_to_file().size() - 1) == '/')
         is_autoindex_ = true;
 
+    // CGI拡張子の設定を取得
+    std::vector<std::string> cgi_extension =
+     Config::getLocationVector(virtual_host_index_, location_, "cgi_extension");
     // ファイルタイプの判定
     const std::string file_extension
             = PathUtil::get_file_extension(get_path_to_file());
-    if (file_extension == "cgi" || file_extension == "py")
+    if ((file_extension == "cgi" || file_extension == "py") &&
+        is_set_cgi_extension(cgi_extension, file_extension))
         file_type_ = FILETYPE_SCRIPT;
-    else if (file_extension == "out")
+    else if (file_extension == "out" &&
+        is_set_cgi_extension(cgi_extension, file_extension))
         file_type_ = FILETYPE_BINARY;
     else
         file_type_ = FILETYPE_STATIC_HTML;
