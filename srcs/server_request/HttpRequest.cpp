@@ -111,6 +111,10 @@ bool HttpRequest::receive_header() {
 
 bool HttpRequest::is_allowed_method(std::vector<std::string> v,
                                      std::string upload_dir) {
+    // メソッドの制限なし
+    if (v.empty()) {
+        return (true);
+    }
     std::string method_string;
     switch (get_http_method()) {
         case 1:
