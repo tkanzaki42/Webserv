@@ -72,6 +72,10 @@ int Connection::get_status_code() {
     return request_.get_status_code();
 }
 
+int Connection::get_response_status_code() {
+    return response_.get_status_code();
+}
+
 // 戻り値 true : 問題なく読み込み完了、継続読み込み可
 //       false : エラー発生、読み込み終了などで継続読み込み不可
 bool Connection::receive_from_pipe() {
