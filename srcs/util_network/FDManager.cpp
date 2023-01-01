@@ -246,7 +246,6 @@ bool FDManager::send() {
 }
 
 bool FDManager::is_disconnect() {
-    std::cout << (*connections_it_).get_response_status_code() << std::endl;
     if ((*connections_it_).get_response_status_code() == 400)
         return true;
     return false;
