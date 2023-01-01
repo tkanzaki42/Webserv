@@ -34,7 +34,7 @@ int CGI::exec_cgi(FileType file_type) {
         return EXIT_FAILURE;
     } else if (pid == 0) {
         // POST時はリクエストボディのデータを標準入力に入れる
-        int fd_in = open(TMP_POST_DATA_FILE, O_RDONLY|O_CREAT, 777);
+        int fd_in = open(TMP_POST_DATA_FILE, O_RDONLY);
         if (fd_in == -1) {
             std::cerr << "Failed to open file "
                 << TMP_POST_DATA_FILE << std::endl;
