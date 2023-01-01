@@ -266,7 +266,7 @@ void FDManager::disconnect() {
     close((*connections_it_).get_accepted_fd());
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
     FD_CLR((*connections_it_).get_accepted_fd(), &received_fd_collection_);
-    reset();
+    (*connections_it_).reset();
     connections_.erase(connections_it_);
 }
 
@@ -318,8 +318,4 @@ void FDManager::destory_socket() {
 
 struct sockaddr_in FDManager::get_client_addr() {
     return (*sockets_it_).get_client_addr();
-}
-
-void FDManager::reset() {
-    (*connections_it_).reset();
 }
