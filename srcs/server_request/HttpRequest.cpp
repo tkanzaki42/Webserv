@@ -99,7 +99,8 @@ bool HttpRequest::receive_header() {
     }
 }
 
-bool HttpRequest::is_allowed_method(std::vector<std::string> v) {
+bool HttpRequest::is_allowed_method(std::vector<std::string> v,
+                                     std::string upload_dir) {
     std::string method_string;
     switch (get_http_method()) {
         case 1:
@@ -118,6 +119,9 @@ bool HttpRequest::is_allowed_method(std::vector<std::string> v) {
     std::vector<std::string>::iterator end = v.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
         if (*itr == method_string) {
+            if (method_string == "POST" && !upload_dir.size()) {
+                return (false);
+            }
             return (true);
         }
     }
@@ -144,17 +148,17 @@ void HttpRequest::analyze_request(int port) {
         Config::getLocationString(virtual_host_index_, location_, "root");
     std::vector<std::string> method =
      Config::getLocationVector(virtual_host_index_, location_, "limit_except");
-    std::cout << get_http_method() << std::endl;
-    if (!is_allowed_method(method)) {
+    upload_dir =
+     Config::getLocationString(virtual_host_index_, location_, "upload_store");
+    if (!is_allowed_method(method, upload_dir)) {
         status_code_ = 405;
         return;
     }
+
     // もしrootが見つからなかった場合
     if (!root.size()) {
         root = "/";
     }
-    upload_dir =
-     Config::getLocationString(virtual_host_index_, location_, "upload_store");
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(virtual_host_index_, location_, "index"));
