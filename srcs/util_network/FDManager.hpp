@@ -79,7 +79,7 @@ class FDManager {
     int receive();
 
     // ソケットを作成
-    void create_socket();
+    bool create_socket();
 
     // ソケットを削除
     void destory_socket();

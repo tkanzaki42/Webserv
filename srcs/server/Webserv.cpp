@@ -6,7 +6,9 @@ Webserv::~Webserv() {
 }
 
 void Webserv::init() {
-    fd_manager_.create_socket();
+    if (!fd_manager_.create_socket()) {
+        exit(0);
+    }
 }
 
 void Webserv::loop() {

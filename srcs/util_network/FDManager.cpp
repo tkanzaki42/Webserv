@@ -91,7 +91,7 @@ bool FDManager::select_fd_() {
 #endif
         // それ以外はexit
         std::cerr << "select() failed." << std::endl;
-        return false;
+        exit(0);
     } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る
 #ifdef DEBUG
@@ -183,7 +183,7 @@ void FDManager::accept() {
 int FDManager::receive() {
     // クライアントから受信する
     char     buf[BUF_SIZE];
-    memset(buf, 0, sizeof(char) * BUF_SIZE);
+    StringConverter::ft_memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = ::recv((*connections_it_).get_accepted_fd(),
         buf,
         sizeof(char) * BUF_SIZE - 1,
@@ -298,14 +298,18 @@ void FDManager::update_time() {
     (*connections_it_).set_last_time(time(NULL));
 }
 
-void FDManager::create_socket() {
+bool FDManager::create_socket() {
     for (
         std::vector<Socket>::iterator it = sockets_.begin();
         it != sockets_.end();
         it++)
     {
-        (*it).prepare();
+        // もしソケットの作成に失敗したら
+        if (!(*it).prepare()) {
+            return false;
+        }
     }
+    return true;
 }
 
 void FDManager::destory_socket() {
