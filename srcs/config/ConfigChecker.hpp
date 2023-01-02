@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <limits.h>
 #include "srcs/config/ConfigChecker.hpp"
 #include "srcs/config/Config.hpp"
 
