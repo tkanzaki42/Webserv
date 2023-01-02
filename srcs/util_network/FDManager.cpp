@@ -298,14 +298,18 @@ void FDManager::update_time() {
     (*connections_it_).set_last_time(time(NULL));
 }
 
-void FDManager::create_socket() {
+bool FDManager::create_socket() {
     for (
         std::vector<Socket>::iterator it = sockets_.begin();
         it != sockets_.end();
         it++)
     {
-        (*it).prepare();
+        // もしソケットの作成に失敗したら
+        if (!(*it).prepare()) {
+            return false;
+        }
     }
+    return true;
 }
 
 void FDManager::destory_socket() {

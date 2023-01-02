@@ -30,16 +30,16 @@ int Socket::get_port() const {
     return (this->port_);
 }
 
-int Socket::prepare() {
+bool Socket::prepare() {
     serv_addr_len_ = sizeof(serv_addr_);
     from_addr_len_ = sizeof(from_addr_);
     if (open_socket_() == -1)
-        return -1;
+        return false;
     if (bind_address_() == -1)
-        return -1;
+        return false;
     if (listen_() == -1)
-        return -1;
-    return 0;
+        return false;
+    return true;
 }
 
 int Socket::cleanup() {
