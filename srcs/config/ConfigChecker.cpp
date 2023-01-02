@@ -19,11 +19,24 @@ bool ConfigChecker::isValidConfig() {
                 if (!ConfigChecker::isValidListen(iter->second)) {
                     return (false);
                 }
+                continue;
             } else if (!iter->first.compare("client_max_body_size")) {
                 if (!ConfigChecker::isValidClientMaxBodySize(iter->second)) {
                     return (false);
                 }
+                continue;
+            } else if (!iter->first.compare("error_page")
+                         || !iter->first.compare("server_name")) {
+                continue;
+            } else if (iter->first.size() > std::string("location ").size()) {
+                if (!iter->first.substr
+                    (0, std::string("location ").size()).
+                        compare("location ")) {
+                    continue;
+                }
             }
+            std::cout << iter->first << std::endl;
+            return (false);
         }
     }
     return (true);
@@ -94,12 +107,8 @@ bool isAllNum(const std::string s) {
 
 bool ConfigChecker
     ::isValidClientMaxBodySize(const std::vector<std::string> &v) {
-    std::vector<std::string>::const_iterator begin = v.begin();
-    std::vector<std::string>::const_iterator end = v.end();
-    for (std::vector<std::string>::const_iterator iter = begin;
-         iter != end; iter++) {
-        // std::cout  << StringConverter::stoi(*iter) << std::endl;
-        // 変換エラー処理
+    if (v.size() != 1 || !isAllNum(*v.begin())) {
+        return (false);
     }
     return (true);
 }

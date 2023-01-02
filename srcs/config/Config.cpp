@@ -37,14 +37,14 @@ int Config::getVirtualHostIndex(const std::string &hostname,
     string_vector_map::iterator serverName;
     string_vector_map::iterator listenNum;
     int index = 0;
-    int open_port_default_host = 0;
+    int open_port_default_host = -1;
     // ポートとサーバー名が一致するものを検索する。ポートが合致していたらそれを保持しておく
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
         serverName = itr->second.find("server_name");
         listenNum = itr->second.find("listen");
         if (!listenNum->second[0].compare(port)) {
-            if (open_port_default_host == 0) {
+            if (open_port_default_host == -1) {
                 // 最初に見つかったIndexを保持しておく
                 open_port_default_host = index;
             }
@@ -55,7 +55,7 @@ int Config::getVirtualHostIndex(const std::string &hostname,
         }
         index++;
     }
-    // 最初の設定のポートがマッチしていたらここで返す。
+    // ここには来ない想定
     return (open_port_default_host);
 }
 
@@ -71,7 +71,7 @@ bool Config::isReturn(int virtualServerIndex, std::string &location) {
 std::map<int, string_vector_map> Config::_config;
 
 void    Config::parseConfig(const std::string &path) {
-    bool isDefault = true;
+    // bool isDefault = true;
     std::ifstream ifs(path.c_str());
     if (!ifs) {
         std::cerr << "Can not open file" << std::endl;
@@ -126,23 +126,23 @@ void    Config::parseConfig(const std::string &path) {
                 if (!_config[hostKey].insert(key_value_pair).second) {
                     throw(Config::ConfigFormatException());
                 }
-                // 最初のサーバーネームの場合は　default フラグを立てる
-                if (isDefault) {
-                    std::vector<std::string> defaultVect;
-                    defaultVect.push_back("true");
-                    if (!_config[hostKey].insert(
-                            std::make_pair("default", defaultVect)).second) {
-                        throw(Config::ConfigFormatException());
-                    }
-                    isDefault = false;
-                }
+                // // 最初のサーバーネームの場合は　default フラグを立てる
+                // if (isDefault) {
+                //     std::vector<std::string> defaultVect;
+                //     defaultVect.push_back("true");
+                //     if (!_config[hostKey].insert(
+                //             std::make_pair("default", defaultVect)).second) {
+                //         throw(Config::ConfigFormatException());
+                //     }
+                //     isDefault = false;
+                // }
             }
         } else {
             throw(Config::ConfigFormatException());
         }
     }
     // デバッグ用 : コンフィグの中身を全て出力する
-    // Config::printConfig();
+    Config::printConfig();
     ifs.close();
     if (!ConfigChecker::isValidConfig())
         throw(Config::ConfigFormatException());
@@ -337,7 +337,6 @@ std::vector<std::string> Config::parseValue(const std::string &valueStr) {
 }
 
 void    Config::printConfig() {
-#ifdef DEBUG
     std::map<int, string_vector_map>::iterator begin = _config.begin();
     std::map<int, string_vector_map >::iterator end = _config.end();
     for (std::map<int, string_vector_map>
@@ -358,7 +357,6 @@ void    Config::printConfig() {
             std::cout << std::endl;
         }
     }
-#endif
 }
 
 int Config::getSingleInt(int hostKey, const std::string& key) {
