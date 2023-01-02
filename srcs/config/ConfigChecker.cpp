@@ -32,7 +32,7 @@ bool ConfigChecker::isValidConfig() {
                 if (!iter->first.substr
                     (0, std::string("location ").size()).
                         compare("location ")) {
-                    Config::printVector(iter->second);
+                    // Config::printVector(iter->second);
                     if (!isValidLocation(iter->second)) {
                         return (false);
                     }
@@ -46,12 +46,43 @@ bool ConfigChecker::isValidConfig() {
     return (true);
 }
 
+int convertKeyToInt(const std::string &key) {
+    if (!key.compare("autoindex")) {
+        return (AUTO_INDEX);
+    } else if (!key.compare("index")) {
+        return (INDEX);
+    } else if (!key.compare("cgi_extension")) {
+        return (CGI_EXTENSION);
+    } else if (!key.compare("http_method")) {
+        return (HTTP_METHOD);
+    } else if (!key.compare("return")) {
+        return (REDIRECTOIN);
+    } else if (!key.compare("root")) {
+        return (ROOT);
+    } else if (!key.compare("upload_dir")) {
+        return (UPLOAD_DIR);
+    }
+    return (KEY_UNKNOWN);
+}
+
 bool ConfigChecker::isValidLocation(const std::vector<std::string> &v) {
     std::vector<std::string>::const_iterator begin = v.begin();
     std::vector<std::string>::const_iterator end = v.end();
     for (std::vector<std::string>::const_iterator iter = begin;
          iter != end; iter++) {
-        // エラーチェック処理を書く
+        int sep_position = iter->find('|');
+        std::string key = iter->substr(0, sep_position);
+        std::string value = iter->substr(sep_position + 1, iter->length());
+        int key_num = convertKeyToInt(key);
+        switch (key_num) {
+        case AUTO_INDEX:
+            if (value.compare("on") && value.compare("off")) {
+                return (false);
+            }
+            break;
+        default:
+            break;
+        }
     }
     return (true);
 }

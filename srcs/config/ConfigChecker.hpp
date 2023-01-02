@@ -7,6 +7,17 @@
 #include "srcs/config/ConfigChecker.hpp"
 #include "srcs/config/Config.hpp"
 
+enum locationKye {
+    ROOT,
+    INDEX,
+    CGI_EXTENSION,
+    HTTP_METHOD,
+    REDIRECTOIN,
+    AUTO_INDEX,
+    UPLOAD_DIR,
+    KEY_UNKNOWN
+};
+
 namespace ConfigChecker {
     bool isValidConfig();
     bool isValidListen(const std::vector<std::string> &v);
