@@ -53,7 +53,7 @@ bool HttpRequest::receive_header() {
     char     buf[BUF_SIZE];
 
     // パイプから読み込み
-    memset(buf, 0, sizeof(buf));
+    StringConverter::ft_memset(buf, 0, sizeof(buf));
     ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
     if (read_size <= 0) {
         std::cerr << "read() ends with return value 0 or -1,"

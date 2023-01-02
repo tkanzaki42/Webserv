@@ -1,5 +1,6 @@
 // Copyright 2022 tkanzaki
 #include "srcs/util_network/Socket.hpp"
+#include "srcs/util/StringConverter.hpp"
 
 Socket::Socket():
 port_(0) {
@@ -29,16 +30,16 @@ int Socket::get_port() const {
     return (this->port_);
 }
 
-int Socket::prepare() {
+bool Socket::prepare() {
     serv_addr_len_ = sizeof(serv_addr_);
     from_addr_len_ = sizeof(from_addr_);
     if (open_socket_() == -1)
-        return -1;
+        return false;
     if (bind_address_() == -1)
-        return -1;
+        return false;
     if (listen_() == -1)
-        return -1;
-    return 0;
+        return false;
+    return true;
 }
 
 int Socket::cleanup() {
@@ -78,7 +79,7 @@ int Socket::open_socket_() {
 }
 
 int Socket::bind_address_() {
-    memset(&serv_addr_, 0, sizeof(serv_addr_));
+    StringConverter::ft_memset(&serv_addr_, 0, sizeof(serv_addr_));
     serv_addr_.sin_family = AF_INET;
     serv_addr_.sin_port = htons(port_);
     serv_addr_.sin_addr.s_addr = htonl(INADDR_ANY);

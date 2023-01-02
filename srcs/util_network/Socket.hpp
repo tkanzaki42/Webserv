@@ -23,11 +23,11 @@ class Socket {
     ~Socket();
 
     void set_port(int port);
-    int get_port() const;
-    int prepare();
-    int cleanup();
-    int get_listen_fd() const { return listen_fd_; }
-    int accept();
+    int  get_port() const;
+    bool prepare();
+    int  cleanup();
+    int  get_listen_fd() const { return listen_fd_; }
+    int  accept();
 
     // getter
     struct sockaddr_in  get_client_addr();
