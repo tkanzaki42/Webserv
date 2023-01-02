@@ -279,9 +279,9 @@ void HttpRequest::analyze_request(int port) {
     is_header_analyzed_ = true;
 }
 
-bool HttpRequest::op_method_post(bool is_first_time) {
+bool HttpRequest::op_method_post(bool is_not_readed_header) {
     // POSTの場合データを読む
-    if (receive_and_store_to_file_(is_first_time) == false) {
+    if (receive_and_store_to_file_(is_not_readed_header) == false) {
         return false;  // 継続読み込み
     } else {
         status_code_ = 201;  // Created
@@ -458,7 +458,7 @@ void HttpRequest::check_redirect_() {
         status_code_ = this->redirect_pair_.first;
 }
 
-bool HttpRequest::receive_and_store_to_file_(bool is_first_time) {
+bool HttpRequest::receive_and_store_to_file_(bool is_not_readed_header) {
     // ヘッダ読み込み時にバッファに残っている分をコピー
     if (upload_data_ == "") {
         upload_data_ = parser_.get_remain_buffer();
@@ -470,7 +470,7 @@ bool HttpRequest::receive_and_store_to_file_(bool is_first_time) {
         receive_ret = receive_chunked_data_();
     } else  {
         // Content-Lengthがあってもなくても通常のデータ受信モード
-        receive_ret = receive_plain_data_(is_first_time);
+        receive_ret = receive_plain_data_(is_not_readed_header);
     }
     if (receive_ret == false)
         return false;  // 継続読み込み
@@ -616,11 +616,11 @@ int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
 
 // 戻り値 true  読み込み完了
 //       false 読み込み継続
-bool HttpRequest::receive_plain_data_(bool is_first_time) {
+bool HttpRequest::receive_plain_data_(bool is_not_readed_header) {
     std::size_t content_length
         = StringConverter::stoi(parser_.get_header_field("Content-Length"));
 
-    if (!is_first_time) {
+    if (!is_not_readed_header) {
         // データ受信
         char    buf[BUF_SIZE];
         memset(buf, 0, sizeof(char) * BUF_SIZE);

@@ -79,13 +79,13 @@ int Connection::get_response_status_code() {
 // 戻り値 true : 問題なく読み込み完了、継続読み込み可
 //       false : エラー発生、読み込み終了などで継続読み込み不可
 bool Connection::receive_from_pipe() {
-    bool is_first_time = false;
+    bool is_not_readed_header = false;
 
     request_.set_readpipe(pp_recv_[0]);
 
     // ヘッダが読み込み終わっていない場合
     if (request_.get_is_header_analyzed() == false) {
-        is_first_time = true;
+        is_not_readed_header = true;
 
         // ヘッダ読み込み
         if (request_.receive_header() == false) {
@@ -102,7 +102,7 @@ bool Connection::receive_from_pipe() {
     if (request_.get_status_code() == 200
             && request_.get_http_method() == METHOD_POST) {
         // ボディ読み込み
-        if (request_.op_method_post(is_first_time) == false) {
+        if (request_.op_method_post(is_not_readed_header) == false) {
             // ヘッダが不十分なら読み込みを継続
             return false;
         }

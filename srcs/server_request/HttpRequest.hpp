@@ -30,7 +30,7 @@ class HttpRequest {
     void                reset();
     bool                receive_header();
     void                analyze_request(int port);
-    bool                op_method_post(bool is_first_time);
+    bool                op_method_post(bool is_not_readed_header);
     void                print_debug();
 
     // getter(HttpParser)
@@ -79,13 +79,13 @@ class HttpRequest {
 
     void                check_redirect_();
     void                check_authorization_();
-    bool                receive_and_store_to_file_(bool is_first_time);
+    bool                receive_and_store_to_file_(bool is_not_readed_header);
     bool                receive_chunked_data_();
     bool                is_found_crlf_(char *readed_data);
     int                 recv_and_join_data_(char **readed_data);
     int                 split_chunk_size_(
                            char **readed_data, int total_read_size);
-    bool                receive_plain_data_(bool is_first_time);
+    bool                receive_plain_data_(bool is_not_readed_header);
     bool                write_to_file_();
     int                 delete_file_();
     bool                is_allowed_method(std::vector<std::string> method,
