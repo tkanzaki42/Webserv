@@ -65,7 +65,7 @@ const std::string PathUtil::get_full_path(const std::string& relative_path) {
     resolved_path = realpath(relative_path.c_str(), NULL);
     if (resolved_path != NULL) {
         resolved_path_str = std::string(resolved_path);
-        delete(resolved_path);
+        free(resolved_path);
     } else {
         std::cerr << "Failed to resolve relative path "
             << "to absolute path in get_full_path(), relative_path = "

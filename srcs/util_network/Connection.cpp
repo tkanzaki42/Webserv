@@ -102,7 +102,7 @@ bool Connection::receive_from_pipe() {
     if (request_.get_status_code() == 200
             && request_.get_http_method() == METHOD_POST) {
         // ボディ読み込み
-        if (request_.op_method_post(is_not_readed_header) == false) {
+        if (request_.receive_and_store_to_file(is_not_readed_header) == false) {
             // ヘッダが不十分なら読み込みを継続
             return false;
         }

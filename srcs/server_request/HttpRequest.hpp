@@ -30,8 +30,8 @@ class HttpRequest {
     void                reset();
     bool                receive_header();
     void                analyze_request(int port);
-    bool                op_method_post(bool is_not_readed_header);
     void                print_debug();
+    bool                receive_and_store_to_file(bool is_not_readed_header);
 
     // getter(HttpParser)
     HttpMethod          get_http_method() const;
@@ -79,14 +79,12 @@ class HttpRequest {
 
     void                check_redirect_();
     void                check_authorization_();
-    bool                receive_and_store_to_file_(bool is_not_readed_header);
-    bool                receive_chunked_data_();
-    bool                is_found_crlf_(char *readed_data);
-    int                 recv_and_join_data_(char **readed_data);
-    int                 split_chunk_size_(
-                           char **readed_data, int total_read_size);
+    bool                receive_chunked_data_(bool is_not_readed_header);
+    bool                recv_and_join_data_();
+    std::pair<int, int> split_chunk_size_();
     bool                receive_plain_data_(bool is_not_readed_header);
     bool                write_to_file_();
+    bool                write_to_file_append_(std::size_t append_length);
     int                 delete_file_();
     bool                is_allowed_method(std::vector<std::string> method,
                                           const std::string &upload_dir);
