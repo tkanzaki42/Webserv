@@ -79,21 +79,40 @@ int Connection::get_response_status_code() {
 // 戻り値 true : 問題なく読み込み完了、継続読み込み可
 //       false : エラー発生、読み込み終了などで継続読み込み不可
 bool Connection::receive_from_pipe() {
-    // ヘッダ読み込み
+    bool is_first_time = false;
+
     request_.set_readpipe(pp_recv_[0]);
-    if (request_.receive_header() == false) {
-        // ヘッダが不十分なら読み込みを継続
-        return false;
+
+    // ヘッダが読み込み終わっていない場合
+    if (request_.get_is_header_analyzed() == false) {
+        is_first_time = true;
+
+        // ヘッダ読み込み
+        if (request_.receive_header() == false) {
+            // ヘッダが不十分なら読み込みを継続
+            return false;
+        }
+
+        // リクエストデータを解析
+        if (request_.get_status_code() == 200)
+            request_.analyze_request(port_);
     }
 
-    // リクエストデータを解析
-    if (request_.get_status_code() == 200)
-        request_.analyze_request(port_);
+    // ヘッダ読み込みが終わり、ボディ読み込みが必要な場合
+    if (request_.get_status_code() == 200
+            && request_.get_http_method() == METHOD_POST) {
+        // ボディ読み込み
+        if (request_.op_method_post(is_first_time) == false) {
+            // ヘッダが不十分なら読み込みを継続
+            return false;
+        }
+    }
 
     request_.print_debug();
 
     set_response_status_code_(get_status_code());
     response_.make_response();
+
 #ifdef DEBUG
     std::cout << response_.get_response() << std::endl;
     std::cout << "---------------------------------------" << std::endl;
