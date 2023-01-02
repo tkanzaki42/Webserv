@@ -33,7 +33,7 @@ bool ConfigChecker::isValidConfig() {
                     (0, std::string("location ").size()).
                         compare("location ")) {
                     // Config::printVector(iter->second);
-                    if (!isValidLocation(iter->second)) {
+                    if (!isValidLocation(iter->first, iter->second)) {
                         return (false);
                     }
                     continue;
@@ -65,7 +65,17 @@ int convertKeyToInt(const std::string &key) {
     return (KEY_UNKNOWN);
 }
 
-bool ConfigChecker::isValidLocation(const std::vector<std::string> &v) {
+bool ConfigChecker::isValidLocation(const std::string &s,
+                                 const std::vector<std::string> &v) {
+    std::string locationArg =
+         s.substr(std::string("location ").size(), s.size());
+    for (size_t i = 0; i < locationArg.size(); i++) {
+        if (!isspace(locationArg[i])) {
+            break;
+        }
+        return (false);
+    }
+
     std::vector<std::string>::const_iterator begin = v.begin();
     std::vector<std::string>::const_iterator end = v.end();
     for (std::vector<std::string>::const_iterator iter = begin;
