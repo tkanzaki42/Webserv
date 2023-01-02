@@ -240,7 +240,7 @@ void HttpRequest::analyze_request(int port) {
         status_code_ = 301;  // Moved Permanently
         redirect_pair_.first = 301;
         redirect_pair_.second = "http://"
-                 + get_header_field("Host") + get_request_target();
+                 + get_header_field("Host") + get_request_target() + "/";
     }
 
     // 認証の確認
