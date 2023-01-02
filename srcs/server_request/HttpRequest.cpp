@@ -231,12 +231,13 @@ void HttpRequest::analyze_request(int port) {
         std::cerr << "File not found: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
+    bool is_folder_existes = PathUtil::is_folder_exists(get_path_to_file());
     // リダイレクト確認
     if (Config::isReturn(virtual_host_index_, location_)) {
         check_redirect_();
     } else if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
-            && PathUtil::is_folder_exists(get_path_to_file())) {
-        // ディレクトリ指定で最後のスラッシュがない場合
+            && is_folder_existes) {
+        // ディレクトリ指定で最後のスラッシュがない場合は末尾にスラッシュをつけて返す
         status_code_ = 301;  // Moved Permanently
         redirect_pair_.first = 301;
         redirect_pair_.second = "http://"
@@ -248,11 +249,11 @@ void HttpRequest::analyze_request(int port) {
 
     // autoindex
     bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
-    if (autoindex == true
-            && status_code_ == 404
-            && parser_.get_path_to_file().at(
-                parser_.get_path_to_file().size() - 1) == '/')
+    if (!autoindex && is_folder_existes) {
+        status_code_ = 403;
+    } else if (autoindex == true && is_folder_existes) {
         is_autoindex_ = true;
+    }
 
     // CGI拡張子の設定を取得
     std::vector<std::string> cgi_extension =

@@ -387,10 +387,12 @@ std::vector<std::string> Config::getVectorStr(int hostKey,
 bool Config::getAutoIndex(int virtualHostIndex, const std::string& url) {
     std::string autoIndexString =
             getLocationString(virtualHostIndex, url, "autoindex");
-    if (!autoIndexString.compare("on"))
+    if (!autoIndexString.compare("on")) {
         return (true);
-    else
+    } else if (!autoIndexString.compare("off")) {
         return (false);
+    }
+    return (false);
 }
 
 // test for getter

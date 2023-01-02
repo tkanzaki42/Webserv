@@ -59,13 +59,13 @@ int convertKeyToInt(const std::string &key) {
         return (INDEX);
     } else if (!key.compare("cgi_extension")) {
         return (CGI_EXTENSION);
-    } else if (!key.compare("http_method")) {
+    } else if (!key.compare("limit_except")) {
         return (HTTP_METHOD);
     } else if (!key.compare("return")) {
         return (REDIRECTOIN);
     } else if (!key.compare("root")) {
         return (ROOT);
-    } else if (!key.compare("upload_dir")) {
+    } else if (!key.compare("upload_store")) {
         return (UPLOAD_DIR);
     }
     return (LOCATION_KEY_UNKNOWN);
