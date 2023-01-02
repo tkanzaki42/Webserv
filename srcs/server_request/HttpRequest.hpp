@@ -51,6 +51,7 @@ class HttpRequest {
     bool                get_is_autoindex() const;
     struct sockaddr_in  get_client_addr();
     bool                get_is_header_analyzed();
+    const std::string&  get_upload_dir();
     //  getter(HttpResponse)
     const std::pair<int, std::string>
                         get_redirect_pair() const;
