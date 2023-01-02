@@ -25,8 +25,10 @@ bool ConfigChecker::isValidConfig() {
                     return (false);
                 }
                 continue;
-            } else if (!iter->first.compare("error_page")
-                         || !iter->first.compare("server_name")) {
+            } else if (!iter->first.compare("error_page")) {
+                // TODO(kfukuta) error_pageのバリデーションを行う
+                continue;
+            } else if(!iter->first.compare("server_name")) {
                 continue;
             } else if (iter->first.size() > std::string("location ").size()) {
                 if (!iter->first.substr
