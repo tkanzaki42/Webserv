@@ -109,10 +109,8 @@ bool HttpRequest::is_set_cgi_extension(std::vector<std::string> v,
                          const std::string &extension) {
     // CGIの設定がない
     if (v.empty()) {
-        std::cout << "EXTENSION NOT FOUND :" << extension << std::endl;
         return (false);
     }
-    std::cout << "EXTENSION FOUND :" << extension << std::endl;
     std::vector<std::string>::iterator begin = v.begin();
     std::vector<std::string>::iterator end = v.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
