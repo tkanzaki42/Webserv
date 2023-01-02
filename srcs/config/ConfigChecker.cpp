@@ -65,7 +65,7 @@ int convertKeyToInt(const std::string &key) {
         return (REDIRECTOIN);
     } else if (!key.compare("root")) {
         return (ROOT);
-    } else if (!key.compare("upload_dir")) {
+    } else if (!key.compare("upload_store")) {
         return (UPLOAD_DIR);
     }
     return (LOCATION_KEY_UNKNOWN);
