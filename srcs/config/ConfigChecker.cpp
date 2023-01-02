@@ -9,6 +9,7 @@ bool ConfigChecker::isValidConfig() {
          = Config::_config.begin();
     std::map<int, string_vector_map>::iterator end
          = Config::_config.end();
+    bool    is_set_location = false;
     for (std::map<int, string_vector_map>
         ::iterator itr = begin; itr != end; itr++) {
         string_vector_map::iterator key_begin = itr->second.begin();
@@ -38,6 +39,7 @@ bool ConfigChecker::isValidConfig() {
                     if (!isValidLocation(iter->first, iter->second)) {
                         return (false);
                     }
+                    is_set_location = true;
                     continue;
                 }
             }
@@ -45,7 +47,8 @@ bool ConfigChecker::isValidConfig() {
             return (false);
         }
     }
-    return (true);
+    // Location項目がない場合はエラー
+    return (is_set_location);
 }
 
 int convertKeyToInt(const std::string &key) {
