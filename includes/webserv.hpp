@@ -10,8 +10,7 @@ const int MAX_URL_LENGTH     = 8177;
 #define BASIC_AUTH   false
 #define ETAG_ENABLED true
 
-#define TMP_POST_DATA_DIR  "./file/"
-#define TMP_POST_DATA_FILE "./file/upload_file"
+#define TMP_POST_DATA_FILE "upload_file"
 
 const std::string kServerSoftwareName = "Webserv/1.0";
 
