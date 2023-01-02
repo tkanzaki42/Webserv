@@ -8,7 +8,8 @@ HttpRequest::HttpRequest()
           virtual_host_index_(-1),
           is_autoindex_(false),
           client_max_body_size(-1),
-          is_header_analyzed_(false) {
+          is_header_analyzed_(false),
+          upload_data_("") {
 }
 
 HttpRequest::~HttpRequest() {
@@ -28,6 +29,7 @@ HttpRequest& HttpRequest::operator=(const HttpRequest &obj) {
     is_autoindex_        = obj.is_autoindex_;
     client_max_body_size = obj.client_max_body_size;
     is_header_analyzed_  = obj.is_header_analyzed_;
+    upload_data_         = obj.upload_data_;
     return *this;
 }
 
@@ -45,6 +47,7 @@ void HttpRequest::reset() {
     readpipe_           = -1;
     client_addr_        = sockaddr_in();
     is_header_analyzed_ = false;
+    upload_data_        = "";
 }
 
 // 戻り値 true : 読み込み終了
