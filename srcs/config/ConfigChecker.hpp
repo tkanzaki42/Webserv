@@ -23,6 +23,7 @@ namespace ConfigChecker {
     bool isValidListen(const std::vector<std::string> &v);
     bool isValidClientMaxBodySize(const std::vector<std::string> &v);
     bool isValidLocation(const std::string &s, const std::vector<std::string> &v);
+    bool isValidRedirection(const std::string &value);
 }
 
 #endif /* SRCS_CONFIG_CONFIGCHECKER_HPP_ */

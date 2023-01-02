@@ -65,6 +65,22 @@ int convertKeyToInt(const std::string &key) {
     return (KEY_UNKNOWN);
 }
 
+bool ConfigChecker::isValidRedirection(const std::string &value) {
+    if (value.find('|') == std::string::npos) {
+        return (false);
+    }
+    int sep_position = value.find('|');
+    std::string status_code = value.substr(0, sep_position);
+    std::string url = value.substr(sep_position + 1, value.length());
+    if (!url.size() || status_code.size() != 3 || !isAllNum(status_code)) {
+        return (false);
+    }
+    std::istringstream iss(status_code);
+    int n;
+    iss >> n;
+    return 100 <= n && n <= 599;
+}
+
 bool ConfigChecker::isValidLocation(const std::string &s,
                                  const std::vector<std::string> &v) {
     std::string locationArg =
@@ -87,6 +103,11 @@ bool ConfigChecker::isValidLocation(const std::string &s,
         switch (key_num) {
         case AUTO_INDEX:
             if (value.compare("on") && value.compare("off")) {
+                return (false);
+            }
+            break;
+        case REDIRECTOIN:
+            if (!isValidRedirection(value)) {
                 return (false);
             }
             break;
