@@ -31,7 +31,7 @@ HttpBody &HttpBody::operator=(const HttpBody &obj) {
 
 std::string HttpBody::get_error_page(int status_code) {
     std::map<int, std::string> errorPageMap =
-        Config::getErrorPage(request_.get_virtual_host_index(), request_.get_location());
+        Config::getErrorPage(request_.get_virtual_host_index());
     std::map<int, std::string>::iterator it =
         errorPageMap.find(status_code);
     // std::map<int, std::string>::iterator begin = errorPageMap.begin();
@@ -125,7 +125,7 @@ int HttpBody::read_contents_from_file_() {
 
 bool HttpBody::is_match_error_page(int status_code) {
     std::map<int, std::string> errorPageMap =
-        Config::getErrorPage(request_.get_virtual_host_index(), request_.get_location());
+        Config::getErrorPage(request_.get_virtual_host_index());
     std::map<int, std::string>::iterator it =
         errorPageMap.find(status_code);
     if (it != errorPageMap.end()) {

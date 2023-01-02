@@ -34,7 +34,7 @@ class Config {
     static std::vector<std::string>
          getVectorStr(int, const std::string&);
     static std::map<std::string, std::string> getLocation(int hostkey, const std::string& url);
-    static std::map<int, std::string> getErrorPage(int hostkey, const std::string &location);
+    static std::map<int, std::string> getErrorPage(int hostkey);
     static std::vector<std::string> getLocationVector(int hostkey, const std::string& url, const std::string &key);
     static std::string getLocationString(int hostkey, const std::string& url, const std::string &key);
     static std::string findLongestMatchLocation(std::string& url, std::vector<std::string> locationVector);

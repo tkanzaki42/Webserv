@@ -16,10 +16,10 @@ int main(int argc, char const *argv[]) {
         break;
     }
     puts("Config OK");
-    // Webserv serv;
-    // serv.init();
-    // serv.loop();
-    // serv.finalize();
+    Webserv serv;
+    serv.init();
+    serv.loop();
+    serv.finalize();
 
     return 0;
 }

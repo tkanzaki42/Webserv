@@ -192,16 +192,17 @@ std::pair<int, std::string> Config::getRedirectPair(int hostkey, const std::stri
     return (redirectPair);
 }
 
-std::map<int, std::string> Config::getErrorPage(int hostkey, const std::string &location) {
+std::map<int, std::string> Config::getErrorPage(int hostkey) {
     std::map<int, std::string> errorPageMap;
     std::vector<std::string> erroPageVector =
-        Config::getLocationVector(hostkey, location, "error_page");
-    // printVector(erroPageVector);
+        Config::getVectorStr(hostkey, "error_page");
     std::vector<std::string>::iterator begin = erroPageVector.begin();
     std::vector<std::string>::iterator end = erroPageVector.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
-        std::string value = *(itr++);
-        errorPageMap.insert(std::make_pair(StringConverter::stoi(value), (*itr)));
+        int sep_position = itr->find('|');
+        std::string key = itr->substr(0, sep_position);
+        std::string value = itr->substr(sep_position + 1, itr->length());
+        errorPageMap.insert(std::make_pair(StringConverter::stoi(key), (value)));
     }
     return (errorPageMap);
 }
