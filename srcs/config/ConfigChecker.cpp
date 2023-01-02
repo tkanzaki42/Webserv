@@ -17,17 +17,19 @@ bool ConfigChecker::isValidConfig() {
         for (string_vector_map::iterator iter = key_begin;
              iter != key_end; iter++) {
             if (!iter->first.compare("listen")) {
-                if (!ConfigChecker::isValidListen(iter->second)) {
+                if (!isValidListen(iter->second)) {
                     return (false);
                 }
                 continue;
             } else if (!iter->first.compare("client_max_body_size")) {
-                if (!ConfigChecker::isValidClientMaxBodySize(iter->second)) {
+                if (!isValidClientMaxBodySize(iter->second)) {
                     return (false);
                 }
                 continue;
             } else if (!iter->first.compare("error_page")) {
-                // TODO(kfukuta) error_pageのバリデーションを行う
+                if (!isValidErrorPage(iter->second)) {
+                    return (false);
+                }
                 continue;
             } else if(!iter->first.compare("server_name")) {
                 continue;
@@ -35,7 +37,6 @@ bool ConfigChecker::isValidConfig() {
                 if (!iter->first.substr
                     (0, std::string("location ").size()).
                         compare("location ")) {
-                    // Config::printVector(iter->second);
                     if (!isValidLocation(iter->first, iter->second)) {
                         return (false);
                     }
@@ -67,7 +68,41 @@ int convertKeyToInt(const std::string &key) {
     } else if (!key.compare("upload_dir")) {
         return (UPLOAD_DIR);
     }
-    return (KEY_UNKNOWN);
+    return (LOCATION_KEY_UNKNOWN);
+}
+
+bool ConfigChecker::isValidStatusCode(const std::string &status_code) {
+    if (status_code.size() != 3 || !isAllNum(status_code)) {
+        return (false);
+    }
+    std::istringstream iss(status_code);
+    int n;
+    iss >> n;
+    return (100 <= n && n <= 599);
+}
+
+bool ConfigChecker::isValidErrorPage(const std::vector<std::string> &v) {
+    std::vector<std::string>::const_iterator begin = v.begin();
+    std::vector<std::string>::const_iterator end = v.end();
+    // 重複確認のためのstd::set<std::string>
+    std::set<std::string> status_code;
+    for (std::vector<std::string>::const_iterator iter = begin;
+         iter != end; iter++) {
+        if (iter->find('|') == std::string::npos) {
+            return (false);
+        }
+        int sep_position = iter->find('|');
+        std::string key = iter->substr(0, sep_position);
+        std::string value = iter->substr(sep_position + 1, iter->length());
+        if (!value.size()) {
+            // エラーページのURLが空
+            return (false);
+        } else if (!status_code.insert(key).second || !isValidStatusCode(key)) {
+            // 同一error_page内でstatus_codeが重複している または ステータスコードが不正
+            return (false);
+        }
+    }
+    return (true);
 }
 
 bool ConfigChecker::isValidRedirection(const std::string &value) {
@@ -77,13 +112,10 @@ bool ConfigChecker::isValidRedirection(const std::string &value) {
     int sep_position = value.find('|');
     std::string status_code = value.substr(0, sep_position);
     std::string url = value.substr(sep_position + 1, value.length());
-    if (!url.size() || status_code.size() != 3 || !isAllNum(status_code)) {
+    if (!url.size()) {
         return (false);
     }
-    std::istringstream iss(status_code);
-    int n;
-    iss >> n;
-    return 100 <= n && n <= 599;
+    return (isValidStatusCode(status_code));
 }
 
 bool ConfigChecker::isValidLocation(const std::string &s,
@@ -123,7 +155,7 @@ bool ConfigChecker::isValidLocation(const std::string &s,
                 return (false);
             }
             break;
-        case KEY_UNKNOWN:
+        case LOCATION_KEY_UNKNOWN:
             return (false);
         default:
             break;
@@ -150,7 +182,7 @@ bool ConfigChecker::isValidListen(const std::vector<std::string> &v) {
     return (true);
 }
 
-bool isValidIP(const std::string s) {
+bool ConfigChecker::isValidIP(const std::string s) {
     std::vector<std::string> v = split(s, '.');
     if (v.size() != 4)
         return (false);
@@ -171,7 +203,7 @@ bool isValidIP(const std::string s) {
     return (true);
 }
 
-bool isValidPort(const std::string s) {
+bool ConfigChecker::isValidPort(const std::string s) {
     if (!isAllNum(s)) {
         return (false);
     }
@@ -184,7 +216,7 @@ bool isValidPort(const std::string s) {
     return (true);
 }
 
-bool isAllNum(const std::string s) {
+bool ConfigChecker::isAllNum(const std::string s) {
     std::string::const_iterator begin = s.begin();
     std::string::const_iterator end = s.end();
     for (std::string::const_iterator iter = begin; iter != end; iter++) {
