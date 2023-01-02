@@ -49,6 +49,10 @@ void HttpResponse::make_response() {
     header_.clear_contents();
     message_body_.clear_contents();
 
+    // エラーならFILETYPE_STATIC_HTML
+    if (status_code_ != 200 && status_code_ != 201)
+        request_->set_file_type(FILETYPE_STATIC_HTML);
+
     // リクエストヘッダ、リクエストボディの作成
     make_message_body_();
     make_header_();
