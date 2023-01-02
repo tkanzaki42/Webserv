@@ -412,6 +412,9 @@ bool HttpRequest::get_is_header_analyzed() {
     return is_header_analyzed_;
 }
 
+const std::string& HttpRequest::get_upload_dir() {
+    return upload_dir;
+}
 void HttpRequest::check_authorization_() {
     // TODO(someone)
     // コンフィグに認証設定がなかったらなにもしない

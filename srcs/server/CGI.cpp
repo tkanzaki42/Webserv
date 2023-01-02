@@ -19,7 +19,8 @@ CGI &CGI::operator=(const CGI &obj) {
     return *this;
 }
 
-int CGI::exec_cgi(FileType file_type, HttpMethod http_method) {
+int CGI::exec_cgi(FileType file_type, HttpMethod http_method,
+        const std::string& upload_dir) {
     file_type_ = file_type;
 
     int pp_out[2];
@@ -35,10 +36,11 @@ int CGI::exec_cgi(FileType file_type, HttpMethod http_method) {
     } else if (pid == 0) {
         // POST時はリクエストボディのデータを標準入力に入れる
         if (http_method == METHOD_POST) {
-            int fd_in = open(TMP_POST_DATA_FILE, O_RDONLY);
+            int fd_in = open(
+                (upload_dir + TMP_POST_DATA_FILE).c_str(), O_RDONLY);
             if (fd_in == -1) {
                 std::cerr << "Failed to open file "
-                    << TMP_POST_DATA_FILE << std::endl;
+                    << (upload_dir + TMP_POST_DATA_FILE).c_str() << std::endl;
                 return EXIT_FAILURE;
             }
             if (connect_pipe_(fd_in, 0) == EXIT_FAILURE)

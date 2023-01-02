@@ -30,7 +30,8 @@ class CGI {
     CGI& operator=(const CGI &obj);
 
     int                              exec_cgi(FileType file_type,
-                                       HttpMethod http_method);
+                                       HttpMethod http_method,
+                                       const std::string& upload_dir);
     std::size_t                      get_content_length();
     const std::map<std::string, std::string>&
                                      get_header_content();

@@ -70,7 +70,9 @@ void HttpResponse::make_message_body_() {
         status_code_ = 200;  // status_code_が201の場合、200に戻す
         cgi_ = new CGI(request_);
         int cgi_ret = cgi_->exec_cgi(
-                request_->get_file_type(), request_->get_http_method());
+                request_->get_file_type(),
+                request_->get_http_method(),
+                request_->get_upload_dir());
         if (cgi_ret == EXIT_FAILURE) {
             delete cgi_;
             cgi_ = NULL;
