@@ -83,6 +83,10 @@ class HttpRequest {
                            char **readed_data, int total_read_size);
     int                 receive_plain_data_(std::ofstream &ofs_outfile);
     int                 delete_file_();
+    bool                is_allowed_method(std::vector<std::string> method,
+                                          const std::string &upload_dir);
+    bool                is_set_cgi_extension(std::vector<std::string> v,
+                                              const std::string &extention);
     std::string         replacePathToLocation_(std::string &location,
                                               std::string &path, 
                                               std::string &root);
