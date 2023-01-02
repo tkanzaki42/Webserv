@@ -146,10 +146,8 @@ void HttpBody::make_status_response_(int status_code) {
     content_.clear();
     content_.push_back(oss_body.str());
 
-    // 401はContent-Lengthを返す
-    if (400 <= status_code && status_code <= 499) {
-        count_content_length_();
-    }
+    // Content-Lengthを数える
+    count_content_length_();
 }
 
 int HttpBody::make_response(int status_code) {
