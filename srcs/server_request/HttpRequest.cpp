@@ -203,6 +203,11 @@ void HttpRequest::analyze_request(int port) {
         (path, Config::getAllLocation(virtual_host_index_));
     std::string root =
         Config::getLocationString(virtual_host_index_, location_, "root");
+    // もしrootが見つからなかった場合
+    if (!root.size()) {
+        root = "/";
+    }
+
     std::vector<std::string> method =
      Config::getLocationVector(virtual_host_index_, location_, "limit_except");
     upload_dir =
@@ -212,10 +217,6 @@ void HttpRequest::analyze_request(int port) {
         return;
     }
 
-    // もしrootが見つからなかった場合
-    if (!root.size()) {
-        root = "/";
-    }
     // デフォルトパスの設定
     parser_.setIndexHtmlFileName
         (Config::getLocationVector(virtual_host_index_, location_, "index"));

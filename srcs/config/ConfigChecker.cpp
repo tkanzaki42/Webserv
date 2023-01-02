@@ -80,6 +80,8 @@ bool ConfigChecker::isValidLocation(const std::vector<std::string> &v) {
                 return (false);
             }
             break;
+        case KEY_UNKNOWN:
+            return (false);
         default:
             break;
         }
