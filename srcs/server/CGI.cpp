@@ -162,7 +162,7 @@ char** CGI::generate_exec_paths_() {
     size_t execpath_i = 0;
     if (shebang_path != "") {
         execpath_[execpath_i] = new char[shebang_path.size() + 1];
-        strncpy(execpath_[execpath_i],
+        StringConverter::ft_strncpy(execpath_[execpath_i],
             shebang_path.c_str(), shebang_path.size());
         execpath_[execpath_i][shebang_path.size()] = '\0';
         execpath_i++;
@@ -170,7 +170,7 @@ char** CGI::generate_exec_paths_() {
 
     // ファイルパスを追加
     execpath_[execpath_i] = new char[execpath_length + 1];
-    strncpy(execpath_[execpath_i],
+    StringConverter::ft_strncpy(execpath_[execpath_i],
         request_->get_path_to_file().c_str(), execpath_length);
     execpath_[execpath_i][execpath_length] = '\0';
     execpath_i++;
@@ -252,7 +252,7 @@ char* CGI::duplicate_string_(const std::string &str) {
         std::cerr << "Failed to duplicate string" << std::endl;
         return NULL;
     }
-    strncpy(allocated_char, str.c_str(), str.size());
+    StringConverter::ft_strncpy(allocated_char, str.c_str(), str.size());
     allocated_char[str.size()] = '\0';
     return allocated_char;
 }
@@ -289,7 +289,7 @@ void CGI::read_cgi_output_from_pipe_(std::string *read_buffer, int pp_out) {
     ssize_t     read_size = 0;
     char        buf[BUF_SIZE];
     while (true) {
-        memset(buf, 0, sizeof(char) * BUF_SIZE);
+        StringConverter::ft_memset(buf, 0, sizeof(char) * BUF_SIZE);
         read_size = read(pp_out, buf, sizeof(char) * BUF_SIZE - 1);
         if (read_size <= 0)
             break;

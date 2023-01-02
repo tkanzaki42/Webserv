@@ -118,7 +118,7 @@ char* StringConverter::ft_strjoin(char const *s1, char const *s2) {
 
     s1len = ft_strlen(s1);
     s2len = ft_strlen(s2);
-    if (!(t = (char *)malloc(sizeof(char) * (s1len + s2len + 1))))
+    if (!(t = new char[sizeof(char) * (s1len + s2len + 1)]))
         return (NULL);
     i = 0;
     while (i < s1len) {
@@ -131,4 +131,51 @@ char* StringConverter::ft_strjoin(char const *s1, char const *s2) {
     }
     t[i] = '\0';
     return (t);
+}
+
+void	*StringConverter::ft_memset(void *b, int c, size_t len)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < len)
+		((unsigned char*)b)[i++] = (unsigned char)c;
+	return (b);
+}
+
+char	*StringConverter::ft_strdup(char *src)
+{
+	char	*dest;
+	int		i;
+
+	i = 0;
+	while (src[i] != '\0')
+		i++;
+	dest = new char[(i + 1) * sizeof(char)];
+	if (dest == NULL)
+		return (NULL);
+	i = 0;
+	while (src[i] != '\0')
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+	return (dest);
+}
+
+char *StringConverter::ft_strncpy(char *dst, const char *src, size_t n)
+{
+	if (n != 0) {
+		char *d = dst;
+		const char *s = src;
+		do {
+			if ((*d++ = *s++) == 0) {
+				while (--n != 0)
+					*d++ = 0;
+				break;
+			}
+		} while (--n != 0);
+	}
+	return (dst);
 }

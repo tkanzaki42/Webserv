@@ -53,7 +53,7 @@ bool HttpRequest::receive_header() {
     char     buf[BUF_SIZE];
 
     // パイプから読み込み
-    memset(buf, 0, sizeof(buf));
+    StringConverter::ft_memset(buf, 0, sizeof(buf));
     ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
     if (read_size <= 0) {
         std::cerr << "read() ends with return value 0 or -1,"
@@ -498,7 +498,7 @@ std::ofstream ofs_outfile;
     // ヘッダ読み込み時にバッファに残っている分をバッファへ
     StringConverter::ft_strlcpy(
             buf, parser_.get_remain_buffer().c_str(), BUF_SIZE);
-    char *readed_data = strdup(buf);
+    char *readed_data = StringConverter::ft_strdup(buf);
     int total_read_size = StringConverter::ft_strlen(buf);
 
     // 受信しながらファイルに書き出し
@@ -514,12 +514,12 @@ std::ofstream ofs_outfile;
             if (chunk_size == -1) {
                 ofs_outfile.close();
                 std::remove(TMP_POST_DATA_FILE);
-                free(readed_data);
+                delete(readed_data);
                 return 400;  // Bad Request
             } else if (chunk_size == 0) {
                 // チャンクサイズが0の場合、データの終了を意味する
                 ofs_outfile.close();
-                free(readed_data);
+                delete(readed_data);
                 break;
             // } else if (total_read_size + chunk_size > client_max_body_size) {
             //     // デフォルト値1MB以上なら413
@@ -531,7 +531,7 @@ std::ofstream ofs_outfile;
             read_mode = READMODE_DATA;
         } else if (read_mode == READMODE_DATA) {
             // チャンクサイズ分のデータを読み込んでファイルに書き出し
-            while (chunk_size > static_cast<int>(strlen(readed_data))) {
+            while (chunk_size > static_cast<int>(StringConverter::ft_strlen(readed_data))) {
                 if (recv_and_join_data_(&readed_data) == -1)
                     return 400;  // Bad Request
             }
@@ -541,8 +541,8 @@ std::ofstream ofs_outfile;
             ofs_outfile.write(readed_data, chunk_size);
             // 書き出した分をバッファから削除
             // +2は"\r\n"分
-            char* tmp = strdup(readed_data + chunk_size + 2);
-            free(readed_data);
+            char* tmp = StringConverter::ft_strdup(readed_data + chunk_size + 2);
+            delete(readed_data);
             readed_data = tmp;
             // モード変更など
             read_mode = READMODE_CHUNKSIZE;
@@ -573,7 +573,7 @@ int HttpRequest::recv_and_join_data_(char **readed_data) {
     if (read_size >= 0) {
         buf[read_size] = '\0';
         char* tmp = StringConverter::ft_strjoin(*readed_data, buf);
-        free(*readed_data);
+        delete(*readed_data);
         *readed_data = tmp;
     }
     return read_size;
@@ -608,8 +608,8 @@ int HttpRequest::split_chunk_size_(char **readed_data, int total_read_size) {
 #endif
     // チャンクサイズ部分をバッファから削除
     // +2は"\r\n"分
-    char* tmp = strdup(*readed_data + i + 2);
-    free(*readed_data);
+    char* tmp = StringConverter::ft_strdup(*readed_data + i + 2);
+    delete(*readed_data);
     *readed_data = tmp;
 
     return chunk_size;
@@ -624,7 +624,7 @@ bool HttpRequest::receive_plain_data_(bool is_not_readed_header) {
     if (!is_not_readed_header) {
         // データ受信
         char    buf[BUF_SIZE];
-        memset(buf, 0, sizeof(char) * BUF_SIZE);
+        StringConverter::ft_memset(buf, 0, sizeof(char) * BUF_SIZE);
         ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
     #ifdef DEBUG
         std::cout << "  data readed, read_size: " << read_size << std::endl;

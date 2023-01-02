@@ -1,5 +1,6 @@
 // Copyright 2022 tkanzaki
 #include "srcs/util_network/Socket.hpp"
+#include "srcs/util/StringConverter.hpp"
 
 Socket::Socket():
 port_(0) {
@@ -78,7 +79,7 @@ int Socket::open_socket_() {
 }
 
 int Socket::bind_address_() {
-    memset(&serv_addr_, 0, sizeof(serv_addr_));
+    StringConverter::ft_memset(&serv_addr_, 0, sizeof(serv_addr_));
     serv_addr_.sin_family = AF_INET;
     serv_addr_.sin_port = htons(port_);
     serv_addr_.sin_addr.s_addr = htonl(INADDR_ANY);

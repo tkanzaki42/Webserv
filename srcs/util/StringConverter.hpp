@@ -21,6 +21,10 @@ class StringConverter {
      static std::size_t  ft_strlcpy(
             char *dst, const char *src, std::size_t dstsize);
      static char*        ft_strjoin(char const *s1, char const *s2);
+     static void	     *ft_memset(void *b, int c, size_t len);
+     static char         *ft_strdup(char *src);
+     static char         *ft_strncpy(char *dst, const char *src, size_t n);
+
  private:
      static bool         encode_base64_(const std::vector<unsigned char>& src, std::string& dst);
 };

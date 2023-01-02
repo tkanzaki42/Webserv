@@ -183,7 +183,7 @@ void FDManager::accept() {
 int FDManager::receive() {
     // クライアントから受信する
     char     buf[BUF_SIZE];
-    memset(buf, 0, sizeof(char) * BUF_SIZE);
+    StringConverter::ft_memset(buf, 0, sizeof(char) * BUF_SIZE);
     int read_size = ::recv((*connections_it_).get_accepted_fd(),
         buf,
         sizeof(char) * BUF_SIZE - 1,
