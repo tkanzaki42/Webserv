@@ -29,7 +29,8 @@ class CGI {
     CGI(const CGI &obj);
     CGI& operator=(const CGI &obj);
 
-    int                              exec_cgi(FileType file_type);
+    int                              exec_cgi(FileType file_type,
+                                       HttpMethod http_method);
     std::size_t                      get_content_length();
     const std::map<std::string, std::string>&
                                      get_header_content();

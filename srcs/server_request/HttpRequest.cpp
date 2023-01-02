@@ -51,15 +51,9 @@ bool HttpRequest::receive_header() {
     // パイプから読み込み
     memset(buf, 0, sizeof(buf));
     ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
-    if (read_size < 0) {
-        int recv_errno = errno;
-        if (recv_errno == 0 || recv_errno == 9) {
-            std::cerr << "connection closed by peer."
-                << " recv() errno: " << recv_errno << std::endl;
-        } else {
-            std::cerr << "recv() failed."
-                << " ERROR: " << recv_errno << std::endl;
-        }
+    if (read_size <= 0) {
+        std::cerr << "read() ends with return value 0 or -1,"
+            << " errno = " << errno << std::endl;
         return true;  // 受信に失敗したので処理中断
     }
 
@@ -563,7 +557,7 @@ int HttpRequest::recv_and_join_data_(char **readed_data) {
             << "recv_and_join_data_()." << std::endl;
         return -1;
     }
-    if (read_size > 0) {
+    if (read_size >= 0) {
         buf[read_size] = '\0';
         char* tmp = StringConverter::ft_strjoin(*readed_data, buf);
         free(*readed_data);

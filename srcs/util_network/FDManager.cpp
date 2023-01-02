@@ -83,16 +83,15 @@ bool FDManager::select_fd_() {
         NULL,
         &select_time_);
     if (count < 0) {
+#ifdef DEBUG
         if (errno == EINTR) {
             // シグナル受信によるselect終了の場合、再度待ち受けに戻る
-#ifdef DEBUG
             std::cout << "Interrupted system call." << std::endl;
-#endif
-            return false;
         }
+#endif
         // それ以外はexit
         std::cerr << "select() failed." << std::endl;
-        _exit(1);
+        return false;
     } else if (count == 0) {
         // タイムアウトした場合、再度待ち受けに戻る
 #ifdef DEBUG
