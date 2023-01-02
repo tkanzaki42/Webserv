@@ -94,11 +94,18 @@ bool ConfigChecker::isValidLocation(const std::string &s,
 
     std::vector<std::string>::const_iterator begin = v.begin();
     std::vector<std::string>::const_iterator end = v.end();
+    // 重複確認のためのstd::set<std::string>
+    std::set<std::string> key_set;
     for (std::vector<std::string>::const_iterator iter = begin;
          iter != end; iter++) {
         int sep_position = iter->find('|');
         std::string key = iter->substr(0, sep_position);
         std::string value = iter->substr(sep_position + 1, iter->length());
+        if (!key_set.insert(key).second) {
+            // 同一Location内でキーが重複している
+            return (false);
+        }
+
         int key_num = convertKeyToInt(key);
         switch (key_num) {
         case AUTO_INDEX:
