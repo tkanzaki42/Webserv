@@ -71,7 +71,6 @@ bool Config::isReturn(int virtualServerIndex, std::string &location) {
 std::map<int, string_vector_map> Config::_config;
 
 void    Config::parseConfig(const std::string &path) {
-    // bool isDefault = true;
     std::ifstream ifs(path.c_str());
     if (!ifs) {
         std::cerr << "Can not open file" << std::endl;
@@ -126,16 +125,6 @@ void    Config::parseConfig(const std::string &path) {
                 if (!_config[hostKey].insert(key_value_pair).second) {
                     throw(Config::ConfigFormatException());
                 }
-                // // 最初のサーバーネームの場合は　default フラグを立てる
-                // if (isDefault) {
-                //     std::vector<std::string> defaultVect;
-                //     defaultVect.push_back("true");
-                //     if (!_config[hostKey].insert(
-                //             std::make_pair("default", defaultVect)).second) {
-                //         throw(Config::ConfigFormatException());
-                //     }
-                //     isDefault = false;
-                // }
             }
         } else {
             throw(Config::ConfigFormatException());

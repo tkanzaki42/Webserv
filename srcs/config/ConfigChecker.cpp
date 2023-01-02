@@ -31,7 +31,7 @@ bool ConfigChecker::isValidConfig() {
                     return (false);
                 }
                 continue;
-            } else if(!iter->first.compare("server_name")) {
+            } else if (!iter->first.compare("server_name")) {
                 continue;
             } else if (iter->first.size() > std::string("location ").size()) {
                 if (!iter->first.substr
@@ -230,6 +230,12 @@ bool ConfigChecker::isAllNum(const std::string s) {
 bool ConfigChecker
     ::isValidClientMaxBodySize(const std::vector<std::string> &v) {
     if (v.size() != 1 || !isAllNum(*v.begin())) {
+        return (false);
+    }
+    std::stringstream ss(*v.begin());
+    long n;
+    ss >> n;
+    if (!(0 <= n && n <= INT_MAX)) {
         return (false);
     }
     return (true);
