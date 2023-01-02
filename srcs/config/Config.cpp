@@ -207,20 +207,14 @@ std::map<int, std::string> Config::getErrorPage(int hostkey, const std::string &
 }
 
 // デバッグ用
-void printVector(std::vector<std::string> v) {
+void Config::printVector(std::vector<std::string> v) {
     std::vector<std::string>::iterator begin = v.begin();
     std::vector<std::string>::iterator end = v.end();
-#ifdef DEBUG
     std::cout << "### printVector() STRART ####" << std::endl;
-#endif
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
-#ifdef DEBUG
         std::cout << *itr << std::endl;
-#endif
     }
-#ifdef DEBUG
     std::cout << "### printVector() END ####" << std::endl;
-#endif
 }
 
 // あたえられたURLからlocationを決定して、そのLocationのパスを返す。

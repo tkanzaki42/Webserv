@@ -32,12 +32,26 @@ bool ConfigChecker::isValidConfig() {
                 if (!iter->first.substr
                     (0, std::string("location ").size()).
                         compare("location ")) {
+                    Config::printVector(iter->second);
+                    if (!isValidLocation(iter->second)) {
+                        return (false);
+                    }
                     continue;
                 }
             }
             std::cout << iter->first << std::endl;
             return (false);
         }
+    }
+    return (true);
+}
+
+bool ConfigChecker::isValidLocation(const std::vector<std::string> &v) {
+    std::vector<std::string>::const_iterator begin = v.begin();
+    std::vector<std::string>::const_iterator end = v.end();
+    for (std::vector<std::string>::const_iterator iter = begin;
+         iter != end; iter++) {
+        // エラーチェック処理を書く
     }
     return (true);
 }

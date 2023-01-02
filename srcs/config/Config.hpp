@@ -45,6 +45,7 @@ class Config {
                                     const std::string &port);
     static bool isReturn(int virtualHostIndex, std::string &url);
     static bool getAutoIndex(int virtualHostIndex, const std::string& url);
+    static void printVector(std::vector<std::string> v);
 
     class ConfigFormatException : public std::exception {
      public:
