@@ -30,6 +30,7 @@ class HttpRequest {
     void                reset();
     bool                receive_header();
     void                analyze_request(int port);
+    bool                op_method_post(bool is_not_readed_header);
     void                print_debug();
 
     // getter(HttpParser)
@@ -49,6 +50,7 @@ class HttpRequest {
     int                 get_virtual_host_index() const;
     bool                get_is_autoindex() const;
     struct sockaddr_in  get_client_addr();
+    bool                get_is_header_analyzed();
     //  getter(HttpResponse)
     const std::pair<int, std::string>
                         get_redirect_pair() const;
@@ -72,16 +74,19 @@ class HttpRequest {
     std::string         upload_dir;
     int                 readpipe_;
     struct sockaddr_in  client_addr_;
+    bool                is_header_analyzed_;
+    std::string         upload_data_;
 
     void                check_redirect_();
     void                check_authorization_();
-    int                 receive_and_store_to_file_();
-    int                 receive_chunked_data_(std::ofstream &ofs_outfile);
+    bool                receive_and_store_to_file_(bool is_not_readed_header);
+    bool                receive_chunked_data_();
     bool                is_found_crlf_(char *readed_data);
     int                 recv_and_join_data_(char **readed_data);
     int                 split_chunk_size_(
                            char **readed_data, int total_read_size);
-    int                 receive_plain_data_(std::ofstream &ofs_outfile);
+    bool                receive_plain_data_(bool is_not_readed_header);
+    bool                write_to_file_();
     int                 delete_file_();
     bool                is_allowed_method(std::vector<std::string> method,
                                           const std::string &upload_dir);

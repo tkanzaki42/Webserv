@@ -266,7 +266,7 @@ std::string CGI::read_shebang_() {
              << request_->get_path_to_file() << std::endl;
         return "";
     }
-    getline(input_file, shebang_line);
+    std::getline(input_file, shebang_line);
     input_file.close();
 
     if (shebang_line.size() >= 2

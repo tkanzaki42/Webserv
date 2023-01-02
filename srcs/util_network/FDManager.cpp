@@ -188,6 +188,9 @@ int FDManager::receive() {
         buf,
         sizeof(char) * BUF_SIZE - 1,
         0);
+#ifdef DEBUG
+    std::cout << "read_size:" << read_size << std::endl;
+#endif
     if (read_size < 0) {
         // 切断された場合
         return EXIT_FAILURE;
