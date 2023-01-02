@@ -19,7 +19,7 @@ CGI &CGI::operator=(const CGI &obj) {
     return *this;
 }
 
-int CGI::exec_cgi(FileType file_type) {
+int CGI::exec_cgi(FileType file_type, HttpMethod http_method) {
     file_type_ = file_type;
 
     int pp_out[2];
@@ -34,14 +34,16 @@ int CGI::exec_cgi(FileType file_type) {
         return EXIT_FAILURE;
     } else if (pid == 0) {
         // POST時はリクエストボディのデータを標準入力に入れる
-        int fd_in = open(TMP_POST_DATA_FILE, O_RDONLY);
-        if (fd_in == -1) {
-            std::cerr << "Failed to open file "
-                << TMP_POST_DATA_FILE << std::endl;
-            return EXIT_FAILURE;
+        if (http_method == METHOD_POST) {
+            int fd_in = open(TMP_POST_DATA_FILE, O_RDONLY);
+            if (fd_in == -1) {
+                std::cerr << "Failed to open file "
+                    << TMP_POST_DATA_FILE << std::endl;
+                return EXIT_FAILURE;
+            }
+            if (connect_pipe_(fd_in, 0) == EXIT_FAILURE)
+                return EXIT_FAILURE;
         }
-        if (connect_pipe_(fd_in, 0) == EXIT_FAILURE)
-            return EXIT_FAILURE;
 
         // 標準出力をパイプに出し親プロセスに送る
         if (close_pipe_(pp_out[0]) == EXIT_FAILURE)
