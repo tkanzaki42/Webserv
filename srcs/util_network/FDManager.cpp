@@ -210,6 +210,7 @@ bool FDManager::receive() {
         std::cerr << "Failed to write to pipe in FDManager::receive(), "
             << "write_ret = " << write_ret << ", errno = " << errno
             << std::endl;
+        return false;
     }
     // パイプから読み込んで解析
     if ((*connections_it_).receive_from_pipe() == false) {
