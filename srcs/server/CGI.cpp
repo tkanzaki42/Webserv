@@ -82,7 +82,7 @@ int CGI::exec_cgi(FileType file_type, HttpMethod http_method,
     // パイプからCGI出力を読み込み
     std::string read_buffer;
     if (!read_cgi_output_from_pipe_(&read_buffer, pp_out[0])) {
-        return EXIT_SUCCESS;
+        return EXIT_FAILURE;
     }
 
     // 改行ごとに切ってヘッダとボディのvectorに入れる

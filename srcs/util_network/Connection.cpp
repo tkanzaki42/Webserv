@@ -136,3 +136,7 @@ void Connection::reset() {
     request_.reset();
     response_.reset();
 }
+
+void Connection::make_response() {
+    response_.make_response();
+}
