@@ -37,7 +37,7 @@ void Webserv::loop() {
                 std::cout << std::endl;
                 std::cout << "Event triggered: Read" << std::endl;
 #endif
-                if (fd_manager_.receive() == EXIT_FAILURE) {
+                if (fd_manager_.receive() == false) {
                     fd_manager_.disconnect();
                 }
                 continue;
@@ -46,7 +46,9 @@ void Webserv::loop() {
                 std::cout << std::endl;
                 std::cout << "Event triggered: Write" << std::endl;
 #endif
-                fd_manager_.send();
+                if (fd_manager_.send() == false) {
+                    fd_manager_.disconnect();
+                }
                 if (fd_manager_.is_disconnect()) {
                     fd_manager_.disconnect();
                 } else {

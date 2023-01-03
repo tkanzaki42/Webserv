@@ -180,7 +180,7 @@ void FDManager::accept() {
 #endif
 }
 
-int FDManager::receive() {
+bool FDManager::receive() {
     // クライアントから受信する
     char     buf[BUF_SIZE];
     StringConverter::ft_memset(buf, 0, sizeof(char) * BUF_SIZE);
@@ -193,10 +193,10 @@ int FDManager::receive() {
 #endif
     if (read_size < 0) {
         // 切断された場合
-        return EXIT_FAILURE;
+        return false;
     } else if (read_size == 0) {
         // 正常終了の場合
-        return EXIT_FAILURE;
+        return false;
     }
 #ifdef DEBUG
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
@@ -210,11 +210,15 @@ int FDManager::receive() {
         std::cerr << "Failed to write to pipe in FDManager::receive(), "
             << "write_ret = " << write_ret << ", errno = " << errno
             << std::endl;
+        (*connections_it_).set_response_status_code_(500);
+        (*connections_it_).make_response();
+        FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
+        return true;
     }
     // パイプから読み込んで解析
     if ((*connections_it_).receive_from_pipe() == false) {
         // ヘッダ読み込みが最後まで終わっていない場合、そのまま抜けて再度Readイベントを待つ
-        return EXIT_SUCCESS;
+        return true;
     }
 
     // 書き込みイベントフラグをセット
@@ -223,7 +227,7 @@ int FDManager::receive() {
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " set sendable_fds." << std::endl;
 #endif
-    return EXIT_SUCCESS;
+    return true;
 }
 
 bool FDManager::send() {
