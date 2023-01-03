@@ -209,6 +209,10 @@ void HttpRequest::analyze_request(int port) {
      Config::getLocationVector(virtual_host_index_, location_, "limit_except");
     upload_dir =
      Config::getLocationString(virtual_host_index_, location_, "upload_store");
+    if (upload_dir.size() && upload_dir[upload_dir.size() - 1] != '/') {
+        // /で終わってなかったら追加する
+        upload_dir += "/";
+    }
     if (!is_allowed_method(method, upload_dir)) {
         status_code_ = 405;
         return;
