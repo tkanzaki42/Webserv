@@ -307,9 +307,6 @@ std::set<int> Config::getAllListen() {
 
 std::vector<std::string> Config::parseValue(const std::string &valueStr) {
     std::vector<std::string> valueVector;
-    if (valueStr.size() < 3) {
-        throw(Config::ConfigFormatException());
-    }
     if (valueStr[0] != '{') {
         valueVector.push_back(valueStr);
     } else if (valueStr.at(valueStr.size() - 1) != '}') {
