@@ -232,8 +232,9 @@ void HttpRequest::analyze_request(int port) {
     parser_.separate_querystring_pathinfo();
 
     // ファイル存在チェック
-    if (!PathUtil::is_file_exists(get_path_to_file())) {
-        std::cerr << "File not found: " << get_path_to_file() << std::endl;
+    if (get_http_method() != METHOD_POST
+            && !PathUtil::is_file_exists(get_path_to_file())) {
+        std::cerr << "File not founda: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
     bool is_folder_existes = PathUtil::is_folder_exists(get_path_to_file());
@@ -257,10 +258,12 @@ void HttpRequest::analyze_request(int port) {
 
     // autoindex
     bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
-    if (!autoindex && is_folder_existes) {
-        status_code_ = 403;
-    } else if (autoindex == true && is_folder_existes) {
-        is_autoindex_ = true;
+    if (get_http_method() != METHOD_POST) {
+        if (!autoindex && is_folder_existes) {
+            status_code_ = 403;
+        } else if (autoindex == true && is_folder_existes) {
+            is_autoindex_ = true;
+        }
     }
 
     // CGI拡張子の設定を取得
