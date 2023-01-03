@@ -76,7 +76,7 @@ class FDManager {
     bool send();
 
     // クライアントからの文字列をバッファに読み込ませる(戻り値は読み込んだ文字列の長さ)
-    int receive();
+    bool receive();
 
     // ソケットを作成
     bool create_socket();

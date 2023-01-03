@@ -81,7 +81,9 @@ int CGI::exec_cgi(FileType file_type, HttpMethod http_method,
 
     // パイプからCGI出力を読み込み
     std::string read_buffer;
-    read_cgi_output_from_pipe_(&read_buffer, pp_out[0]);
+    if (!read_cgi_output_from_pipe_(&read_buffer, pp_out[0])) {
+        return EXIT_FAILURE;
+    }
 
     // 改行ごとに切ってヘッダとボディのvectorに入れる
     separate_to_header_and_body_(read_buffer);
@@ -287,17 +289,21 @@ std::string CGI::read_shebang_() {
     return "";
 }
 
-void CGI::read_cgi_output_from_pipe_(std::string *read_buffer, int pp_out) {
+bool CGI::read_cgi_output_from_pipe_(std::string *read_buffer, int pp_out) {
     ssize_t     read_size = 0;
     char        buf[BUF_SIZE];
     while (true) {
         StringConverter::ft_memset(buf, 0, sizeof(char) * BUF_SIZE);
         read_size = read(pp_out, buf, sizeof(char) * BUF_SIZE - 1);
-        if (read_size <= 0)
+        if (read_size < 0) {
+            return false;
+        } else if (read_size == 0) {
             break;
+        }
         buf[read_size] = '\0';
         *read_buffer += buf;
     }
+    return true;
 }
 
 void CGI::separate_to_header_and_body_(const std::string& read_buffer) {

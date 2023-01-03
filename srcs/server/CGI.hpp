@@ -50,7 +50,7 @@ class CGI {
     char**       generate_env_vars_();
     char*        duplicate_string_(const std::string &str);
     std::string  read_shebang_();
-    void         read_cgi_output_from_pipe_(std::string *read_buffer, int pp);
+    bool         read_cgi_output_from_pipe_(std::string *read_buffer, int pp);
     void         separate_to_header_and_body_(const std::string &read_buffer);
     void         store_header_(std::string header_line);
     void         cleanup_(char **cleanup_var);

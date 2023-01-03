@@ -209,6 +209,10 @@ void HttpRequest::analyze_request(int port) {
      Config::getLocationVector(virtual_host_index_, location_, "limit_except");
     upload_dir =
      Config::getLocationString(virtual_host_index_, location_, "upload_store");
+    if (upload_dir.size() && upload_dir[upload_dir.size() - 1] != '/') {
+        // /で終わってなかったら追加する
+        upload_dir += "/";
+    }
     if (!is_allowed_method(method, upload_dir)) {
         status_code_ = 405;
         return;
@@ -243,6 +247,9 @@ void HttpRequest::analyze_request(int port) {
         redirect_pair_.first = 301;
         redirect_pair_.second = "http://"
                  + get_header_field("Host") + get_request_target() + "/";
+        std::cout << redirect_pair_.second << std::endl;
+        is_header_analyzed_ = true;
+        return;
     }
 
     // 認証の確認
@@ -446,8 +453,6 @@ void HttpRequest::check_authorization_() {
 }
 
 void HttpRequest::check_redirect_() {
-        std::string returnPath =
-            Config::getLocationString(virtual_host_index_, location_, "return");
         // int status_code, std::string リダイレクト先
         this->redirect_pair_ =
             Config::getRedirectPair(virtual_host_index_, location_);
