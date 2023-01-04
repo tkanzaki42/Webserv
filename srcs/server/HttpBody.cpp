@@ -84,10 +84,8 @@ int HttpBody::read_contents_from_file_() {
     // エラーチェック
     if (ifs_readfile.fail()) {
         // ファイルが存在しない
-#ifdef DEBUG
-        std::cout << "File not found: "
+        std::cerr << "File not found: "
             << request_.get_path_to_file() << std::endl;
-#endif
         return 404;  // Not Found
     } else if (!ifs_readfile) {
         // その他のファイルオープンエラー

@@ -215,6 +215,7 @@ void HttpRequest::analyze_request(int port) {
     }
     if (!is_allowed_method(method, upload_dir)) {
         status_code_ = 405;
+        is_header_analyzed_ = true;
         return;
     }
 
@@ -232,7 +233,8 @@ void HttpRequest::analyze_request(int port) {
     parser_.separate_querystring_pathinfo();
 
     // ファイル存在チェック
-    if (!PathUtil::is_file_exists(get_path_to_file())) {
+    if (get_http_method() != METHOD_POST
+            && !PathUtil::is_file_exists(get_path_to_file())) {
         std::cerr << "File not found: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
@@ -257,10 +259,12 @@ void HttpRequest::analyze_request(int port) {
 
     // autoindex
     bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
-    if (!autoindex && is_folder_existes) {
-        status_code_ = 403;
-    } else if (autoindex == true && is_folder_existes) {
-        is_autoindex_ = true;
+    if (get_http_method() != METHOD_POST) {
+        if (!autoindex && is_folder_existes) {
+            status_code_ = 403;
+        } else if (autoindex == true && is_folder_existes) {
+            is_autoindex_ = true;
+        }
     }
 
     // CGI拡張子の設定を取得
@@ -476,14 +480,18 @@ bool HttpRequest::receive_and_store_to_file(bool is_not_readed_header) {
         receive_ret = receive_plain_data_(is_not_readed_header);
         if (receive_ret == false)
             return false;  // 継続読み込み
+        // receive_plain_data_()内でステータスコードがエラーになった場合
+        if (status_code_ != 200) {
+            return true;  // 読み込み終了
+        }
         // ファイル書き出し
         if (write_to_file_() == false) {
             status_code_ = 500;
             return true;  // 読み込み終了
         }
+        status_code_ = 201;  // Created
     }
 
-    status_code_ = 201;  // Created
     return true;  // 読み込み終了
 }
 
@@ -518,7 +526,7 @@ bool HttpRequest::receive_chunked_data_(bool is_not_readed_header) {
             chunk_size = split_chunk_size_();
             if (chunk_size.first == -1) {
                 std::remove((upload_dir + TMP_POST_DATA_FILE).c_str());
-                status_code_ = 400;  // Bad Request
+                status_code_ = chunk_size.second;
                 return true;  // 読み込み終了
             } else if (chunk_size.first == 0) {
                 // チャンクサイズが0の場合、データの終了を意味する
@@ -589,6 +597,8 @@ bool HttpRequest::recv_and_join_data_() {
     return false;   // 継続
 }
 
+// 戻り値 first   エラーの場合-1、正常の場合チャンクサイズ
+//       second エラーの場合ステータスコード、正常の場合チャンクサイズ部分の文字数
 std::pair<int, int> HttpRequest::split_chunk_size_() {
     int chunk_size = 0;
 
@@ -605,14 +615,14 @@ std::pair<int, int> HttpRequest::split_chunk_size_() {
             chunk_size = chunk_size * 16 + upload_data_.at(i) - '0';
         } else {
             std::cerr << "Failed to recognize chunk size." << std::endl;
-            return std::pair<int, int>(-1, 0);
+            return std::pair<int, int>(-1, 400);  // Bad Request
         }
         // チャンクサイズが極端に大きい数値の場合、無限ループにならないよう早めに判定
         if (client_max_body_size != -1
                 && static_cast<int>(upload_data_.length()) - i + chunk_size
                 > client_max_body_size) {
             std::cerr << "Chunk size overflow." << std::endl;
-            return std::pair<int, int>(-1, 0);
+            return std::pair<int, int>(-1, 413);  // Payload Too Large
         }
         i++;
     }
