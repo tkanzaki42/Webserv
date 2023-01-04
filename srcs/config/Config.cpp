@@ -26,10 +26,6 @@ void Config::init(const std::string &path) {
     }
 }
 
-std::map<int, string_vector_map>::iterator Config::getDefaultServer() {
-    return (_config.find(0));
-}
-
 int Config::getVirtualHostIndex(const std::string &hostname,
                                  const std::string &port) {
     std::map<int, string_vector_map>::iterator begin = _config.begin();
@@ -41,17 +37,26 @@ int Config::getVirtualHostIndex(const std::string &hostname,
     // ポートとサーバー名が一致するものを検索する。ポートが合致していたらそれを保持しておく
     for (std::map<int, string_vector_map>
             ::iterator itr = begin; itr != end; itr++) {
-        serverName = itr->second.find("server_name");
         listenNum = itr->second.find("listen");
-        if (!listenNum->second[0].compare(port)) {
-            if (open_port_default_host == -1) {
-                // 最初に見つかったIndexを保持しておく
-                open_port_default_host = index;
-            }
-            if (!serverName->second[0].compare(hostname)) {
-                // 両方合致していたらそのindexを返す。
-                return (index);
-            }
+        if (listenNum == itr->second.end()) {
+            index++;
+            continue;
+        }
+
+        if (!listenNum->second[0].compare(port)
+             && open_port_default_host == -1) {
+                // ポートが一致するサーバーの内一番上で設定されているものを保持する
+            open_port_default_host = index;
+        }
+        serverName = itr->second.find("server_name");
+        if (serverName == itr->second.end()) {
+            // server_nameが設定されていない
+            index++;
+            continue;
+        } else if (serverName->second[0].compare(hostname)
+                     && !listenNum->second[0].compare(port)) {
+            // server_nameとポートが一致する
+            return (index);
         }
         index++;
     }
