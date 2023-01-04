@@ -215,6 +215,7 @@ void HttpRequest::analyze_request(int port) {
     }
     if (!is_allowed_method(method, upload_dir)) {
         status_code_ = 405;
+        is_header_analyzed_ = true;
         return;
     }
 
