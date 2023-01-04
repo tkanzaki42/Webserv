@@ -235,7 +235,7 @@ void HttpRequest::analyze_request(int port) {
     // ファイル存在チェック
     if (get_http_method() != METHOD_POST
             && !PathUtil::is_file_exists(get_path_to_file())) {
-        std::cerr << "File not founda: " << get_path_to_file() << std::endl;
+        std::cerr << "File not found: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
     bool is_folder_existes = PathUtil::is_folder_exists(get_path_to_file());
