@@ -217,7 +217,7 @@ void HttpRequest::analyze_request(int port) {
         // /で終わってなかったら追加する
         upload_dir += "/";
     }
-    if (!is_allowed_method(method, upload_dir)) {
+    if (!is_allowed_method(method)) {
         status_code_ = 405;
         is_header_analyzed_ = true;
         return;
@@ -228,9 +228,9 @@ void HttpRequest::analyze_request(int port) {
         (Config::getLocationVector(virtual_host_index_, location_, "index"));
     parser_.setBaseHtmlPath(root);
 
+    std::string path_not_autocompleted = replacePathToLocation_(location_, path, root);
+    parser_.setPathToFile(path_not_autocompleted);
     // パスの補完(末尾にindex.htmlをつけるなど)
-    parser_.setPathToFile
-        (replacePathToLocation_(location_, path, root));
     parser_.autocomplete_path();
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
@@ -242,9 +242,8 @@ void HttpRequest::analyze_request(int port) {
         std::cerr << "File not found: " << get_path_to_file() << std::endl;
         status_code_ = 404;  // Not Found
     }
-    bool is_folder_existes = PathUtil::is_folder_exists(get_path_to_file());
-    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
-            && is_folder_existes) {
+    bool is_folder_existes = PathUtil::is_folder_exists(path_not_autocompleted);
+    if (path_not_autocompleted[path_not_autocompleted.size() - 1] != '/' && is_folder_existes) {
         // ディレクトリ指定で最後のスラッシュがない場合は末尾にスラッシュをつけて返す
         status_code_ = 301;  // Moved Permanently
         redirect_pair_.first = 301;
@@ -259,6 +258,7 @@ void HttpRequest::analyze_request(int port) {
     check_authorization_();
 
     // autoindex
+    is_folder_existes = PathUtil::is_folder_exists(get_path_to_file());
     bool autoindex = Config::getAutoIndex(virtual_host_index_, location_);
     if (get_http_method() != METHOD_POST) {
         if (!autoindex && is_folder_existes) {
