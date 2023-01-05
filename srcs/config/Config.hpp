@@ -43,7 +43,8 @@ class Config {
     static std::pair<int, std::string> getRedirectPair(int hostkey, const std::string& url);
     static int getVirtualHostIndex(const std::string &hostname,
                                     const std::string &port);
-    static bool isReturn(int virtualHostIndex, std::string &url);
+    static bool isSetReturn(int virtualHostIndex, std::string &location);
+    static std::string isReturn(int virtualHostIndex, std::string& url, std::vector<std::string> locationVector);
     static bool getAutoIndex(int virtualHostIndex, const std::string& url);
     static void printVector(std::vector<std::string> v);
 

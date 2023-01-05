@@ -65,7 +65,7 @@ int Config::getVirtualHostIndex(const std::string &hostname,
 }
 
 // アクセスしたlocationにリダイレクトが設定されているかを返却する
-bool Config::isReturn(int virtualServerIndex, std::string &location) {
+bool Config::isSetReturn(int virtualServerIndex, std::string &location) {
     if (Config::getLocationString(virtualServerIndex,
                                     location, "return").size()) {
         return (true);
@@ -264,6 +264,31 @@ std::string Config::findLongestMatchLocation(std::string& url, std::vector<std::
         longestMatchLocation = "/";
     }
     return (longestMatchLocation);
+}
+
+// あたえられたURLからlocationを決定して、そのLocationのパスを返す。
+std::string Config::isReturn(int virtualHostIndex, std::string& url, std::vector<std::string> locationVector) {
+    std::string tmp = "";
+    std::vector<std::string> urlVector = split(url, '/');
+    std::vector<std::string>::iterator begin = locationVector.begin();
+    std::vector<std::string>::iterator end = locationVector.end();
+    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
+        // locationの方がURLより長い場合は次を見る
+        if ((*itr).size() > url.size()) {
+            continue;
+        }
+        // URLとlocationが完全一致したらtrue
+        if (url.compare(*itr) == 0 && isSetReturn(virtualHostIndex, *itr)) {
+            return (*itr);
+        }
+        // 途中まで保持しているものよりも長いものがマッチすればそれを保持する
+        if (url.substr(0, (*itr).size()) == *itr
+         && tmp.size() < (*itr).size()
+          && isSetReturn(virtualHostIndex, *itr)) {
+            tmp = *itr;
+        }
+    }
+    return (tmp);
 }
 
 // getLocation()の引数に渡すlocationベクタの作成
