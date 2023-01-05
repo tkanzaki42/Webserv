@@ -53,8 +53,8 @@ int Config::getVirtualHostIndex(const std::string &hostname,
             // server_nameが設定されていない
             index++;
             continue;
-        } else if (serverName->second[0].compare(hostname)
-                     && !listenNum->second[0].compare(port)) {
+        } else if (serverName->second[0] == (hostname)
+                     && listenNum->second[0] == (port)) {
             // server_nameとポートが一致する
             return (index);
         }
