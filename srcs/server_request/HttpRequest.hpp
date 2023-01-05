@@ -87,8 +87,7 @@ class HttpRequest {
     bool                write_to_file_();
     bool                write_to_file_append_(std::size_t append_length);
     int                 delete_file_();
-    bool                is_allowed_method(std::vector<std::string> method,
-                                          const std::string &upload_dir);
+    bool                is_allowed_method(std::vector<std::string> method);
     bool                is_set_cgi_extension(std::vector<std::string> v,
                                               const std::string &extention);
     std::string         replacePathToLocation_(std::string &location,
