@@ -196,8 +196,16 @@ void HttpRequest::analyze_request(int port) {
     std::string path = get_request_target();
     std::vector<std::string> v =
      Config::getAllLocation(virtual_host_index_);
-    location_ = Config::findLongestMatchLocation
-        (path, Config::getAllLocation(virtual_host_index_));
+
+    // リダイレクト確認
+    std::string redirectLocation
+     = Config::isReturn(virtual_host_index_, path, v);
+    if (redirectLocation.size()) {
+        location_ = redirectLocation;
+        check_redirect_();
+        return;
+    }
+    location_ = Config::findLongestMatchLocation(path, v);
     std::string root =
         Config::getLocationString(virtual_host_index_, location_, "root");
     // もしrootが見つからなかった場合
@@ -239,10 +247,7 @@ void HttpRequest::analyze_request(int port) {
         status_code_ = 404;  // Not Found
     }
     bool is_folder_existes = PathUtil::is_folder_exists(get_path_to_file());
-    // リダイレクト確認
-    if (Config::isReturn(virtual_host_index_, location_)) {
-        check_redirect_();
-    } else if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
+    if (get_path_to_file()[get_path_to_file().size() - 1] != '/'
             && is_folder_existes) {
         // ディレクトリ指定で最後のスラッシュがない場合は末尾にスラッシュをつけて返す
         status_code_ = 301;  // Moved Permanently
