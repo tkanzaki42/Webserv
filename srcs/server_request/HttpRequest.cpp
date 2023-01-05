@@ -125,8 +125,7 @@ bool HttpRequest::is_set_cgi_extension(std::vector<std::string> v,
     return (false);
 }
 
-bool HttpRequest::is_allowed_method(std::vector<std::string> v,
-                                    const std::string &upload_dir) {
+bool HttpRequest::is_allowed_method(std::vector<std::string> v) {
     // メソッドの制限なし
     if (v.empty()) {
         return (true);
@@ -149,9 +148,6 @@ bool HttpRequest::is_allowed_method(std::vector<std::string> v,
     std::vector<std::string>::iterator end = v.end();
     for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
         if (*itr == method_string) {
-            if (method_string == "POST" && !upload_dir.size()) {
-                return (false);
-            }
             return (true);
         }
     }
