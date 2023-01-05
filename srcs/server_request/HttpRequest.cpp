@@ -298,6 +298,9 @@ std::string HttpRequest::replacePathToLocation_(std::string &location,
                                               std::string &path,
                                               std::string &root) {
     std::string newUrl;
+    if (!location.size()) {
+        return ("/");
+    }
     if (location.size() > path.size()) {
         return (root);
     }
