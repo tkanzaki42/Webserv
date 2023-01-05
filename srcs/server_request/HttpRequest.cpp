@@ -202,6 +202,10 @@ void HttpRequest::analyze_request(int port) {
         return;
     }
     location_ = Config::findLongestMatchLocation(path, v);
+    if (!location_.size()) {
+        status_code_ = 403;
+        return;
+    }
     std::string root =
         Config::getLocationString(virtual_host_index_, location_, "root");
     // もしrootが見つからなかった場合
@@ -299,7 +303,7 @@ std::string HttpRequest::replacePathToLocation_(std::string &location,
                                               std::string &root) {
     std::string newUrl;
     if (!location.size()) {
-        return ("/");
+        return ("");
     }
     if (location.size() > path.size()) {
         return (root);
