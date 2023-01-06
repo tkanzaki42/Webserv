@@ -28,10 +28,10 @@ class HttpRequest {
     HttpRequest& operator=(const HttpRequest &obj);
 
     void                reset();
-    bool                receive_header();
+    bool                receive_header(const char *buf);
     void                analyze_request(int port);
     void                print_debug();
-    bool                receive_and_store_to_file(bool is_not_readed_header);
+    bool                receive_and_store_to_file(bool is_not_readed_header, const char *buf);
 
     // getter(HttpParser)
     HttpMethod          get_http_method() const;
@@ -73,17 +73,15 @@ class HttpRequest {
     std::pair<int, std::string>
                         redirect_pair_;
     std::string         upload_dir;
-    int                 readpipe_;
     struct sockaddr_in  client_addr_;
     bool                is_header_analyzed_;
     std::string         upload_data_;
 
     void                check_redirect_();
     void                check_authorization_();
-    bool                receive_chunked_data_(bool is_not_readed_header);
-    bool                recv_and_join_data_();
+    bool                receive_chunked_data_(bool is_not_readed_header, const char *buf);
     std::pair<int, int> split_chunk_size_();
-    bool                receive_plain_data_(bool is_not_readed_header);
+    bool                receive_plain_data_(bool is_not_readed_header, const char *buf);
     bool                write_to_file_();
     bool                write_to_file_append_(std::size_t append_length);
     int                 delete_file_();

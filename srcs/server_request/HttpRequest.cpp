@@ -44,7 +44,6 @@ void HttpRequest::reset() {
     is_autoindex_       = false;
     redirect_pair_      = std::make_pair(0, "");
     upload_dir          = "";
-    readpipe_           = -1;
     client_addr_        = sockaddr_in();
     is_header_analyzed_ = false;
     upload_data_        = "";
@@ -52,25 +51,14 @@ void HttpRequest::reset() {
 
 // 戻り値 true : 読み込み終了
 //       false  : 継続読み込み
-bool HttpRequest::receive_header() {
-    char     buf[BUF_SIZE];
-
-    // パイプから読み込み
-    StringConverter::ft_memset(buf, 0, sizeof(buf));
-    ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
-    if (read_size <= 0) {
-        std::cerr << "read() ends with return value 0 or -1,"
-            << " errno = " << errno << std::endl;
-        return true;  // 受信に失敗したので処理中断
-    }
-
-    if (buf[0] == '\r' && buf[1] == '\n' && read_size == 2
+bool HttpRequest::receive_header(const char *buf) {
+    std::string buf_str = std::string(buf);
+    if (buf_str == "\r\n"
             && received_line_.length() == 0) {
         // skip
         return false;
     }
     if (received_line_.length() == 0) {
-        std::string            buf_str = std::string(buf);
         std::string::size_type pos = buf_str.find("\r\n");
         int status_code = validate_received_header_line_(buf_str.substr(0, pos));
         if (status_code != 200) {
@@ -79,7 +67,7 @@ bool HttpRequest::receive_header() {
         }
     }
 
-    received_line_.append(buf);
+    received_line_ += buf_str;
 
     std::string crlfstr = "\r\n\r\n";
     if (received_line_.length() < crlfstr.length()) {
@@ -421,10 +409,6 @@ void HttpRequest::set_file_type(FileType file_type) {
     file_type_ = file_type;
 }
 
-void HttpRequest::set_readpipe(int pp) {
-    readpipe_ = pp;
-}
-
 void HttpRequest::set_client_addr(struct sockaddr_in  client_addr) {
     client_addr_ = client_addr;
 }
@@ -471,7 +455,7 @@ void HttpRequest::check_redirect_() {
         status_code_ = this->redirect_pair_.first;
 }
 
-bool HttpRequest::receive_and_store_to_file(bool is_not_readed_header) {
+bool HttpRequest::receive_and_store_to_file(bool is_not_readed_header, const char *buf) {
     // ヘッダ読み込み時にバッファに残っている分をコピー
     if (upload_data_ == "") {
         upload_data_ = parser_.get_remain_buffer();
@@ -480,12 +464,12 @@ bool HttpRequest::receive_and_store_to_file(bool is_not_readed_header) {
     // データ受信
     bool receive_ret = false;
     if (parser_.get_header_field("Transfer-Encoding").compare("chunked") == 0) {
-        receive_ret = receive_chunked_data_(is_not_readed_header);
+        receive_ret = receive_chunked_data_(is_not_readed_header, buf);
         if (receive_ret == false)
             return false;  // 継続読み込み
     } else  {
         // Content-Lengthがあってもなくても通常のデータ受信モード
-        receive_ret = receive_plain_data_(is_not_readed_header);
+        receive_ret = receive_plain_data_(is_not_readed_header, buf);
         if (receive_ret == false)
             return false;  // 継続読み込み
         // receive_plain_data_()内でステータスコードがエラーになった場合
@@ -503,7 +487,7 @@ bool HttpRequest::receive_and_store_to_file(bool is_not_readed_header) {
     return true;  // 読み込み終了
 }
 
-bool HttpRequest::receive_chunked_data_(bool is_not_readed_header) {
+bool HttpRequest::receive_chunked_data_(bool is_not_readed_header, const char *buf) {
     enum ReadMode {
         READMODE_CHUNKSIZE = 0,
         READMODE_DATA = 1
@@ -519,9 +503,7 @@ bool HttpRequest::receive_chunked_data_(bool is_not_readed_header) {
     } else {
         // 2回目以降実行時
         // データ受信
-        if (recv_and_join_data_() == true) {
-            return true;  // 読み込み終了
-        }
+        upload_data_ += buf;
     }
 
     while (true) {
@@ -588,23 +570,6 @@ bool HttpRequest::receive_chunked_data_(bool is_not_readed_header) {
     }
 }
 
-bool HttpRequest::recv_and_join_data_() {
-    char    buf[BUF_SIZE];
-    memset(buf, 0, sizeof(char) * BUF_SIZE);
-    ssize_t read_size = read(readpipe_, buf, sizeof(char) * BUF_SIZE - 1);
-#ifdef DEBUG
-    std::cout << "  data readed, read_size: " << read_size << std::endl;
-#endif
-    if (read_size < 0) {
-        std::cerr << "read() failed in "
-            << "recv_and_join_data_()." << std::endl;
-        status_code_ = 500;  // Internal Server Error
-        return true;  // エラー発生、終了
-    }
-    upload_data_ += buf;
-    return false;   // 継続
-}
-
 // 戻り値 first   エラーの場合-1、正常の場合チャンクサイズ
 //       second エラーの場合ステータスコード、正常の場合チャンクサイズ部分の文字数
 std::pair<int, int> HttpRequest::split_chunk_size_() {
@@ -643,14 +608,14 @@ std::pair<int, int> HttpRequest::split_chunk_size_() {
 
 // 戻り値 true  読み込み完了
 //       false 読み込み継続
-bool HttpRequest::receive_plain_data_(bool is_not_readed_header) {
+bool HttpRequest::receive_plain_data_(bool is_not_readed_header, const char *buf) {
     std::size_t content_length
         = StringConverter::stoi(parser_.get_header_field("Content-Length"));
 
     if (!is_not_readed_header) {
         // データ受信
-        if (recv_and_join_data_() == false)
-            return false;  // 継続読み込み
+        upload_data_ += buf;
+        return false;  // 継続読み込み
     }
 
     // 終了条件チェック

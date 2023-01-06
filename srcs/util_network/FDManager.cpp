@@ -1,6 +1,8 @@
 // Copyright 2022 tkanzaki
 #include "srcs/util_network/FDManager.hpp"
 
+#define USLEEP_FIN_DELAY 1500
+
 FDManager::FDManager() {
     std::set<int> set = Config::getAllListen();
     std::set<int>::iterator begin = set.begin();
@@ -203,20 +205,8 @@ bool FDManager::receive() {
     std::cout << " received." << std::endl;
 #endif
 
-    // 受信したデータをパイプに書き込み
-    int write_ret
-        = write((*connections_it_).get_write_pipe(), buf, read_size);
-    if (write_ret <= 0) {
-        std::cerr << "Failed to write to pipe in FDManager::receive(), "
-            << "write_ret = " << write_ret << ", errno = " << errno
-            << std::endl;
-        (*connections_it_).set_response_status_code_(500);
-        (*connections_it_).make_response();
-        FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
-        return true;
-    }
-    // パイプから読み込んで解析
-    if ((*connections_it_).receive_from_pipe() == false) {
+    // 受信したデータを解析
+    if ((*connections_it_).receive_from_pipe(buf) == false) {
         // ヘッダ読み込みが最後まで終わっていない場合、そのまま抜けて再度Readイベントを待つ
         return true;
     }
@@ -270,6 +260,7 @@ void FDManager::disconnect() {
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " disconnected." << std::endl;
 #endif
+    usleep(USLEEP_FIN_DELAY);
     close((*connections_it_).get_accepted_fd());
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
     FD_CLR((*connections_it_).get_accepted_fd(), &received_fd_collection_);
