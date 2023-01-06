@@ -73,7 +73,6 @@ class HttpRequest {
     std::pair<int, std::string>
                         redirect_pair_;
     std::string         upload_dir;
-   //  int                 readpipe_;
     struct sockaddr_in  client_addr_;
     bool                is_header_analyzed_;
     std::string         upload_data_;
@@ -81,7 +80,6 @@ class HttpRequest {
     void                check_redirect_();
     void                check_authorization_();
     bool                receive_chunked_data_(bool is_not_readed_header, const char *buf);
-    bool                recv_and_join_data_(const char *buf);
     std::pair<int, int> split_chunk_size_();
     bool                receive_plain_data_(bool is_not_readed_header, const char *buf);
     bool                write_to_file_();

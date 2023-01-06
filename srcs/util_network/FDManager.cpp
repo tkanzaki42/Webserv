@@ -203,19 +203,7 @@ bool FDManager::receive() {
     std::cout << " received." << std::endl;
 #endif
 
-    // 受信したデータをパイプに書き込み
-    // int write_ret
-    //     = write((*connections_it_).get_write_pipe(), buf, read_size);
-    // if (write_ret <= 0) {
-    //     std::cerr << "Failed to write to pipe in FDManager::receive(), "
-    //         << "write_ret = " << write_ret << ", errno = " << errno
-    //         << std::endl;
-    //     (*connections_it_).set_response_status_code_(500);
-    //     (*connections_it_).make_response();
-    //     FD_SET((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
-    //     return true;
-    // }
-    // パイプから読み込んで解析
+    // 受信したデータを解析
     if ((*connections_it_).receive_from_pipe(buf) == false) {
         // ヘッダ読み込みが最後まで終わっていない場合、そのまま抜けて再度Readイベントを待つ
         return true;
