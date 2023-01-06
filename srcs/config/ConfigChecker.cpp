@@ -169,7 +169,7 @@ bool ConfigChecker::isValidListen(const std::vector<std::string> &v) {
     std::vector<std::string>::const_iterator end = v.end();
     for (std::vector<std::string>::const_iterator iter = begin;
          iter != end; iter++) {
-        if (!isValidPort(*iter) && !isValidIP(*iter)) {
+        if (!isValidPort(*iter)) {
             return (false);
         }
         for (std::vector<std::string>::const_iterator itr = iter + 1;
@@ -177,27 +177,6 @@ bool ConfigChecker::isValidListen(const std::vector<std::string> &v) {
             if (*itr == *iter) {
                 return (false);
             }
-        }
-    }
-    return (true);
-}
-
-bool ConfigChecker::isValidIP(const std::string s) {
-    std::vector<std::string> v = split(s, '.');
-    if (v.size() != 4)
-        return (false);
-    std::vector<std::string>::const_iterator begin = v.begin();
-    std::vector<std::string>::const_iterator end = v.end();
-    for (std::vector<std::string>::const_iterator iter = begin;
-            iter != end; iter++) {
-        if (!isAllNum(*iter)) {
-            return (false);
-        }
-        std::stringstream ss(*iter);
-        long n;
-        ss >> n;
-        if (!(0 <= n && n <= 255)) {
-            return false;
         }
     }
     return (true);
