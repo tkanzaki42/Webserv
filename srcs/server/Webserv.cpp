@@ -42,7 +42,6 @@ void Webserv::loop() {
                 }
                 continue;
             case Write:
-                usleep(1000);
 #ifdef DEBUG
                 std::cout << std::endl;
                 std::cout << "Event triggered: Write" << std::endl;
