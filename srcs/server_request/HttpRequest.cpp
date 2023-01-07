@@ -636,7 +636,13 @@ bool HttpRequest::write_to_file_() {
     }
 
     // 書き込み
-    ofs_outfile.write(upload_data_.c_str(), upload_data_.length());
+    try {
+        ofs_outfile.write(upload_data_.c_str(), upload_data_.length());
+    } catch (const std::exception& e) {
+        std::cerr << "Could not write file during receiving the file: "
+            << get_path_to_file() << std::endl;
+        return (false);
+    }
 
     // クローズ
     ofs_outfile.close();
@@ -669,7 +675,13 @@ bool HttpRequest::write_to_file_append_(std::size_t append_length) {
     }
 
     // 追加書き込み
-    ofs_outfile.write(upload_data_.c_str(), append_length);
+    try {
+        ofs_outfile.write(upload_data_.c_str(), append_length);
+    } catch (const std::exception& e) {
+        std::cerr << "Could not write file during receiving the file: "
+            << get_path_to_file() << std::endl;
+            return (false);
+    }
 
     // クローズ
     ofs_outfile.close();
