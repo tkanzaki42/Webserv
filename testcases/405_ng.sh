@@ -4,4 +4,4 @@ curl -v -X "GETT" localhost
 echo;
 echo;
 echo "~~~~~webserv~~~~~"
-curl -v -X "GETT" localhost:5050
+curl -v -X "GETT" localhost:6060

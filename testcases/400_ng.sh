@@ -7,4 +7,4 @@ curl -v "localhost/?$QUERYSTRING_TXT"
 echo;
 echo;
 echo "~~~~~webserv~~~~~"
-curl -v "localhost:5050/$QUERYSTRING_TXT"
+curl -v "localhost:6060/$QUERYSTRING_TXT"
