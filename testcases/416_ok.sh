@@ -2,7 +2,7 @@
 
 # Accept-RangesがHTMLの範囲内(206を返す)
 HOST="localhost"
-PORT=5050
+PORT=6060
 START=12
 END=50
 

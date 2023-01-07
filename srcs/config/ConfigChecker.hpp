@@ -38,7 +38,6 @@ namespace ConfigChecker {
     bool isValidErrorPage(const std::vector<std::string> &v);
     bool isValidStatusCode(const std::string &status_code);
     bool isAllNum(const std::string s);
-    bool isValidIP(const std::string s);
     bool isValidPort(const std::string s);
 }
 
