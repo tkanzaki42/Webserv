@@ -12,6 +12,24 @@ bool PathUtil::is_file_exists(const std::string& path) {
     }
 }
 
+bool PathUtil::is_set_cgi_extension(const std::vector<std::string> &v,
+                         const std::string &extension) {
+    // CGIの設定がない
+    if (v.empty()) {
+        return (false);
+    }
+    std::vector<std::string>::const_iterator begin = v.begin();
+    std::vector<std::string>::const_iterator end = v.end();
+    for (std::vector<std::string>::const_iterator
+         itr = begin; itr != end; itr++) {
+        if (*itr == extension) {
+            return (true);
+        }
+    }
+    // 見つからなかった
+    return (false);
+}
+
 bool PathUtil::is_folder_exists(const std::string& path) {
     struct stat st;
 
