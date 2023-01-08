@@ -56,5 +56,5 @@ stestfile = result.log
 stest     = $(stestdir)/$(stestfile)
 .PHONY: siege
 siege:
-	siege -t 1m -b http://localhost:6060/empty.html
+	siege -c 100 -t 30S -b http://localhost:6060/empty.html
 	
