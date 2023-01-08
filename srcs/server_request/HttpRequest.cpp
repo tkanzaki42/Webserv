@@ -96,23 +96,6 @@ bool HttpRequest::receive_header(const char *buf) {
     }
 }
 
-bool HttpRequest::is_set_cgi_extension(std::vector<std::string> v,
-                         const std::string &extension) {
-    // CGIの設定がない
-    if (v.empty()) {
-        return (false);
-    }
-    std::vector<std::string>::iterator begin = v.begin();
-    std::vector<std::string>::iterator end = v.end();
-    for (std::vector<std::string>::iterator itr = begin; itr != end; itr++) {
-        if (*itr == extension) {
-            return (true);
-        }
-    }
-    // 見つからなかった
-    return (false);
-}
-
 bool HttpRequest::is_allowed_method(std::vector<std::string> v) {
     // メソッドの制限なし
     if (v.empty()) {
@@ -226,7 +209,9 @@ void HttpRequest::analyze_request(int port) {
     parser_.autocomplete_path();
 
     // パースした情報からQUERY_STRING、PATH_INFOを切り出し
-    parser_.separate_querystring_pathinfo();
+    std::vector<std::string> cgi_extension =
+     Config::getLocationVector(virtual_host_index_, location_, "cgi_extension");
+    parser_.separate_querystring_pathinfo(cgi_extension);
 
     // ファイル存在チェック
     if (get_http_method() != METHOD_POST
@@ -260,17 +245,14 @@ void HttpRequest::analyze_request(int port) {
         }
     }
 
-    // CGI拡張子の設定を取得
-    std::vector<std::string> cgi_extension =
-     Config::getLocationVector(virtual_host_index_, location_, "cgi_extension");
     // ファイルタイプの判定
     const std::string file_extension
             = PathUtil::get_file_extension(get_path_to_file());
     if ((file_extension == "cgi" || file_extension == "py") &&
-        is_set_cgi_extension(cgi_extension, file_extension))
+        PathUtil::is_set_cgi_extension(cgi_extension, file_extension))
         file_type_ = FILETYPE_SCRIPT;
     else if (file_extension == "out" &&
-        is_set_cgi_extension(cgi_extension, file_extension))
+        PathUtil::is_set_cgi_extension(cgi_extension, file_extension))
         file_type_ = FILETYPE_BINARY;
     else
         file_type_ = FILETYPE_STATIC_HTML;
@@ -654,7 +636,13 @@ bool HttpRequest::write_to_file_() {
     }
 
     // 書き込み
-    ofs_outfile.write(upload_data_.c_str(), upload_data_.length());
+    try {
+        ofs_outfile.write(upload_data_.c_str(), upload_data_.length());
+    } catch (const std::exception& e) {
+        std::cerr << "Could not write file during receiving the file: "
+            << get_path_to_file() << std::endl;
+        return (false);
+    }
 
     // クローズ
     ofs_outfile.close();
@@ -687,7 +675,13 @@ bool HttpRequest::write_to_file_append_(std::size_t append_length) {
     }
 
     // 追加書き込み
-    ofs_outfile.write(upload_data_.c_str(), append_length);
+    try {
+        ofs_outfile.write(upload_data_.c_str(), append_length);
+    } catch (const std::exception& e) {
+        std::cerr << "Could not write file during receiving the file: "
+            << get_path_to_file() << std::endl;
+            return (false);
+    }
 
     // クローズ
     ofs_outfile.close();

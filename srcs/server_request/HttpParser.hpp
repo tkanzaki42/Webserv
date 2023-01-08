@@ -20,7 +20,8 @@ class HttpParser {
     HttpParser& operator=(const HttpParser &obj);
 
     int                      parse();
-    void                     separate_querystring_pathinfo();
+    void                     separate_querystring_pathinfo
+                              (const std::vector<std::string> &cgi_extention);
     void                     autocomplete_path();
 
     // getter
@@ -66,7 +67,7 @@ class HttpParser {
     bool         parse_method_();
     bool         parse_request_target_();
     std::string  split_query_string_(std::string &request_target);
-    void         split_path_info_();
+    void         split_path_info_(std::vector<std::string> cgi_extention);
     bool         parse_http_ver_();
     void         parse_header_field_();
     std::pair<std::string, std::string>

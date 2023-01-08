@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 class PathUtil {
  public:
@@ -27,6 +28,8 @@ class PathUtil {
                                     const std::string& relative_path);
      static const std::string   get_current_datetime();
      static const std::string   get_filesize(const std::string& relative_path);
+     static bool                is_set_cgi_extension(const std::vector<std::string> &v,
+                         const std::string &extension);
 };
 
 #endif  // SRCS_UTIL_PATHUTIL_HPP_

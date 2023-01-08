@@ -1,7 +1,7 @@
 // Copyright 2022 tkanzaki
 #include "srcs/util_network/FDManager.hpp"
 
-#define USLEEP_FIN_DELAY 1500
+#define USLEEP_FIN_DELAY 3000
 
 FDManager::FDManager() {
     std::set<int> set = Config::getAllListen();
@@ -221,7 +221,7 @@ bool FDManager::receive() {
 }
 
 bool FDManager::send() {
-
+    usleep(USLEEP_FIN_DELAY);
     // データをクライアントに送信
     if (::send((*connections_it_).get_accepted_fd(),
         (*connections_it_).get_response().c_str(),
@@ -260,7 +260,7 @@ void FDManager::disconnect() {
     std::cout << "connected_fds_:" << (*connections_it_).get_accepted_fd();
     std::cout << " disconnected." << std::endl;
 #endif
-    usleep(USLEEP_FIN_DELAY);
+    // usleep(USLEEP_FIN_DELAY);
     close((*connections_it_).get_accepted_fd());
     FD_CLR((*connections_it_).get_accepted_fd(), &sendable_fd_collection_);
     FD_CLR((*connections_it_).get_accepted_fd(), &received_fd_collection_);

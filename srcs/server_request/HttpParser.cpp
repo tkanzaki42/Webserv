@@ -159,14 +159,13 @@ bool HttpParser::parse_request_target_() {
     return true;
 }
 
-void HttpParser::separate_querystring_pathinfo() {
+void HttpParser::separate_querystring_pathinfo(const std::vector<std::string> &cgi_extention) {
     // パスからQUERY_STRINGを切り出す
     path_to_file_ = split_query_string_(path_to_file_);
     // std::cout << "PATH_TO_FILE " << get_path_to_file() << std::endl;
 
     // パスからPATH_INFOを切り出す
-    if (get_http_method() != METHOD_POST)
-        split_path_info_();
+    split_path_info_(cgi_extention);
 }
 
 std::string HttpParser::split_query_string_(
@@ -190,9 +189,9 @@ std::string HttpParser::split_query_string_(
 
 void HttpParser::autocomplete_path() {
     // パスが正しければ対応不要
-    if (PathUtil::is_file_exists(path_to_file_))
+    if (PathUtil::is_file_exists(path_to_file_)) {
         return;
-
+    }
     if (PathUtil::is_folder_exists(path_to_file_)) {
         std::vector<std::string> autocomp_file = getIndexHtmlFileName();
 
@@ -225,7 +224,7 @@ void HttpParser::autocomplete_path() {
 // 例) /invalid/invalid.html/invalid
 //     -> path_to_file_ : /invalid/invalid.html/invalid
 //     -> path_info_    : (empty)
-void HttpParser::split_path_info_() {
+void HttpParser::split_path_info_(std::vector<std::string> cgi_extension) {
     // path_to_file_の末尾からPATH_INFOを切り出す
     std::string::size_type slash_pos_prev = 0;
     while (true) {
@@ -234,23 +233,25 @@ void HttpParser::split_path_info_() {
         if (slash_pos == std::string::npos) {
             // スラッシュが見つからなかった場合、PATH_INFOは指定されていなかった
             path_info_ = "";
-            break;
+            return;
         } else {
             // スラッシュが見つかった場合、スラッシュまでのパスが有効か判定
             std::string path_candidate = path_to_file_.substr(0, slash_pos);
             if (PathUtil::is_folder_exists(path_candidate)) {
                 // ディレクトリが有効な場合、下層のディレクトリチェックに進む
                 {}
-            } else if (PathUtil::is_file_exists(path_candidate)) {
+            } else if (PathUtil::is_file_exists(path_candidate)
+                 && PathUtil::is_set_cgi_extension(cgi_extension,
+                 PathUtil::get_file_extension(path_candidate))) {
                 // ファイルとして有効な場合、パスはそこまでで完了、残りをPATH_INFOに格納
                 path_info_ = path_to_file_.substr(slash_pos,
                     path_to_file_.size() - slash_pos);
                 path_to_file_ = path_to_file_.substr(0, slash_pos);
-                break;
+                return;
             } else {
                 // 有効でない場合、PATH_INFOは指定されていなかった
                 path_info_ = "";
-                break;
+                return;
             }
         }
         slash_pos_prev = slash_pos + 1;
