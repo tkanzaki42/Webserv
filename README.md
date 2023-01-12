@@ -45,7 +45,7 @@ make debug
 ```
 fsanitizeオプションを付加してコンパイルします。
 
-その他、all、clean、fclean、reオプションが仕えます。詳細は`make usage`を参照。
+その他、all、clean、fclean、reオプションが使えます。詳細は`make usage`を参照。
 
 
 ## サーバの起動と停止
