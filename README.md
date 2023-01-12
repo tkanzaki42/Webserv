@@ -124,8 +124,62 @@ Host: localhost:6060
 
 ## 設定項目
 
-後述
+### 最小設定
 
+```
+server
+ location /
+  {root|./public_html}
+ listen
+  {6060}
+```
+
+- 1つのサーバがserver項目1つに対応
+- 行頭のスペース1つがインデント1つに対応
+- リクエストURLで指定されるパスをlocationに書き、レスポンスで返すファイルが置かれているパスをrootに書く
+- ポート番号を指定する
+
+### 複数サーバ設定例
+```
+server
+ server_name
+  example.com
+ location /
+  {root|./public_html,index|index.html}
+ listen
+  {6060}
+
+server
+ server_name
+  hoge.com
+ location /
+  {root|./public_html/subdir,index|index.html}
+ listen
+  {6060}
+```
+
+- server_nameでバーチャルホストを指定
+- 各サーバごとに設定を記載する
+- バーチャルホストでなく、ポート番号でサーバを複数記述してもよい(その場合はserver_name項目はなくてもよい)
+
+### CGI設定例
+
+```
+server
+ location /cgi-bin
+  {root|./public_html/cgi-bin,cgi_extension|out|py,upload_store|./upload}
+ location /
+  {root|./public_html,index|index.html}
+ listen
+  {6060}
+```
+
+- cgi_extensionで、実行を許可するCGIの拡張子を指定する
+- POSTメソッドを使用する場合は、POSTで送付されるデータを保存するパスをupload_storeで指定する（upload_fileというファイル名で保存される）
+
+### その他
+
+その他いくつか設定可能な項目があります。configsディレクトリにサンプルがあるので参考にしてください。
 
 ## 負荷テスト
 
